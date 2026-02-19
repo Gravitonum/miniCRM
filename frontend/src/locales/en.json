@@ -99,5 +99,11 @@
         "ru": "Русский",
         "en": "English",
         "switch": "Language"
+    },
+    "joinOrg": {
+        "title": "Join Organization",
+        "subtitle": "Please enter your organization code to continue.",
+        "confirm": "Join Organization",
+        "joining": "Joining..."
     }
 }

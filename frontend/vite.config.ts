@@ -14,11 +14,19 @@ export default defineConfig({
   server: {
     proxy: {
       '/auth': {
-        target: 'https://app.gravibase.ru',
+        target: 'https://minicrm.apps.gravibase.ru',
         changeOrigin: true,
       },
       '/api': {
-        target: 'https://app.gravibase.ru',
+        target: 'https://minicrm.apps.gravibase.ru',
+        changeOrigin: true,
+      },
+      '/application': {
+        target: 'https://minicrm.apps.gravibase.ru',
+        changeOrigin: true,
+      },
+      '/security': {
+        target: 'https://minicrm.apps.gravibase.ru',
         changeOrigin: true,
       },
     },

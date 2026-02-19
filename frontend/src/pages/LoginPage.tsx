@@ -1,6 +1,6 @@
 /**
  * Login page with username/password form.
- * Supports i18n and form validation.
+ * Large, readable inputs with proper spacing and premium feel.
  *
  * @example
  * // Route: /login
@@ -66,8 +66,8 @@ export function LoginPage(): ReactElement {
             const result = await login(username.trim(), password);
 
             if (result.success && result.token) {
-                // Store token
                 localStorage.setItem('gravisales_token', result.token.access_token);
+                localStorage.setItem('gravisales_username', username.trim()); // Store username for profile updates
                 if (result.token.refresh_token) {
                     localStorage.setItem('gravisales_refresh_token', result.token.refresh_token);
                 }
@@ -76,11 +76,8 @@ export function LoginPage(): ReactElement {
                 } else {
                     localStorage.removeItem('gravisales_username');
                 }
-
-                // Navigate to dashboard (for now, just show success)
                 navigate('/');
             } else {
-                // Map API error to i18n key
                 const errorKey = result.error === 'invalidCredentials'
                     ? 'login.errors.invalidCredentials'
                     : result.error === 'networkError'
@@ -96,7 +93,7 @@ export function LoginPage(): ReactElement {
         }
     }
 
-    // Load saved username
+    // Load saved username on mount
     useState(() => {
         const savedUsername = localStorage.getItem('gravisales_username');
         if (savedUsername) {
@@ -107,30 +104,31 @@ export function LoginPage(): ReactElement {
 
     return (
         <AuthLayout>
-            <div>
-                {/* Title */}
-                <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
+            <div className="w-full">
+                {/* Title - Left aligned */}
+                <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-8 tracking-tight text-left leading-tight">
                     {t('login.title')}
                 </h1>
-                <p className="text-[var(--color-text-secondary)] mb-8">
+                <p className="text-gray-500 text-lg md:text-xl mb-14 text-left max-w-md leading-loose">
                     {t('login.subtitle')}
                 </p>
 
                 {/* Error Banner */}
                 {errors.general && (
-                    <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200
-                          text-red-700 text-sm animate-fade-in" role="alert">
+                    <div className="w-full mb-8 p-6 rounded-2xl bg-red-50 border border-red-200
+                          text-red-700 text-base animate-fade-in flex items-center gap-4 leading-relaxed" role="alert">
+                        <span className="text-2xl">⚠️</span>
                         {errors.general}
                     </div>
                 )}
 
                 {/* Login Form */}
-                <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                <form onSubmit={handleSubmit} className="space-y-12 w-full" noValidate>
                     {/* Username */}
-                    <div>
+                    <div className="mb-12">
                         <label
                             htmlFor="login-username"
-                            className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
+                            className="block text-base font-semibold text-gray-800 mb-12"
                         >
                             {t('login.username')}
                         </label>
@@ -145,34 +143,34 @@ export function LoginPage(): ReactElement {
                             placeholder={t('login.usernamePlaceholder')}
                             autoComplete="username"
                             autoFocus
-                            className={`w-full px-4 py-3 rounded-xl border text-sm
+                            className={`w-full px-5 py-6 rounded-2xl border-2 text-lg
                          transition-all duration-200
-                         bg-[var(--color-bg-primary)]
-                         placeholder:text-[var(--color-text-tertiary)]
-                         focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
-                         focus:border-[var(--color-primary)]
+                         bg-gray-50 hover:bg-white
+                         placeholder:text-gray-400
+                         focus:outline-none focus:ring-4 focus:ring-cyan-100
+                         focus:border-[#19cbfe] focus:bg-white
                          ${errors.username
-                                    ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error)]/20'
-                                    : 'border-[var(--color-border)]'}`}
+                                    ? 'border-red-400 bg-red-50 ring-2 ring-red-100'
+                                    : 'border-gray-200'}`}
                         />
                         {errors.username && (
-                            <p className="mt-1 text-xs text-[var(--color-error)]">{errors.username}</p>
+                            <p className="mt-2 text-sm text-red-600 font-medium leading-relaxed">{errors.username}</p>
                         )}
                     </div>
 
                     {/* Password */}
                     <div>
-                        <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center justify-between mb-8 mt-4">
                             <label
                                 htmlFor="login-password"
-                                className="block text-sm font-medium text-[var(--color-text-primary)]"
+                                className="text-base font-semibold text-gray-800"
                             >
                                 {t('login.password')}
                             </label>
                             <button
                                 type="button"
-                                className="text-xs text-[var(--color-primary)] hover:text-[var(--color-primary-hover)]
-                           font-medium transition-colors cursor-pointer"
+                                className="text-sm text-[#19cbfe] hover:text-[#17a8d4]
+                           font-semibold transition-colors cursor-pointer"
                             >
                                 {t('login.forgotPassword')}
                             </button>
@@ -188,43 +186,43 @@ export function LoginPage(): ReactElement {
                                 }}
                                 placeholder={t('login.passwordPlaceholder')}
                                 autoComplete="current-password"
-                                className={`w-full px-4 py-3 pr-12 rounded-xl border text-sm
+                                className={`w-full px-5 py-6 pr-14 rounded-2xl border-2 text-lg
                            transition-all duration-200
-                           bg-[var(--color-bg-primary)]
-                           placeholder:text-[var(--color-text-tertiary)]
-                           focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
-                           focus:border-[var(--color-primary)]
+                           bg-gray-50 hover:bg-white
+                           placeholder:text-gray-400
+                           focus:outline-none focus:ring-4 focus:ring-cyan-100
+                           focus:border-[#19cbfe] focus:bg-white
                            ${errors.password
-                                        ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error)]/20'
-                                        : 'border-[var(--color-border)]'}`}
+                                        ? 'border-red-400 bg-red-50 ring-2 ring-red-100'
+                                        : 'border-gray-200'}`}
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2
-                           text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]
-                           transition-colors cursor-pointer"
+                                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg
+                           text-gray-400 hover:text-gray-600 hover:bg-gray-100
+                           transition-all cursor-pointer"
                                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                             >
-                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                             </button>
                         </div>
                         {errors.password && (
-                            <p className="mt-1 text-xs text-[var(--color-error)]">{errors.password}</p>
+                            <p className="mt-2 text-sm text-red-600 font-medium leading-relaxed">{errors.password}</p>
                         )}
                     </div>
 
                     {/* Remember me */}
-                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <label className="flex items-center gap-3 cursor-pointer select-none">
                         <input
                             type="checkbox"
                             checked={rememberMe}
                             onChange={(e) => setRememberMe(e.target.checked)}
-                            className="w-4 h-4 rounded border-[var(--color-border)]
-                         text-[var(--color-primary)] focus:ring-[var(--color-primary)]
-                         accent-[var(--color-primary)]"
+                            className="w-5 h-5 rounded-md border-2 border-gray-300
+                         text-[#19cbfe] focus:ring-cyan-500
+                         accent-[#19cbfe] cursor-pointer"
                         />
-                        <span className="text-sm text-[var(--color-text-secondary)]">
+                        <span className="text-base text-gray-600 leading-relaxed">
                             {t('login.rememberMe')}
                         </span>
                     </label>
@@ -233,22 +231,23 @@ export function LoginPage(): ReactElement {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full flex items-center justify-center gap-2
-                       px-6 py-3 rounded-xl text-sm font-semibold
-                       bg-[var(--color-primary)] text-white
-                       hover:bg-[var(--color-primary-hover)]
+                        className="w-full flex items-center justify-center gap-3
+                       h-16 px-8 rounded-2xl text-lg font-bold
+                       bg-[#19cbfe] text-white
+                       hover:bg-[#17a8d4]
                        disabled:opacity-60 disabled:cursor-not-allowed
                        transition-all duration-200 cursor-pointer
-                       shadow-md hover:shadow-lg active:scale-[0.98]"
+                       shadow-lg shadow-cyan-200 hover:shadow-xl hover:shadow-cyan-300
+                       active:scale-[0.98] mt-10!"
                     >
                         {isLoading ? (
                             <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <Loader2 className="w-5 h-5 animate-spin" />
                                 {t('login.submitting')}
                             </>
                         ) : (
                             <>
-                                <LogIn className="w-4 h-4" />
+                                <LogIn className="w-5 h-5" />
                                 {t('login.submit')}
                             </>
                         )}
@@ -256,12 +255,12 @@ export function LoginPage(): ReactElement {
                 </form>
 
                 {/* Register link */}
-                <p className="mt-8 text-center text-sm text-[var(--color-text-secondary)]">
+                <p className="mt-12 text-left text-base text-gray-500 leading-relaxed">
                     {t('login.noAccount')}{' '}
                     <Link
                         to="/register"
-                        className="text-[var(--color-primary)] hover:text-[var(--color-primary-hover)]
-                       font-semibold transition-colors"
+                        className="text-[#19cbfe] hover:text-[#17a8d4]
+                       font-bold transition-colors"
                     >
                         {t('login.register')}
                     </Link>

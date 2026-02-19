@@ -1,31 +1,18 @@
 /**
- * Registration page with 2-step flow:
- * Step 1: Enter organization code → lookup company → confirm
- * Step 2: Fill user details → register via GraviBase API
- *
- * @example
- * // Route: /register
- * <RegisterPage />
+ * Registration page.
+ * Simple 1-step flow: Enter user details -> Register.
+ * Organization code is handled post-login if needed.
  */
 import { useState, type ReactElement } from 'react';
 import type { FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import {
-    Building2, UserPlus, Loader2, CheckCircle2,
-    ArrowRight, ArrowLeft, Eye, EyeOff, Search
-} from 'lucide-react';
+import { UserPlus, Loader2, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { AuthLayout } from '../components/AuthLayout';
-import { lookupCompanyByOrgCode, register } from '../lib/api';
-import type { CompanyLookupResult } from '../lib/api';
+import { register } from '../lib/api';
 
-/** Step 1 errors */
-interface Step1Errors {
-    orgCode?: string;
-}
-
-/** Step 2 errors */
-interface Step2Errors {
+/** Registration form errors */
+interface RegisterErrors {
     username?: string;
     email?: string;
     password?: string;
@@ -33,102 +20,25 @@ interface Step2Errors {
     general?: string;
 }
 
-/** Confirmed organization info */
-interface ConfirmedOrg {
-    id: string;
-    name: string;
-    orgCode: string;
-}
-
 export function RegisterPage(): ReactElement {
     const { t } = useTranslation();
 
-    // Step management
-    const [step, setStep] = useState<1 | 2 | 'success'>(1);
-
-    // Step 1 state
-    const [orgCode, setOrgCode] = useState('');
-    const [isLookingUp, setIsLookingUp] = useState(false);
-    const [lookupResult, setLookupResult] = useState<CompanyLookupResult | null>(null);
-    const [confirmedOrg, setConfirmedOrg] = useState<ConfirmedOrg | null>(null);
-    const [step1Errors, setStep1Errors] = useState<Step1Errors>({});
-
-    // Step 2 state
+    // State
+    const [isSuccess, setIsSuccess] = useState(false);
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isRegistering, setIsRegistering] = useState(false);
-    const [step2Errors, setStep2Errors] = useState<Step2Errors>({});
-
-    // ──────────────────────────────────────────────
-    // Step 1: Organization Lookup
-    // ──────────────────────────────────────────────
-
-    /**
-     * Validates org code format.
-     * @returns true if valid
-     */
-    function validateOrgCode(): boolean {
-        const newErrors: Step1Errors = {};
-
-        if (!orgCode.trim()) {
-            newErrors.orgCode = t('register.errors.orgCodeRequired');
-        } else if (!/^[a-zA-Z0-9-]+$/.test(orgCode.trim())) {
-            newErrors.orgCode = t('register.errors.orgCodeInvalid');
-        }
-
-        setStep1Errors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    }
-
-    /**
-     * Looks up the company by org code.
-     */
-    async function handleLookup(e: FormEvent<HTMLFormElement>): Promise<void> {
-        e.preventDefault();
-        if (!validateOrgCode()) return;
-
-        setIsLookingUp(true);
-        setLookupResult(null);
-
-        try {
-            const result = await lookupCompanyByOrgCode(orgCode.trim().toUpperCase());
-            setLookupResult(result);
-
-            if (!result.found) {
-                setStep1Errors({ orgCode: t('register.errors.orgNotFound') });
-            }
-        } catch {
-            setStep1Errors({ orgCode: t('register.errors.orgNotFound') });
-        } finally {
-            setIsLookingUp(false);
-        }
-    }
-
-    /**
-     * Confirms the organization and moves to step 2.
-     */
-    function handleConfirmOrg(): void {
-        if (lookupResult?.found && lookupResult.company) {
-            setConfirmedOrg(lookupResult.company);
-            setStep(2);
-        }
-    }
-
-    // ──────────────────────────────────────────────
-    // Step 2: Registration Form
-    // ──────────────────────────────────────────────
+    const [errors, setErrors] = useState<RegisterErrors>({});
 
     /**
      * Validates registration form fields.
-     * @returns true if all fields are valid
      */
-    function validateStep2(): boolean {
-        const newErrors: Step2Errors = {};
+    function validate(): boolean {
+        const newErrors: RegisterErrors = {};
 
-        // Username validation
         if (!username.trim()) {
             newErrors.username = t('register.errors.usernameRequired');
         } else if (!/^[a-zA-Z][a-zA-Z0-9-]*$/.test(username.trim())) {
@@ -137,59 +47,55 @@ export function RegisterPage(): ReactElement {
             newErrors.username = t('register.errors.usernameTooShort');
         }
 
-        // Email validation
         if (!email.trim()) {
             newErrors.email = t('register.errors.emailRequired');
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
             newErrors.email = t('register.errors.emailInvalid');
         }
 
-        // Password validation
         if (!password) {
             newErrors.password = t('register.errors.passwordRequired');
         } else if (password.length < 8) {
             newErrors.password = t('register.errors.passwordTooShort');
         }
 
-        // Confirm password
         if (!confirmPassword) {
             newErrors.confirmPassword = t('register.errors.confirmPasswordRequired');
         } else if (password !== confirmPassword) {
             newErrors.confirmPassword = t('register.errors.passwordsMismatch');
         }
 
-        setStep2Errors(newErrors);
+        setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     }
 
     /**
      * Handles the registration form submission.
-     * Calls GraviBase registration API with profile attributes.
      */
     async function handleRegister(e: FormEvent<HTMLFormElement>): Promise<void> {
         e.preventDefault();
-        if (!validateStep2() || !confirmedOrg) return;
+        if (!validate()) return;
 
         setIsRegistering(true);
-        setStep2Errors({});
+        setErrors({});
 
         try {
             const result = await register(
                 username.trim(),
                 email.trim(),
-                password,
-                confirmedOrg.orgCode
+                password
             );
 
             if (result.success && result.token) {
-                // Store token
+                // We don't auto-login here usually in strict security, but for UX we often do.
+                // However, the requested flow implies we might want to redirect to login or auto-login.
+                // Based on previous code, we saved tokens.
                 localStorage.setItem('gravisales_token', result.token.access_token);
                 if (result.token.refresh_token) {
                     localStorage.setItem('gravisales_refresh_token', result.token.refresh_token);
                 }
-                setStep('success');
+                setIsSuccess(true);
             } else {
-                // Map error codes to i18n keys
                 const errorKey = result.error === 'usernameExists'
                     ? 'register.errors.usernameExists'
                     : result.error === 'passwordTooShort'
@@ -198,10 +104,10 @@ export function RegisterPage(): ReactElement {
                             ? 'register.errors.networkError'
                             : 'register.errors.registrationFailed';
 
-                setStep2Errors({ general: t(errorKey) });
+                setErrors({ general: t(errorKey) });
             }
         } catch {
-            setStep2Errors({ general: t('register.errors.registrationFailed') });
+            setErrors({ general: t('register.errors.registrationFailed') });
         } finally {
             setIsRegistering(false);
         }
@@ -209,7 +115,6 @@ export function RegisterPage(): ReactElement {
 
     /**
      * Calculates password strength for the indicator.
-     * @returns strength level 0-4
      */
     function getPasswordStrength(): number {
         let strength = 0;
@@ -220,186 +125,44 @@ export function RegisterPage(): ReactElement {
         return strength;
     }
 
-    // ──────────────────────────────────────────────
-    // Render
-    // ──────────────────────────────────────────────
+    /** Shared input class builder */
+    function inputClasses(hasError: boolean): string {
+        return `w-full px-5 py-6 rounded-2xl border-2 text-base
+           transition-all duration-200
+           bg-gray-50 hover:bg-white
+           placeholder:text-gray-400
+           focus:outline-none focus:ring-4 focus:ring-cyan-100
+           focus:border-[#19cbfe] focus:bg-white
+           ${hasError ? 'border-red-400 bg-red-50 ring-2 ring-red-100' : 'border-gray-200'}`;
+    }
 
     return (
         <AuthLayout>
-            <div>
-                {/* ── Step 1: Organization Code ── */}
-                {step === 1 && (
-                    <div className="animate-fade-in">
-                        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
+            <div className="w-full">
+                {!isSuccess ? (
+                    <div className="animate-fade-in flex flex-col w-full">
+                        <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-8 tracking-tight text-left leading-tight">
                             {t('register.title')}
                         </h1>
-                        <p className="text-[var(--color-text-secondary)] mb-8">
+                        <p className="text-gray-500 text-lg md:text-xl mb-12 text-left max-w-md leading-loose">
                             {t('register.step1.subtitle')}
                         </p>
 
-                        <form onSubmit={handleLookup} className="space-y-5" noValidate>
-                            {/* Org Code Input */}
-                            <div>
-                                <label
-                                    htmlFor="org-code"
-                                    className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
-                                >
-                                    {t('register.step1.orgCode')}
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2
-                                  text-[var(--color-text-tertiary)]">
-                                        <Building2 className="w-4 h-4" />
-                                    </div>
-                                    <input
-                                        id="org-code"
-                                        type="text"
-                                        value={orgCode}
-                                        onChange={(e) => {
-                                            setOrgCode(e.target.value.toUpperCase());
-                                            setLookupResult(null);
-                                            if (step1Errors.orgCode) setStep1Errors({});
-                                        }}
-                                        placeholder={t('register.step1.orgCodePlaceholder')}
-                                        autoFocus
-                                        className={`w-full pl-10 pr-4 py-3 rounded-xl border text-sm uppercase
-                               font-mono tracking-wider
-                               transition-all duration-200
-                               bg-[var(--color-bg-primary)]
-                               placeholder:text-[var(--color-text-tertiary)]
-                               placeholder:normal-case placeholder:font-sans placeholder:tracking-normal
-                               focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
-                               focus:border-[var(--color-primary)]
-                               ${step1Errors.orgCode
-                                                ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error)]/20'
-                                                : 'border-[var(--color-border)]'}`}
-                                    />
-                                </div>
-                                {step1Errors.orgCode && (
-                                    <p className="mt-1 text-xs text-[var(--color-error)]">{step1Errors.orgCode}</p>
-                                )}
-                                <p className="mt-1.5 text-xs text-[var(--color-text-tertiary)]">
-                                    {t('register.step1.orgCodeHint')}
-                                </p>
-                            </div>
-
-                            {/* Lookup Result */}
-                            {lookupResult?.found && lookupResult.company && (
-                                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200
-                                animate-fade-in">
-                                    <div className="flex items-start gap-3">
-                                        <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium text-emerald-800">
-                                                {t('register.step1.orgFound')}
-                                            </p>
-                                            <p className="text-lg font-bold text-emerald-900 mt-1">
-                                                {lookupResult.company.name}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={handleConfirmOrg}
-                                        className="w-full mt-4 flex items-center justify-center gap-2
-                               px-6 py-3 rounded-xl text-sm font-semibold
-                               bg-emerald-600 text-white
-                               hover:bg-emerald-700
-                               transition-all duration-200 cursor-pointer
-                               shadow-md hover:shadow-lg active:scale-[0.98]"
-                                    >
-                                        {t('register.step1.confirm')}
-                                        <ArrowRight className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* Lookup Button (shown when no result yet) */}
-                            {!lookupResult?.found && (
-                                <button
-                                    type="submit"
-                                    disabled={isLookingUp}
-                                    className="w-full flex items-center justify-center gap-2
-                             px-6 py-3 rounded-xl text-sm font-semibold
-                             bg-[var(--color-primary)] text-white
-                             hover:bg-[var(--color-primary-hover)]
-                             disabled:opacity-60 disabled:cursor-not-allowed
-                             transition-all duration-200 cursor-pointer
-                             shadow-md hover:shadow-lg active:scale-[0.98]"
-                                >
-                                    {isLookingUp ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            {t('register.step1.lookingUp')}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Search className="w-4 h-4" />
-                                            {t('register.step1.lookup')}
-                                        </>
-                                    )}
-                                </button>
-                            )}
-                        </form>
-
-                        {/* Login link */}
-                        <p className="mt-8 text-center text-sm text-[var(--color-text-secondary)]">
-                            {t('register.haveAccount')}{' '}
-                            <Link
-                                to="/login"
-                                className="text-[var(--color-primary)] hover:text-[var(--color-primary-hover)]
-                           font-semibold transition-colors"
-                            >
-                                {t('register.login')}
-                            </Link>
-                        </p>
-                    </div>
-                )}
-
-                {/* ── Step 2: User Details ── */}
-                {step === 2 && confirmedOrg && (
-                    <div className="animate-fade-in">
-                        {/* Back button + organization badge */}
-                        <div className="flex items-center gap-2 mb-6">
-                            <button
-                                type="button"
-                                onClick={() => setStep(1)}
-                                className="p-1.5 rounded-lg text-[var(--color-text-secondary)]
-                           hover:bg-[var(--color-bg-tertiary)]
-                           transition-colors cursor-pointer"
-                                aria-label="Go back"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                            </button>
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg
-                              bg-[var(--color-primary-light)] text-[var(--color-primary)]">
-                                <Building2 className="w-3.5 h-3.5" />
-                                <span className="text-xs font-medium">{confirmedOrg.name}</span>
-                            </div>
-                        </div>
-
-                        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text-primary)] mb-2">
-                            {t('register.step2.title')}
-                        </h1>
-                        <p className="text-[var(--color-text-secondary)] mb-8">
-                            {t('register.step2.subtitle', { orgName: confirmedOrg.name })}
-                        </p>
-
                         {/* General Error */}
-                        {step2Errors.general && (
-                            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200
-                              text-red-700 text-sm animate-fade-in" role="alert">
-                                {step2Errors.general}
+                        {errors.general && (
+                            <div className="w-full mb-8 p-6 rounded-2xl bg-red-50 border border-red-200
+                               text-red-700 text-base animate-fade-in flex items-center gap-4 leading-relaxed"
+                                role="alert">
+                                <span className="text-2xl">⚠️</span>
+                                {errors.general}
                             </div>
                         )}
 
-                        <form onSubmit={handleRegister} className="space-y-4" noValidate>
+                        <form onSubmit={handleRegister} className="space-y-8 w-full" noValidate>
                             {/* Username */}
                             <div>
-                                <label
-                                    htmlFor="reg-username"
-                                    className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
-                                >
+                                <label htmlFor="reg-username"
+                                    className="block text-base font-semibold text-gray-800 mb-4">
                                     {t('register.step2.username')}
                                 </label>
                                 <input
@@ -408,31 +171,21 @@ export function RegisterPage(): ReactElement {
                                     value={username}
                                     onChange={(e) => {
                                         setUsername(e.target.value);
-                                        if (step2Errors.username) setStep2Errors((prev) => ({ ...prev, username: undefined }));
+                                        if (errors.username) setErrors((prev) => ({ ...prev, username: undefined }));
                                     }}
                                     placeholder={t('register.step2.usernamePlaceholder')}
                                     autoFocus
-                                    className={`w-full px-4 py-3 rounded-xl border text-sm
-                             transition-all duration-200
-                             bg-[var(--color-bg-primary)]
-                             placeholder:text-[var(--color-text-tertiary)]
-                             focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
-                             focus:border-[var(--color-primary)]
-                             ${step2Errors.username
-                                            ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error)]/20'
-                                            : 'border-[var(--color-border)]'}`}
+                                    className={inputClasses(!!errors.username)}
                                 />
-                                {step2Errors.username && (
-                                    <p className="mt-1 text-xs text-[var(--color-error)]">{step2Errors.username}</p>
+                                {errors.username && (
+                                    <p className="mt-2 text-sm text-red-600 font-medium leading-relaxed">{errors.username}</p>
                                 )}
                             </div>
 
                             {/* Email */}
                             <div>
-                                <label
-                                    htmlFor="reg-email"
-                                    className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
-                                >
+                                <label htmlFor="reg-email"
+                                    className="block text-base font-semibold text-gray-800 mb-4">
                                     {t('register.step2.email')}
                                 </label>
                                 <input
@@ -441,31 +194,21 @@ export function RegisterPage(): ReactElement {
                                     value={email}
                                     onChange={(e) => {
                                         setEmail(e.target.value);
-                                        if (step2Errors.email) setStep2Errors((prev) => ({ ...prev, email: undefined }));
+                                        if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
                                     }}
                                     placeholder={t('register.step2.emailPlaceholder')}
                                     autoComplete="email"
-                                    className={`w-full px-4 py-3 rounded-xl border text-sm
-                             transition-all duration-200
-                             bg-[var(--color-bg-primary)]
-                             placeholder:text-[var(--color-text-tertiary)]
-                             focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
-                             focus:border-[var(--color-primary)]
-                             ${step2Errors.email
-                                            ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error)]/20'
-                                            : 'border-[var(--color-border)]'}`}
+                                    className={inputClasses(!!errors.email)}
                                 />
-                                {step2Errors.email && (
-                                    <p className="mt-1 text-xs text-[var(--color-error)]">{step2Errors.email}</p>
+                                {errors.email && (
+                                    <p className="mt-2 text-sm text-red-600 font-medium leading-relaxed">{errors.email}</p>
                                 )}
                             </div>
 
                             {/* Password */}
                             <div>
-                                <label
-                                    htmlFor="reg-password"
-                                    className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
-                                >
+                                <label htmlFor="reg-password"
+                                    className="block text-base font-semibold text-gray-800 mb-4">
                                     {t('register.step2.password')}
                                 </label>
                                 <div className="relative">
@@ -475,60 +218,48 @@ export function RegisterPage(): ReactElement {
                                         value={password}
                                         onChange={(e) => {
                                             setPassword(e.target.value);
-                                            if (step2Errors.password) setStep2Errors((prev) => ({ ...prev, password: undefined }));
+                                            if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
                                         }}
                                         placeholder={t('register.step2.passwordPlaceholder')}
                                         autoComplete="new-password"
-                                        className={`w-full px-4 py-3 pr-12 rounded-xl border text-sm
-                               transition-all duration-200
-                               bg-[var(--color-bg-primary)]
-                               placeholder:text-[var(--color-text-tertiary)]
-                               focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
-                               focus:border-[var(--color-primary)]
-                               ${step2Errors.password
-                                                ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error)]/20'
-                                                : 'border-[var(--color-border)]'}`}
+                                        className={`${inputClasses(!!errors.password)} pr-14`}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2
-                               text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]
-                               transition-colors cursor-pointer"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-lg
+                               text-gray-400 hover:text-gray-600 hover:bg-gray-100
+                               transition-all cursor-pointer"
                                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     >
-                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
                                 </div>
-                                {step2Errors.password && (
-                                    <p className="mt-1 text-xs text-[var(--color-error)]">{step2Errors.password}</p>
+                                {errors.password && (
+                                    <p className="mt-2 text-sm text-red-600 font-medium leading-relaxed">{errors.password}</p>
                                 )}
 
                                 {/* Password Strength Indicator */}
-                                {password.length > 0 && (
-                                    <div className="mt-2 flex gap-1">
-                                        {[1, 2, 3, 4].map((level) => (
-                                            <div
-                                                key={level}
-                                                className={`h-1.5 flex-1 rounded-full transition-all duration-300
-                                   ${getPasswordStrength() >= level
-                                                        ? level <= 1 ? 'bg-red-400'
-                                                            : level <= 2 ? 'bg-orange-400'
-                                                                : level <= 3 ? 'bg-yellow-400'
-                                                                    : 'bg-emerald-500'
-                                                        : 'bg-[var(--color-bg-tertiary)]'}`}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
+                                <div className="mt-4 flex gap-2 h-2 px-1">
+                                    {[1, 2, 3, 4].map((level) => (
+                                        <div
+                                            key={level}
+                                            className={`flex-1 rounded-full transition-all duration-300
+                                 ${getPasswordStrength() >= level
+                                                    ? level <= 1 ? 'bg-red-400'
+                                                        : level <= 2 ? 'bg-orange-400'
+                                                            : level <= 3 ? 'bg-yellow-400'
+                                                                : 'bg-emerald-500'
+                                                    : 'bg-gray-100'}`}
+                                        />
+                                    ))}
+                                </div>
                             </div>
 
                             {/* Confirm Password */}
                             <div>
-                                <label
-                                    htmlFor="reg-confirm-password"
-                                    className="block text-sm font-medium text-[var(--color-text-primary)] mb-1.5"
-                                >
+                                <label htmlFor="reg-confirm-password"
+                                    className="block text-base font-semibold text-gray-800 mb-4">
                                     {t('register.step2.confirmPassword')}
                                 </label>
                                 <input
@@ -537,23 +268,15 @@ export function RegisterPage(): ReactElement {
                                     value={confirmPassword}
                                     onChange={(e) => {
                                         setConfirmPassword(e.target.value);
-                                        if (step2Errors.confirmPassword)
-                                            setStep2Errors((prev) => ({ ...prev, confirmPassword: undefined }));
+                                        if (errors.confirmPassword)
+                                            setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
                                     }}
                                     placeholder={t('register.step2.confirmPasswordPlaceholder')}
                                     autoComplete="new-password"
-                                    className={`w-full px-4 py-3 rounded-xl border text-sm
-                             transition-all duration-200
-                             bg-[var(--color-bg-primary)]
-                             placeholder:text-[var(--color-text-tertiary)]
-                             focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30
-                             focus:border-[var(--color-primary)]
-                             ${step2Errors.confirmPassword
-                                            ? 'border-[var(--color-error)] ring-1 ring-[var(--color-error)]/20'
-                                            : 'border-[var(--color-border)]'}`}
+                                    className={inputClasses(!!errors.confirmPassword)}
                                 />
-                                {step2Errors.confirmPassword && (
-                                    <p className="mt-1 text-xs text-[var(--color-error)]">{step2Errors.confirmPassword}</p>
+                                {errors.confirmPassword && (
+                                    <p className="mt-2 text-sm text-red-600 font-medium leading-relaxed">{errors.confirmPassword}</p>
                                 )}
                             </div>
 
@@ -561,64 +284,57 @@ export function RegisterPage(): ReactElement {
                             <button
                                 type="submit"
                                 disabled={isRegistering}
-                                className="w-full flex items-center justify-center gap-2
-                           px-6 py-3 rounded-xl text-sm font-semibold
-                           bg-[var(--color-primary)] text-white
-                           hover:bg-[var(--color-primary-hover)]
+                                className="w-full flex items-center justify-center gap-3
+                           h-16 px-8 rounded-2xl text-lg font-bold
+                           bg-[#19cbfe] text-white
+                           hover:bg-[#17a8d4]
                            disabled:opacity-60 disabled:cursor-not-allowed
                            transition-all duration-200 cursor-pointer
-                           shadow-md hover:shadow-lg active:scale-[0.98]
-                           mt-6!"
+                           shadow-lg shadow-cyan-200 hover:shadow-xl hover:shadow-cyan-300
+                           active:scale-[0.98] mt-10!"
                             >
                                 {isRegistering ? (
                                     <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <Loader2 className="w-5 h-5 animate-spin" />
                                         {t('register.step2.submitting')}
                                     </>
                                 ) : (
                                     <>
-                                        <UserPlus className="w-4 h-4" />
+                                        <UserPlus className="w-5 h-5" />
                                         {t('register.step2.submit')}
                                     </>
                                 )}
                             </button>
                         </form>
 
-                        {/* Login link */}
-                        <p className="mt-8 text-center text-sm text-[var(--color-text-secondary)]">
+                        <p className="mt-12 text-left text-base text-gray-500 leading-relaxed">
                             {t('register.haveAccount')}{' '}
-                            <Link
-                                to="/login"
-                                className="text-[var(--color-primary)] hover:text-[var(--color-primary-hover)]
-                           font-semibold transition-colors"
-                            >
+                            <Link to="/login" className="text-[#19cbfe] hover:text-[#17a8d4] font-bold transition-colors">
                                 {t('register.login')}
                             </Link>
                         </p>
                     </div>
-                )}
-
-                {/* ── Success State ── */}
-                {step === 'success' && (
-                    <div className="text-center animate-fade-in py-8">
-                        <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center
-                            mx-auto mb-6">
-                            <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                ) : (
+                    /* ── Success State ── */
+                    <div className="text-left animate-fade-in py-12 flex flex-col">
+                        <div className="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center
+                            mb-8 shadow-sm">
+                            <CheckCircle2 className="w-12 h-12 text-emerald-600" />
                         </div>
-                        <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-3">
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-6 tracking-tight leading-tight">
                             {t('register.success.title')}
                         </h1>
-                        <p className="text-[var(--color-text-secondary)] mb-8">
+                        <p className="text-gray-500 text-lg md:text-xl mb-12 max-w-md leading-loose">
                             {t('register.success.message')}
                         </p>
                         <Link
                             to="/login"
-                            className="inline-flex items-center justify-center gap-2
-                         px-6 py-3 rounded-xl text-sm font-semibold
-                         bg-[var(--color-primary)] text-white
-                         hover:bg-[var(--color-primary-hover)]
+                            className="inline-flex items-center justify-center gap-3
+                         h-16 px-10 rounded-2xl text-lg font-bold
+                         bg-[#19cbfe] text-white
+                         hover:bg-[#17a8d4]
                          transition-all duration-200
-                         shadow-md hover:shadow-lg"
+                         shadow-lg shadow-cyan-200 hover:shadow-xl w-full sm:w-auto"
                         >
                             {t('register.success.goToLogin')}
                         </Link>
