@@ -1,0 +1,12 @@
+# Agent Behavior Rules
+
+## Terminal Execution Restrictions
+- **DO NOT** attempt to use the `run_command` tool or any other tool that executes commands in the terminal.
+- Terminal execution is known to hang on this system. 
+- If a command needs to be run, provide the exact command to the user in a message and ask them to run it manually in the IDE terminal.
+- Always explain that you are asking the user to run the command because your internal terminal tool is disabled by these rules.
+
+## Preferred Workflow
+1. Write/modify code.
+2. Provide the user with any necessary terminal commands (e.g., `npm run dev`, `pytest`, `pip install`).
+3. Wait for the user to provide the output of those commands before proceeding.

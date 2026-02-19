@@ -1,0 +1,1386 @@
+{
+  "openapi" : "3.1.0",
+  "components" : {
+    "schemas" : {
+      "Agreement" : {
+        "type" : "object",
+        "description" : "Соглашение с пользователем",
+        "properties" : {
+          "agreement" : {
+            "type" : "string",
+            "description" : "идентификатор соглашения"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int32",
+            "description" : "версия соглашения"
+          },
+          "required" : {
+            "type" : "boolean",
+            "description" : "обязательность согласия"
+          },
+          "prompt" : {
+            "type" : "string",
+            "examples" : [ "Согласие на хранение персональных данных Пользователя" ],
+            "description" : "запрос на согласие"
+          },
+          "order" : {
+            "type" : "integer",
+            "format" : "int32",
+            "examples" : [ 42 ],
+            "description" : "порядковый номер соглашения"
+          }
+        }
+      },
+      "Attribute" : {
+        "type" : "object",
+        "required" : [ "attribute", "value" ],
+        "description" : "Атрибут",
+        "properties" : {
+          "attribute" : {
+            "type" : "string",
+            "examples" : [ "age" ],
+            "description" : "название атрибута"
+          },
+          "value" : {
+            "type" : "string",
+            "examples" : [ "42" ],
+            "description" : "значение атрибута"
+          }
+        }
+      },
+      "Capabilities" : {
+        "type" : "string",
+        "enum" : [ "register_user", "reset_password", "change_password", "login_code", "send" ],
+        "description" : "Виды возможностей"
+      },
+      "Code" : {
+        "type" : "object",
+        "required" : [ "username", "timestamp", "next", "channel", "length" ],
+        "description" : "Данные об отправке одноразового кода",
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "description" : "идентификатор пользователя"
+          },
+          "timestamp" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "временная метка момента отправки (в миллисекундах с 1970-01-01T00:00:00Z)"
+          },
+          "next" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "временная метка момента следующей разрешенной отправки (в миллисекундах с 1970-01-01T00:00:00Z)"
+          },
+          "channel" : {
+            "type" : "string",
+            "examples" : [ "sms" ],
+            "description" : "идентификатор канала отправки"
+          },
+          "length" : {
+            "type" : "integer",
+            "format" : "int32",
+            "examples" : [ 6 ],
+            "description" : "длина отправленного кода"
+          },
+          "expiration" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "временная метка момента истечения срока действия кода (в миллисекундах с 1970-01-01T00:00:00Z)"
+          }
+        }
+      },
+      "Consent" : {
+        "type" : "object",
+        "required" : [ "agreement", "version" ],
+        "description" : "Согласие пользователя",
+        "properties" : {
+          "agreement" : {
+            "type" : "string",
+            "examples" : [ "analytics" ],
+            "description" : "идентификатор соглашения с пользователем"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int32",
+            "examples" : [ 1 ],
+            "description" : "версия соглашения с пользователем"
+          }
+        }
+      },
+      "Error" : {
+        "type" : "object",
+        "required" : [ "error" ],
+        "description" : "Ошибка",
+        "properties" : {
+          "error" : {
+            "$ref" : "#/components/schemas/Errors",
+            "type" : "string",
+            "description" : "вид ошибки"
+          },
+          "details" : {
+            "type" : "string",
+            "description" : "подробности ошибки"
+          }
+        }
+      },
+      "Errors" : {
+        "type" : "string",
+        "enum" : [ "invalid_request", "invalid_grant", "invalid_token", "invalid_client", "unauthorized_client", "access_denied", "conflict", "server_error" ],
+        "description" : "Виды ошибок"
+      },
+      "Excess" : {
+        "type" : "object",
+        "required" : [ "username", "timestamp", "next" ],
+        "description" : "Данные о превышении лимита запросов на отправку",
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "description" : "идентификатор пользователя"
+          },
+          "timestamp" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "временная метка момента отправки (в миллисекундах с 1970-01-01T00:00:00Z)"
+          },
+          "next" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "временная метка момента следующей разрешенной отправки (в миллисекундах с 1970-01-01T00:00:00Z)"
+          }
+        }
+      },
+      "Lack" : {
+        "type" : "object",
+        "required" : [ "capability" ],
+        "description" : "Отсутствие возможности",
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "description" : "идентификатор пользователя"
+          },
+          "capability" : {
+            "$ref" : "#/components/schemas/Capabilities",
+            "type" : "string",
+            "description" : "вид возможности"
+          }
+        }
+      },
+      "Password" : {
+        "type" : "object",
+        "required" : [ "username", "timestamp", "next", "channel" ],
+        "description" : "Данные отправки временного пароля",
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "description" : "идентификатор пользователя"
+          },
+          "timestamp" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "временная метка момента отправки (в миллисекундах с 1970-01-01T00:00:00Z)"
+          },
+          "next" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "временная метка момента следующей разрешенной отправки (в миллисекундах с 1970-01-01T00:00:00Z)"
+          },
+          "channel" : {
+            "type" : "string",
+            "examples" : [ "email" ],
+            "description" : "идентификатор канала отправки"
+          }
+        }
+      },
+      "PasswordPolicyClaim" : {
+        "type" : "object",
+        "description" : "Требование к паролю",
+        "properties" : {
+          "claim" : {
+            "$ref" : "#/components/schemas/PasswordPolicyClaims",
+            "type" : "string",
+            "examples" : [ "uppercase" ],
+            "description" : "требование"
+          },
+          "configuration" : {
+            "type" : "string",
+            "examples" : [ "42" ],
+            "description" : "конфигурация требования"
+          }
+        }
+      },
+      "PasswordPolicyClaims" : {
+        "type" : "string",
+        "enum" : [ "min_length", "max_length", "lowercase", "uppercase", "digits", "specials", "expiration" ],
+        "description" : "Виды требований к паролю"
+      },
+      "PasswordPolicyViolation" : {
+        "type" : "object",
+        "description" : "Нарушение требований к паролю",
+        "properties" : {
+          "project" : {
+            "type" : "string",
+            "examples" : [ "project" ],
+            "description" : "идентификатор проекта"
+          },
+          "username" : {
+            "type" : "string",
+            "description" : "идентификатор пользователя"
+          },
+          "claims" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/PasswordPolicyClaim"
+            },
+            "description" : "нарушенные требования"
+          }
+        }
+      },
+      "RegistrationForm" : {
+        "type" : "object",
+        "required" : [ "username", "value" ],
+        "description" : "Форма регистрации пользователя",
+        "properties" : {
+          "username" : {
+            "type" : "string",
+            "minLength" : 1,
+            "maxLength" : 42,
+            "pattern" : "^[a-zA-Z][a-zA-Z0-9-]*$",
+            "description" : "идентификатор пользователя"
+          },
+          "flow" : {
+            "type" : "string",
+            "examples" : [ "password", "email" ],
+            "description" : "способ регистрации: 'password' или идентификатор канала для отправки временного пароля",
+            "default" : "password"
+          },
+          "value" : {
+            "type" : "string",
+            "examples" : [ "pa$$W0rD", "user@acme.org" ],
+            "description" : "значение соответствующее способу регистрации"
+          },
+          "profile" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/Attribute"
+            },
+            "description" : "атрибуты профиля пользователя"
+          },
+          "consents" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/Consent"
+            },
+            "description" : "согласия профиля пользователя"
+          }
+        }
+      },
+      "Token" : {
+        "type" : "object",
+        "required" : [ "access_token" ],
+        "description" : "Токен",
+        "properties" : {
+          "access_token" : {
+            "type" : "string"
+          },
+          "token_type" : {
+            "type" : "string",
+            "examples" : [ "Bearer" ]
+          },
+          "expires_in" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "refresh_token" : {
+            "type" : "string"
+          },
+          "refresh_expires_in" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "id_token" : {
+            "type" : "string"
+          },
+          "not-before-policy" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "scope" : {
+            "type" : "string",
+            "examples" : [ "project username" ]
+          }
+        }
+      },
+      "UserConsents" : {
+        "type" : "object",
+        "required" : [ "consents", "password" ],
+        "description" : "Данные согласий пользователя для обновления",
+        "properties" : {
+          "consents" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/Consent"
+            },
+            "description" : "согласия пользователя"
+          },
+          "password" : {
+            "type" : "string",
+            "examples" : [ "pa$$W0rD" ],
+            "description" : "пароль пользователя"
+          },
+          "code" : {
+            "type" : "string",
+            "examples" : [ "134273" ],
+            "description" : "одноразовый код"
+          }
+        }
+      },
+      "UserProfile" : {
+        "type" : "object",
+        "required" : [ "profile", "password" ],
+        "description" : "Данные профиля пользователя для обновления",
+        "properties" : {
+          "profile" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/Attribute"
+            },
+            "description" : "атрибуты профиля пользователя"
+          },
+          "password" : {
+            "type" : "string",
+            "examples" : [ "pa$$W0rD" ],
+            "description" : "пароль пользователя"
+          },
+          "code" : {
+            "type" : "string",
+            "examples" : [ "134273" ],
+            "description" : "одноразовый код"
+          }
+        }
+      },
+      "UserProfileAttribute" : {
+        "type" : "object",
+        "description" : "Атрибут профиля пользователя",
+        "properties" : {
+          "attribute" : {
+            "type" : "string",
+            "description" : "идентификатор атрибута"
+          },
+          "required" : {
+            "type" : "boolean",
+            "description" : "обязательность атрибута"
+          },
+          "default_value" : {
+            "type" : "string",
+            "examples" : [ "42" ],
+            "description" : "значение атрибута по умолчанию"
+          },
+          "pattern" : {
+            "type" : "string",
+            "examples" : [ "^[2-4]{1,3}$" ],
+            "description" : "регулярное выражение, которому должно соответствовать значение атрибута"
+          },
+          "label" : {
+            "type" : "string",
+            "examples" : [ "Возраст" ],
+            "description" : "подпись атрибута"
+          },
+          "order" : {
+            "type" : "integer",
+            "format" : "int32",
+            "examples" : [ 42 ],
+            "description" : "порядковый номер атрибута"
+          }
+        }
+      },
+      "UserUpdateClaim" : {
+        "type" : "object",
+        "description" : "Требование обновления данных пользователя",
+        "properties" : {
+          "claims" : {
+            "type" : "array",
+            "examples" : [ [ "profile", "password" ] ],
+            "uniqueItems" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/UserUpdateClaims"
+            },
+            "description" : "виды требований"
+          },
+          "profile" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/UserProfileAttribute"
+            },
+            "description" : "атрибуты профиля требующие обновления"
+          },
+          "consents" : {
+            "type" : "array",
+            "uniqueItems" : true,
+            "items" : {
+              "$ref" : "#/components/schemas/Agreement"
+            },
+            "description" : "требуемые подтверждения согласий пользователя"
+          }
+        }
+      },
+      "UserUpdateClaims" : {
+        "type" : "string",
+        "enum" : [ "profile", "password", "consents" ],
+        "description" : "Виды требований к данным пользователя"
+      }
+    }
+  },
+  "tags" : [ {
+    "name" : ""
+  } ],
+  "paths" : {
+    "/auth/projects/{project}/agreements" : {
+      "get" : {
+        "summary" : "Получить соглашения с пользователем",
+        "tags" : [ "" ],
+        "parameters" : [ {
+          "description" : "идентификатор проекта",
+          "name" : "project",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Соглашения получены",
+            "content" : {
+              "text/plain" : { },
+              "text/markdown" : { },
+              "text/html" : { }
+            }
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/projects/{project}/agreements/{agreement}" : {
+      "get" : {
+        "summary" : "Получить содержимое последней версии соглашения с пользователем",
+        "tags" : [ "" ],
+        "parameters" : [ {
+          "description" : "идентификатор соглашения",
+          "name" : "agreement",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "идентификатор проекта",
+          "name" : "project",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "content disposition type",
+          "name" : "contentDisposition",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Содержимое соглашения получено",
+            "content" : {
+              "text/plain" : { },
+              "text/markdown" : { },
+              "text/html" : { }
+            }
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/projects/{project}/agreements/{agreement}/{version}" : {
+      "get" : {
+        "summary" : "Получить содержимое соглашения с пользователем",
+        "tags" : [ "" ],
+        "parameters" : [ {
+          "description" : "идентификатор соглашения",
+          "name" : "agreement",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "идентификатор проекта",
+          "name" : "project",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "версия соглашения",
+          "name" : "version",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        }, {
+          "description" : "content disposition type",
+          "name" : "contentDisposition",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Содержимое соглашения получено",
+            "content" : {
+              "text/plain" : { },
+              "text/markdown" : { },
+              "text/html" : { }
+            }
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/projects/{project}/token" : {
+      "post" : {
+        "summary" : "Выпустить токен пользователя",
+        "tags" : [ "" ],
+        "parameters" : [ {
+          "description" : "идентификатор проекта",
+          "name" : "project",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "идентификатор предпочитаемого канала для отправки одноразового кода пользователю (в случае двухфакторной аутентификации или выпуска токена по одноразовому коду)",
+          "name" : "channel",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "тип значения указанного как идентификатор пользователя",
+          "schema" : {
+            "default" : "username"
+          },
+          "name" : "type",
+          "in" : "query"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "login" : {
+                    "type" : "string"
+                  },
+                  "password" : {
+                    "type" : "string"
+                  },
+                  "code" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Токен выпущен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Пользователю отправлен одноразовый код",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Code"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Учетные данные некорректны",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Требуется обновление данных пользователя",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserUpdateClaim"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Возможность недоступна",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Lack"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/projects/{project}/users" : {
+      "post" : {
+        "summary" : "Зарегистрировать пользователя",
+        "tags" : [ "" ],
+        "parameters" : [ {
+          "description" : "идентификатор проекта",
+          "name" : "project",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "description" : "форма регистрации пользователя",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/RegistrationForm"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Пользователь зарегистрирован",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Временный пароль отправлен пользователю",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Password"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "406" : {
+            "description" : "Пароль не соответствует установленной политике паролей",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PasswordPolicyViolation"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Требуется обновление данных пользователя",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserUpdateClaim"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Возможность недоступна",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Lack"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/projects/{project}/users/{username}/code" : {
+      "patch" : {
+        "summary" : "Отправить пользователю одноразовый код",
+        "tags" : [ "" ],
+        "parameters" : [ {
+          "description" : "идентификатор проекта",
+          "name" : "project",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "идентификатор пользователя",
+          "schema" : {
+            "minLength" : 1,
+            "maxLength" : 255,
+            "pattern" : "^[a-zA-Z0-9.-]+$"
+          },
+          "name" : "username",
+          "in" : "path",
+          "required" : true
+        }, {
+          "description" : "канал для отправки",
+          "name" : "channel",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Одноразовый код отправлен пользователю",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Code"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Учетные данные некорректны",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов на отправку",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Excess"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Возможность недоступна",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Lack"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/projects/{project}/users/{username}/consents" : {
+      "patch" : {
+        "summary" : "Обновить согласия пользователя",
+        "tags" : [ "" ],
+        "parameters" : [ {
+          "description" : "идентификатор проекта",
+          "name" : "project",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "идентификатор пользователя",
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "description" : "данные согласий пользователя для обновления",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UserConsents"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Согласия пользователя обновлены",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Пользователю отправлен одноразовый код подтверждения",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Code"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Учетные данные некорректны",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Недостаточно прав",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Требуется обновление данных пользователя",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserUpdateClaim"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/projects/{project}/users/{username}/password" : {
+      "put" : {
+        "summary" : "Обновить пароль пользователя",
+        "tags" : [ "" ],
+        "parameters" : [ {
+          "description" : "идентификатор проекта",
+          "name" : "project",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "идентификатор пользователя",
+          "schema" : {
+            "minLength" : 1,
+            "maxLength" : 255,
+            "pattern" : "^[a-zA-Z0-9.-]+$"
+          },
+          "name" : "username",
+          "in" : "path",
+          "required" : true
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "password" : {
+                    "type" : "string"
+                  },
+                  "code" : {
+                    "type" : "string"
+                  },
+                  "new_password" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Пароль обновлён",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Учетные данные некорректны",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Недостаточно прав",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "406" : {
+            "description" : "Пароль не соответствует установленной политике паролей",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/PasswordPolicyViolation"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Требуется обновление данных пользователя",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserUpdateClaim"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Возможность недоступна",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Lack"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch" : {
+        "summary" : "Отправить пользователю временный пароль",
+        "tags" : [ "" ],
+        "parameters" : [ {
+          "description" : "идентификатор проекта",
+          "name" : "project",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "идентификатор пользователя",
+          "schema" : {
+            "minLength" : 1,
+            "maxLength" : 255,
+            "pattern" : "^[a-zA-Z0-9.-]+$"
+          },
+          "name" : "username",
+          "in" : "path",
+          "required" : true
+        }, {
+          "description" : "канал для отправки",
+          "name" : "channel",
+          "in" : "query",
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Временный пароль отправлен пользователю",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Password"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Учетные данные некорректны",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429" : {
+            "description" : "Превышен лимит запросов на отправку",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Excess"
+                }
+              }
+            }
+          },
+          "503" : {
+            "description" : "Возможность недоступна",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Lack"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/projects/{project}/users/{username}/profile" : {
+      "patch" : {
+        "summary" : "Обновить профиль пользователя",
+        "tags" : [ "" ],
+        "parameters" : [ {
+          "description" : "идентификатор проекта",
+          "name" : "project",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "description" : "идентификатор пользователя",
+          "name" : "username",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "description" : "данные профиля пользователя для обновления",
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UserProfile"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Профиль пользователя обновлён",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Пользователю отправлен одноразовый код подтверждения",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Code"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Учетные данные некорректны",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Недостаточно прав",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Требуется обновление данных пользователя",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserUpdateClaim"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/token" : {
+      "put" : {
+        "summary" : "Обновить токен пользователя",
+        "tags" : [ "" ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "refresh_token" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Токен обновлен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Учетные данные некорректны",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Требуется обновление данных пользователя",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserUpdateClaim"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "summary" : "Отозвать токен пользователя",
+        "tags" : [ "" ],
+        "requestBody" : {
+          "content" : {
+            "application/x-www-form-urlencoded" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "refresh_token" : {
+                    "type" : "string"
+                  }
+                }
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "204" : {
+            "description" : "Токен отозван"
+          },
+          "304" : {
+            "description" : "Токен был отозван ранее"
+          },
+          "400" : {
+            "description" : "Запрос некорректен",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Учетные данные некорректны",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info" : {
+    "title" : "Authenticator API",
+    "version" : "0.0",
+    "description" : "Сервис аутентификации, авторизации и регистрации пользователей",
+    "contact" : {
+      "name" : "Gravitonum",
+      "email" : "mail@gravitonum.com",
+      "url" : "https://gravitonum.com"
+    }
+  }
+}
