@@ -1,0 +1,103 @@
+{
+    "app": {
+        "name": "GraviSales",
+        "tagline": "Мини-CRM для вашего бизнеса"
+    },
+    "login": {
+        "title": "Вход в GraviSales",
+        "subtitle": "Войдите в свою учётную запись",
+        "username": "Имя пользователя",
+        "usernamePlaceholder": "Введите имя пользователя",
+        "password": "Пароль",
+        "passwordPlaceholder": "Введите пароль",
+        "rememberMe": "Запомнить меня",
+        "forgotPassword": "Забыли пароль?",
+        "submit": "Войти",
+        "submitting": "Вход...",
+        "noAccount": "Нет аккаунта?",
+        "register": "Зарегистрироваться",
+        "errors": {
+            "invalidCredentials": "Неверное имя пользователя или пароль",
+            "networkError": "Ошибка сети. Проверьте подключение к интернету",
+            "serverError": "Ошибка сервера. Попробуйте позже",
+            "usernameRequired": "Введите имя пользователя",
+            "passwordRequired": "Введите пароль"
+        }
+    },
+    "register": {
+        "title": "Регистрация в GraviSales",
+        "subtitle": "Создайте свой аккаунт",
+        "step1": {
+            "title": "Код организации",
+            "subtitle": "Введите код, полученный от администратора вашей компании",
+            "orgCode": "Код организации",
+            "orgCodePlaceholder": "Например: ACME-01",
+            "orgCodeHint": "Код организации выдаётся администратором вашей компании",
+            "lookup": "Найти организацию",
+            "lookingUp": "Поиск...",
+            "orgFound": "Организация найдена",
+            "orgNotFound": "Организация с таким кодом не найдена",
+            "confirm": "Это моя организация",
+            "changeOrg": "Изменить"
+        },
+        "step2": {
+            "title": "Данные аккаунта",
+            "subtitle": "Регистрация в {{orgName}}",
+            "username": "Имя пользователя",
+            "usernamePlaceholder": "Латиница, цифры, дефис (3–42 символа)",
+            "email": "Email",
+            "emailPlaceholder": "user@company.com",
+            "password": "Пароль",
+            "passwordPlaceholder": "Минимум 8 символов",
+            "confirmPassword": "Подтвердите пароль",
+            "confirmPasswordPlaceholder": "Повторите пароль",
+            "submit": "Создать аккаунт",
+            "submitting": "Создание..."
+        },
+        "haveAccount": "Уже есть аккаунт?",
+        "login": "Войти",
+        "errors": {
+            "orgCodeRequired": "Введите код организации",
+            "orgCodeInvalid": "Код должен содержать только буквы, цифры и дефис",
+            "orgNotFound": "Организация не найдена. Проверьте код",
+            "usernameRequired": "Введите имя пользователя",
+            "usernameInvalid": "Только латиница, цифры и дефис",
+            "usernameTooShort": "Минимум 3 символа",
+            "emailRequired": "Введите email",
+            "emailInvalid": "Некорректный email",
+            "passwordRequired": "Введите пароль",
+            "passwordTooShort": "Минимум 8 символов",
+            "confirmPasswordRequired": "Подтвердите пароль",
+            "passwordsMismatch": "Пароли не совпадают",
+            "usernameExists": "Пользователь с таким именем уже существует",
+            "registrationFailed": "Ошибка регистрации. Попробуйте позже",
+            "networkError": "Ошибка сети. Проверьте подключение"
+        },
+        "success": {
+            "title": "Аккаунт создан!",
+            "message": "Вы успешно зарегистрированы. Сейчас вы будете перенаправлены...",
+            "goToLogin": "Перейти к входу"
+        }
+    },
+    "hero": {
+        "title": "Простой и мощный CRM для&nbsp;малого бизнеса",
+        "subtitle": "Управляйте сделками, клиентами и воронками продаж — всё в одном месте. От 490 ₽/мес.",
+        "feature1": {
+            "title": "Воронки продаж",
+            "description": "Визуальные Kanban-доски для управления сделками"
+        },
+        "feature2": {
+            "title": "Аналитика",
+            "description": "Отчёты по конверсии, менеджерам и выручке"
+        },
+        "feature3": {
+            "title": "Командная работа",
+            "description": "Приглашайте коллег и назначайте роли"
+        }
+    },
+    "language": {
+        "ru": "Русский",
+        "en": "English",
+        "switch": "Язык"
+    }
+}

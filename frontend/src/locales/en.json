@@ -1,0 +1,103 @@
+{
+    "app": {
+        "name": "GraviSales",
+        "tagline": "Mini-CRM for your business"
+    },
+    "login": {
+        "title": "Sign in to GraviSales",
+        "subtitle": "Access your account",
+        "username": "Username",
+        "usernamePlaceholder": "Enter your username",
+        "password": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "rememberMe": "Remember me",
+        "forgotPassword": "Forgot password?",
+        "submit": "Sign In",
+        "submitting": "Signing in...",
+        "noAccount": "Don't have an account?",
+        "register": "Sign Up",
+        "errors": {
+            "invalidCredentials": "Invalid username or password",
+            "networkError": "Network error. Check your internet connection",
+            "serverError": "Server error. Please try again later",
+            "usernameRequired": "Username is required",
+            "passwordRequired": "Password is required"
+        }
+    },
+    "register": {
+        "title": "Sign up for GraviSales",
+        "subtitle": "Create your account",
+        "step1": {
+            "title": "Organization Code",
+            "subtitle": "Enter the code provided by your company administrator",
+            "orgCode": "Organization Code",
+            "orgCodePlaceholder": "e.g. ACME-01",
+            "orgCodeHint": "Ask your company administrator for the organization code",
+            "lookup": "Find Organization",
+            "lookingUp": "Searching...",
+            "orgFound": "Organization found",
+            "orgNotFound": "No organization found with this code",
+            "confirm": "This is my organization",
+            "changeOrg": "Change"
+        },
+        "step2": {
+            "title": "Account Details",
+            "subtitle": "Register in {{orgName}}",
+            "username": "Username",
+            "usernamePlaceholder": "Letters, numbers, hyphens (3–42 chars)",
+            "email": "Email",
+            "emailPlaceholder": "user@company.com",
+            "password": "Password",
+            "passwordPlaceholder": "At least 8 characters",
+            "confirmPassword": "Confirm Password",
+            "confirmPasswordPlaceholder": "Re-enter password",
+            "submit": "Create Account",
+            "submitting": "Creating..."
+        },
+        "haveAccount": "Already have an account?",
+        "login": "Sign In",
+        "errors": {
+            "orgCodeRequired": "Organization code is required",
+            "orgCodeInvalid": "Code must contain only letters, numbers, and hyphens",
+            "orgNotFound": "Organization not found. Check the code",
+            "usernameRequired": "Username is required",
+            "usernameInvalid": "Only letters, numbers, and hyphens allowed",
+            "usernameTooShort": "At least 3 characters required",
+            "emailRequired": "Email is required",
+            "emailInvalid": "Invalid email address",
+            "passwordRequired": "Password is required",
+            "passwordTooShort": "At least 8 characters required",
+            "confirmPasswordRequired": "Please confirm your password",
+            "passwordsMismatch": "Passwords do not match",
+            "usernameExists": "This username is already taken",
+            "registrationFailed": "Registration failed. Please try again",
+            "networkError": "Network error. Check your connection"
+        },
+        "success": {
+            "title": "Account Created!",
+            "message": "You have been successfully registered. Redirecting...",
+            "goToLogin": "Go to Sign In"
+        }
+    },
+    "hero": {
+        "title": "Simple & Powerful CRM for&nbsp;Small Business",
+        "subtitle": "Manage deals, clients, and sales funnels — all in one place. Starting from $5/mo.",
+        "feature1": {
+            "title": "Sales Funnels",
+            "description": "Visual Kanban boards for deal management"
+        },
+        "feature2": {
+            "title": "Analytics",
+            "description": "Reports on conversion, team performance & revenue"
+        },
+        "feature3": {
+            "title": "Team Collaboration",
+            "description": "Invite teammates and assign roles"
+        }
+    },
+    "language": {
+        "ru": "Русский",
+        "en": "English",
+        "switch": "Language"
+    }
+}
