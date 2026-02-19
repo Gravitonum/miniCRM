@@ -3,62 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { JoinOrganizationPage } from './pages/JoinOrganizationPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { getUserProfile } from './lib/api';
-
-/**
- * Placeholder dashboard page — displayed after successful login.
- */
-function DashboardPlaceholder(): ReactElement {
-  const [username, setUsername] = useState<string | null>(null);
-  const [orgCode, setOrgCode] = useState<string | null>(null);
-
-  useEffect(() => {
-    const user = localStorage.getItem('gravisales_username');
-    setUsername(user);
-
-    async function fetchProfile() {
-      if (user) {
-        const profile = await getUserProfile(user);
-        if (profile && profile.orgCode) {
-          setOrgCode(profile.orgCode);
-        }
-      }
-    }
-    fetchProfile();
-  }, []);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center p-8 bg-white rounded-2xl shadow-xl max-w-md">
-        <div className="w-16 h-16 rounded-2xl bg-[#19cbfe] flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl text-white">✓</span>
-        </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          GraviSales CRM
-        </h1>
-        <p className="text-gray-600 mb-4">
-          Welcome, {username}!
-          {orgCode && <span className="block text-sm text-gray-400 mt-1">Organization: {orgCode}</span>}
-        </p>
-        <p className="text-gray-500 mb-6 text-sm">
-          Dashboard is under construction.
-        </p>
-        <button
-          onClick={() => {
-            localStorage.clear();
-            window.location.href = '/login';
-          }}
-          className="px-6 py-3 rounded-xl text-sm font-bold
-                     bg-gray-100 text-gray-700
-                     hover:bg-gray-200
-                     transition-colors cursor-pointer"
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-  );
-}
 
 function ProtectedRoute({ children }: { children: ReactElement }): ReactElement {
   const token = localStorage.getItem('gravisales_token');
@@ -75,9 +21,13 @@ function ProtectedRoute({ children }: { children: ReactElement }): ReactElement 
 
       const username = localStorage.getItem('gravisales_username');
       if (username) {
-        const profile = await getUserProfile(username);
-        if (profile && profile.orgCode) {
-          setHasOrg(true);
+        try {
+          const profile = await getUserProfile(username);
+          if (profile && profile.orgCode) {
+            setHasOrg(true);
+          }
+        } catch (error) {
+          console.error('Failed to fetch profile:', error);
         }
       }
       setIsLoading(false);
@@ -90,7 +40,11 @@ function ProtectedRoute({ children }: { children: ReactElement }): ReactElement 
   }
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
   }
 
   // If no org code and trying to go to dashboard (/) -> redirect to join
@@ -121,7 +75,7 @@ export default function App(): ReactElement {
 
         <Route path="/" element={
           <ProtectedRoute>
-            <DashboardPlaceholder />
+            <DashboardPage />
           </ProtectedRoute>
         } />
 
