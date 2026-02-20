@@ -50,6 +50,7 @@ export interface RegisterResult {
     token?: TokenResponse;
     error?: string;
     errorCode?: string;
+    username?: string;
 }
 
 /**
@@ -150,7 +151,7 @@ export async function register(
             }
         );
 
-        return { success: true, token: response.data };
+        return { success: true, token: response.data, username };
     } catch (error) {
         if (error instanceof AxiosError) {
             if (error.response?.status === 406) {
@@ -166,50 +167,127 @@ export async function register(
     }
 }
 
+
+
 /**
- * Updates the user's profile attributes.
- * Uses /security/projects/{project}/users/{username}/profile endpoint.
+ * Assigns a role to a user.
+ * Uses PUT /security/projects/{project}/users/{username}/roles/{role}
  */
-export async function updateUserProfile(username: string, attributes: { attribute: string, value: string }[]): Promise<{ success: boolean; error?: string }> {
+export async function assignRole(username: string, role: string): Promise<{ success: boolean; error?: string }> {
     try {
-        await apiClient.patch(
-            `/security/projects/${PROJECT_CODE}/users/${username}/profile`,
-            attributes
+        await apiClient.put(
+            `/security/projects/${PROJECT_CODE}/users/${username}/roles/${role}`
         );
         return { success: true };
     } catch (error) {
         if (error instanceof AxiosError) {
             const errorData = error.response?.data as ApiError;
-            console.error('Profile update failed:', errorData);
-            return { success: false, error: errorData?.error || 'updateFailed' };
+            console.error('Role assignment failed:', errorData);
+            return { success: false, error: errorData?.error || 'roleAssignmentFailed' };
         }
         return { success: false, error: 'networkError' };
     }
 }
 
+/** App user record in the custom 'Users' table */
+export interface AppUser {
+    id: string;
+    email?: string;
+    username: string;
+    orgCode?: string;
+    isActive: boolean;
+}
+
+/** Result of App user fetch/save */
+export interface AppUserResult {
+    success: boolean;
+    user?: AppUser;
+    error?: string;
+}
+
 /**
- * Gets the user's profile attributes.
- * Uses /security/projects/{project}/users/{username}/profile endpoint.
+ * Fetches the application-level user record by username.
  */
-export async function getUserProfile(username: string): Promise<{ [key: string]: string } | null> {
+export async function getAppUser(username: string): Promise<AppUserResult> {
     try {
         const response = await apiClient.get<any>(
-            `/security/projects/${PROJECT_CODE}/users/${username}/profile`
+            `/application/api/Users`,
+            {
+                params: {
+                    filter: `username=="${username}"`,
+                },
+            }
         );
 
-        const profile: { [key: string]: string } = {};
+        const users = Array.isArray(response.data) ? response.data : (response.data?.data || []);
 
-        // The structure depends on whether it returns { data: [] } or just []
-        const attributes = Array.isArray(response.data) ? response.data : response.data.data;
-
-        if (Array.isArray(attributes)) {
-            attributes.forEach((attr: any) => {
-                profile[attr.attribute] = attr.value;
-            });
+        if (users.length === 0) {
+            return { success: false, error: 'notFound' };
         }
-        return profile;
+
+        return { success: true, user: users[0] };
     } catch (error) {
-        console.error('Failed to get profile:', error);
-        return null;
+        console.error('Failed to get app user:', error);
+        return { success: false, error: 'fetchFailed' };
+    }
+}
+
+/**
+ * Creates a base app user record in the 'Users' table.
+ */
+export async function createAppUser(username: string, email?: string): Promise<AppUserResult> {
+    try {
+        const response = await apiClient.post<AppUser>(
+            `/application/api/Users`,
+            {
+                username,
+                email: email || null,
+                isActive: true, // Default to true as per requirements
+                orgCode: null
+            }
+        );
+
+        return { success: true, user: response.data };
+    } catch (error) {
+        console.error('Failed to create app user:', error);
+        return { success: false, error: 'createFailed' };
+    }
+}
+
+/**
+ * Updates the orgCode for a user in the 'Users' table.
+ */
+export async function updateAppUserOrg(usernameOrId: string, orgCode: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        let user: AppUser | undefined;
+
+        // Always get the full user record first to ensure we have all fields for PUT
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(usernameOrId)) {
+            const getResult = await getAppUser(usernameOrId);
+            if (!getResult.success || !getResult.user) {
+                return { success: false, error: 'userNotFound' };
+            }
+            user = getResult.user;
+        } else {
+            // If it is an ID, we still need the full object for PUT
+            const response = await apiClient.get<AppUser>(`/application/api/Users/${usernameOrId}`);
+            user = response.data;
+        }
+
+        if (!user) return { success: false, error: 'userNotFound' };
+
+        // Use PUT with the full object as per typical GraviBase requirements for full update
+        await apiClient.put(
+            `/application/api/Users`,
+            {
+                ...user,
+                orgCode
+            }
+        );
+
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to update app user org:', error);
+        return { success: false, error: 'updateFailed' };
     }
 }

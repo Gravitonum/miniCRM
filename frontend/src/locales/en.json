@@ -9,7 +9,7 @@
         "username": "Username",
         "usernamePlaceholder": "Enter your username",
         "password": "Password",
-        "passwordPlaceholder": "Enter your password",
+        "passwordPlaceholder": "Enter password",
         "rememberMe": "Remember me",
         "forgotPassword": "Forgot password?",
         "submit": "Sign In",

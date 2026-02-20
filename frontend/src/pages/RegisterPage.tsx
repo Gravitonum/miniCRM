@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { UserPlus, Loader2, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 import { AuthLayout } from '../components/AuthLayout';
-import { register } from '../lib/api';
+import { register, assignRole } from '../lib/api';
 
 /** Registration form errors */
 interface RegisterErrors {
@@ -94,6 +94,12 @@ export function RegisterPage(): ReactElement {
                 if (result.token.refresh_token) {
                     localStorage.setItem('gravisales_refresh_token', result.token.refresh_token);
                 }
+
+                // Assign default "Viewer" role
+                if (result.username) {
+                    await assignRole(result.username, 'Viewer');
+                }
+
                 setIsSuccess(true);
             } else {
                 const errorKey = result.error === 'usernameExists'

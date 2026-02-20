@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, LogIn, Loader2 } from 'lucide-react';
 import { AuthLayout } from '../components/AuthLayout';
-import { login } from '../lib/api';
+import { login, getAppUser, createAppUser } from '../lib/api';
 
 /** Form field errors */
 interface LoginErrors {
@@ -40,7 +40,7 @@ export function LoginPage(): ReactElement {
         const newErrors: LoginErrors = {};
 
         if (!username.trim()) {
-            newErrors.username = t('login.errors.usernameRequired');
+            newErrors.username = t('login.errors.usernameRequired') || 'Username is required';
         }
         if (!password) {
             newErrors.password = t('login.errors.passwordRequired');
@@ -63,30 +63,57 @@ export function LoginPage(): ReactElement {
         setErrors({});
 
         try {
-            const result = await login(username.trim(), password);
+            const loginResult = await login(username.trim(), password);
 
-            if (result.success && result.token) {
-                localStorage.setItem('gravisales_token', result.token.access_token);
-                localStorage.setItem('gravisales_username', username.trim()); // Store username for profile updates
-                if (result.token.refresh_token) {
-                    localStorage.setItem('gravisales_refresh_token', result.token.refresh_token);
+            if (loginResult.success && loginResult.token) {
+                const token = loginResult.token;
+                localStorage.setItem('gravisales_token', token.access_token);
+                localStorage.setItem('gravisales_username', username.trim());
+                if (token.refresh_token) {
+                    localStorage.setItem('gravisales_refresh_token', token.refresh_token);
                 }
-                if (rememberMe) {
-                    localStorage.setItem('gravisales_username', username.trim());
+
+                sessionStorage.setItem('gravisales_current_user', username.trim());
+
+                // Check App User table by username
+                const appUserResult = await getAppUser(username.trim());
+
+                if (!appUserResult.success && appUserResult.error === 'notFound') {
+                    // Step 2 (Register in app table if missing)
+                    // We no longer fetch profile/email here as discussed.
+                    await createAppUser(username.trim());
+                    navigate('/join-organization');
+                    return;
+                }
+
+                if (appUserResult.user) {
+                    const user = appUserResult.user;
+
+                    if (!user.isActive) {
+                        setErrors({ general: t('login.errors.accountDisabled') || 'Account is disabled.' });
+                        localStorage.clear();
+                        return;
+                    }
+
+                    if (!user.orgCode) {
+                        navigate('/join-organization');
+                    } else {
+                        navigate('/');
+                    }
                 } else {
-                    localStorage.removeItem('gravisales_username');
+                    setErrors({ general: t('login.errors.serverError') });
                 }
-                navigate('/');
             } else {
-                const errorKey = result.error === 'invalidCredentials'
+                const errorKey = loginResult.error === 'invalidCredentials'
                     ? 'login.errors.invalidCredentials'
-                    : result.error === 'networkError'
+                    : loginResult.error === 'networkError'
                         ? 'login.errors.networkError'
                         : 'login.errors.serverError';
 
                 setErrors({ general: t(errorKey) });
             }
-        } catch {
+        } catch (err) {
+            console.error('Login error:', err);
             setErrors({ general: t('login.errors.serverError') });
         } finally {
             setIsLoading(false);
@@ -130,7 +157,7 @@ export function LoginPage(): ReactElement {
                             htmlFor="login-username"
                             className="block text-base font-semibold text-gray-800 mb-12"
                         >
-                            {t('login.username')}
+                            {t('login.username') || 'Username'}
                         </label>
                         <input
                             id="login-username"
@@ -140,7 +167,7 @@ export function LoginPage(): ReactElement {
                                 setUsername(e.target.value);
                                 if (errors.username) setErrors((prev) => ({ ...prev, username: undefined }));
                             }}
-                            placeholder={t('login.usernamePlaceholder')}
+                            placeholder={t('login.usernamePlaceholder') || 'Enter username'}
                             autoComplete="username"
                             autoFocus
                             className={`w-full px-5 py-6 rounded-2xl border-2 text-lg

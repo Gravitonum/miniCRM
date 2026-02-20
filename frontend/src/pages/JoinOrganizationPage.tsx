@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle2, ArrowRight, Search, LogOut } from 'lucide-react';
 import { AuthLayout } from '../components/AuthLayout';
-import { lookupCompanyByOrgCode, updateUserProfile } from '../lib/api';
+import { lookupCompanyByOrgCode, updateAppUserOrg } from '../lib/api';
 import type { CompanyLookupResult } from '../lib/api';
 
 interface JoinOrgErrors {
@@ -78,25 +78,24 @@ export function JoinOrganizationPage(): ReactElement {
         if (!lookupResult?.found || !lookupResult.company) return;
 
         setIsJoining(true);
-        const username = localStorage.getItem('gravisales_username'); // Need to ensure we save this on login!
+        const username = sessionStorage.getItem('gravisales_current_user');
 
         if (!username) {
-            // Fallback if username missing, redirect to login
-            navigate('/login');
+            setErrors({ general: t('login.errors.sessionExpired') || 'Session expired. Please login again.' });
             return;
         }
 
         try {
-            const result = await updateUserProfile(username, [
-                { attribute: 'orgCode', value: lookupResult.company.orgCode }
-            ]);
+            // Update custom App User table ONLY
+            const appUserResult = await updateAppUserOrg(username, lookupResult.company.orgCode);
 
-            if (result.success) {
+            if (appUserResult.success) {
                 navigate('/');
             } else {
-                setErrors({ general: t('register.errors.joinFailed') || 'Failed to join organization' });
+                setErrors({ general: t('register.errors.joinFailed') || 'Failed to update app user record' });
             }
-        } catch {
+        } catch (err) {
+            console.error('Join error:', err);
             setErrors({ general: t('register.errors.joinFailed') || 'Failed to join organization' });
         } finally {
             setIsJoining(false);
