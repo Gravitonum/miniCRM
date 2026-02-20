@@ -11,7 +11,8 @@ import {
     User,
     Settings,
     Menu,
-    X
+    X,
+    Briefcase
 } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 import { Dropdown, DropdownItem } from '../ui/Dropdown';
@@ -39,8 +40,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
 
     const navigation = [
         { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-        // Add more items here later as per screenshot requirements if needed immediately, 
-        // but user asked ONLY for Dashboard for now.
+        { name: t('navigation.deals', 'Сделки'), href: '/deals', icon: Briefcase },
     ];
 
 

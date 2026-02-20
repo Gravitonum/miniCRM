@@ -27,3 +27,13 @@
     3. If found, the company name will be displayed.
     4. Click **Join Organization** to confirm.
 - Once confirmed, your settings are saved, and you are redirected to the dashboard.
+
+## 4. Deals (Beta)
+- Access the **Deals** section from the left sidebar navigation menu (Briefcase icon).
+- The Deals page provides an overview of your sales pipeline.
+- **View Modes:** Toggle between a Kanban board view and a tabular list view using the icons in the toolbar.
+- **Deal Details:** Click on any deal in the list to open its detailed view, which includes:
+    - Current stage tracking in the sales funnel.
+    - Opportunity details (amount, closure probability, close date).
+    - Financial information and related contacts/company details.
+- *Note: In this version, Deal fields display the required CRM information along with preview data for advanced metrics.*

@@ -4,6 +4,8 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { JoinOrganizationPage } from './pages/JoinOrganizationPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { DealsPage } from './pages/deals/DealsPage';
+import { DealDetailsPage } from './pages/deals/DealDetailsPage';
 import { getAppUser } from './lib/api';
 
 function ProtectedRoute({ children }: { children: ReactElement }): ReactElement {
@@ -116,6 +118,18 @@ export default function App(): ReactElement {
         <Route path="/" element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/deals" element={
+          <ProtectedRoute>
+            <DealsPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/deals/:id" element={
+          <ProtectedRoute>
+            <DealDetailsPage />
           </ProtectedRoute>
         } />
 
