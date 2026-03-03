@@ -250,25 +250,25 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                                         <ChevronDown className="w-3.5 h-3.5 text-muted-foreground hidden md:block" />
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-64 max-w-[calc(100vw-2rem)]">
-                                    <DropdownMenuLabel className="font-normal">
-                                        <div className="flex flex-col space-y-1 min-w-0">
-                                            <p className="text-sm font-semibold text-foreground truncate">{username}</p>
-                                            <p className="text-xs text-muted-foreground truncate" title="user@example.com">user@example.com</p>
+                                <DropdownMenuContent align="end" className="w-64 max-w-[calc(100vw-2rem)] overflow-hidden !p-2">
+                                    <DropdownMenuLabel className="font-normal w-full overflow-hidden !px-4">
+                                        <div className="flex flex-col gap-1 min-w-0 w-full">
+                                            <p className="text-sm font-semibold text-foreground truncate block w-full">{username}</p>
+                                            <p className="text-xs text-muted-foreground truncate block w-full" title="user@example.com">user@example.com</p>
                                         </div>
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem className="!px-4 cursor-pointer">
                                         <User className="w-4 h-4" />
                                         {t('navigation.profile', 'Профиль')}
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem className="!px-4 cursor-pointer">
                                         <Settings className="w-4 h-4" />
                                         {t('navigation.settings', 'Настройки')}
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
-                                        className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                                        className="text-destructive focus:bg-destructive/10 focus:text-destructive !px-4 cursor-pointer"
                                         onClick={logout}
                                     >
                                         <LogOut className="w-4 h-4" />

@@ -254,18 +254,21 @@ function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }): React
     return (
         <div
             onClick={onClick}
-            className="bg-card rounded-xl border border-border p-4 shadow-sm cursor-pointer hover:shadow-md hover:border-primary/30 transition-all group"
+            className="bg-card rounded-xl border border-border p-5 shadow-sm cursor-pointer hover:shadow-md hover:border-primary/30 transition-all group flex flex-col gap-3.5 overflow-hidden relative min-w-0"
         >
-            <p className="font-semibold text-foreground text-sm mb-2 group-hover:text-primary transition-colors line-clamp-2 truncate">
-                {deal.name}
-            </p>
-            <p className="text-primary font-bold text-base mb-3 truncate">{formatAmount(deal.amount)}</p>
-            <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
+            <div className="flex flex-col min-w-0 gap-1">
+                <p className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors line-clamp-2 leading-snug" title={deal.name}>
+                    {deal.name}
+                </p>
+                <p className="text-primary font-bold text-base truncate">{formatAmount(deal.amount)}</p>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 overflow-hidden">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <span className="text-[10px] font-bold text-primary">{deal.responsible.charAt(0)}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground truncate">{deal.responsible}</span>
+                    <span className="text-xs text-muted-foreground truncate" title={deal.responsible}>{deal.responsible}</span>
                 </div>
                 {deal.deadline && (
                     <span className={cn('text-xs font-medium flex items-center gap-1 shrink-0', isOverdue ? 'text-destructive' : 'text-muted-foreground')}>
@@ -274,9 +277,12 @@ function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }): React
                     </span>
                 )}
             </div>
+
             {stageConf && (
-                <div className="mt-3 pt-3 border-t border-border">
-                    <Badge variant={stageConf.badge}>{t(`deals.stages.${deal.stage}`)}</Badge>
+                <div className="pt-3.5 border-t border-border flex items-center overflow-hidden">
+                    <Badge variant={stageConf.badge} className="truncate max-w-full" title={t(`deals.stages.${deal.stage}`)}>
+                        <span className="truncate">{t(`deals.stages.${deal.stage}`)}</span>
+                    </Badge>
                 </div>
             )}
         </div>
@@ -325,19 +331,18 @@ export function DealsPage(): ReactElement {
                 </div>
 
                 {/* Toolbar */}
-                <Card className="px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3 rounded-xl">
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <div className="relative flex-1 sm:w-72">
-                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+                <Card className="!px-4 !py-3 flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-6 rounded-xl">
+                    <div className="flex items-center gap-3 w-full sm:flex-1 min-w-0">
+                        <div className="relative flex-1 sm:max-w-md">
                             <input
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder={t('deals.search')}
-                                className="w-full pl-9 pr-4 py-2 bg-muted/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary transition-all"
+                                className="w-full px-4 py-2 bg-muted/50 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary transition-all truncate"
                             />
                         </div>
-                        <button className="p-2 text-muted-foreground hover:bg-accent rounded-lg border border-border transition-colors hidden sm:flex items-center gap-1.5 text-sm">
+                        <button className="p-2 shrink-0 text-muted-foreground hover:bg-accent rounded-lg border border-border transition-colors hidden sm:flex items-center gap-1.5 text-sm">
                             <Filter className="w-4 h-4" />
                         </button>
                     </div>
@@ -383,12 +388,11 @@ export function DealsPage(): ReactElement {
                                 const colors = STAGE_KANBAN_COLORS[stageConfig.key];
 
                                 return (
-                                    <div key={stageConfig.key} className="w-64 flex flex-col gap-3">
-                                        {/* Column header */}
-                                        <div className={cn('flex items-center justify-between px-3 py-2 rounded-xl border', colors.header)}>
-                                            <div className="flex items-center gap-2">
+                                    <div key={stageConfig.key} className="w-64 shrink-0 flex flex-col gap-3">
+                                        <div className={cn('flex items-center justify-between px-3 py-2 rounded-xl border gap-2', colors.header)}>
+                                            <div className="flex items-center gap-2 min-w-0 flex-1">
                                                 <span className={cn('w-2 h-2 rounded-full shrink-0', colors.dot)} />
-                                                <span className="text-xs font-semibold text-foreground truncate max-w-[100px]">
+                                                <span className="text-xs font-semibold text-foreground truncate">
                                                     {t(`deals.stages.${stageConfig.key}`)}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground font-medium bg-background/60 rounded-full px-1.5 shrink-0">

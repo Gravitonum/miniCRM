@@ -91,8 +91,15 @@ export async function login(username: string, password: string): Promise<LoginRe
  */
 export async function lookupCompanyByOrgCode(orgCode: string): Promise<CompanyLookupResult> {
     try {
+        interface CompanyRecord {
+            id: string;
+            name: string;
+            orgCode: string;
+            isBlocked?: boolean;
+            [key: string]: unknown;
+        }
         // GraviBase data API: GET /application/api/Company?filter=...
-        const response = await apiClient.get<any>(
+        const response = await apiClient.get<CompanyRecord[] | { data?: CompanyRecord[] }>(
             `/application/api/Company`,
             {
                 params: {
@@ -210,7 +217,7 @@ export interface AppUserResult {
  */
 export async function getAppUser(username: string): Promise<AppUserResult> {
     try {
-        const response = await apiClient.get<any>(
+        const response = await apiClient.get<AppUser[] | { data?: AppUser[] }>(
             `/application/api/Users`,
             {
                 params: {

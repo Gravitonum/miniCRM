@@ -5,6 +5,7 @@
  * <Badge variant="slate">Поиск</Badge>
  * <Badge variant="emerald">Закрыта</Badge>
  */
+/* eslint-disable react-refresh/only-export-components */
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
