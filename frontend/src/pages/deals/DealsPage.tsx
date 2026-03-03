@@ -9,7 +9,7 @@ import { type ReactElement, useState, useRef, useEffect } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useTranslation } from 'react-i18next';
 import {
-    Plus, Search, Filter, LayoutGrid, List, ChevronRight,
+    Plus, Filter, LayoutGrid, List, ChevronRight,
     Calendar, DollarSign, User
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

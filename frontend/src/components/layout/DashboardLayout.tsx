@@ -40,6 +40,8 @@ import {
     TooltipTrigger,
 } from '../ui/tooltip';
 import { cn } from '../../lib/utils';
+import { LanguageSwitcher } from '../LanguageSwitcher';
+import { ThemeSwitcher } from '../ThemeSwitcher';
 
 /** Хук выхода из системы */
 function useLogout() {
@@ -65,8 +67,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
     }
 
     const navigation = [
-        { name: t('navigation.dashboard', 'Dashboard'), href: '/', icon: LayoutDashboard },
-        { name: t('navigation.deals', 'Сделки'), href: '/deals', icon: Briefcase },
+        { name: t('nav.dashboard', 'Dashboard'), href: '/', icon: LayoutDashboard },
+        { name: t('nav.deals', 'Deals'), href: '/deals', icon: Briefcase },
     ];
 
     return (
@@ -226,6 +228,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                         </div>
 
                         <div className="flex items-center gap-2">
+                            {/* Theme switcher */}
+                            <ThemeSwitcher />
+
+                            {/* Language switcher */}
+                            <LanguageSwitcher />
+
+                            <div className="w-px h-6 bg-border mx-1" />
+
                             {/* Notifications */}
                             <button className="relative p-2.5 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
                                 <Bell className="w-4.5 h-4.5" />
@@ -260,11 +270,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem className="!px-4 cursor-pointer">
                                         <User className="w-4 h-4" />
-                                        {t('navigation.profile', 'Профиль')}
+                                        {t('nav.profile', 'Профиль')}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem className="!px-4 cursor-pointer">
                                         <Settings className="w-4 h-4" />
-                                        {t('navigation.settings', 'Настройки')}
+                                        {t('nav.settings', 'Настройки')}
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
@@ -272,7 +282,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                                         onClick={logout}
                                     >
                                         <LogOut className="w-4 h-4" />
-                                        {t('auth.logout', 'Выйти')}
+                                        {t('nav.logout', 'Выйти')}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>

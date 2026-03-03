@@ -100,6 +100,11 @@
         "en": "English",
         "switch": "Language"
     },
+    "theme": {
+        "light": "Light",
+        "dark": "Dark",
+        "toggle": "Toggle theme"
+    },
     "joinOrg": {
         "title": "Join Organization",
         "subtitle": "Please enter your organization code to continue.",
@@ -112,7 +117,9 @@
         "contacts": "Contacts",
         "clients": "Clients",
         "reports": "Reports",
-        "settings": "Settings"
+        "settings": "Settings",
+        "profile": "Profile",
+        "logout": "Sign Out"
     },
     "deals": {
         "title": "Deals",
