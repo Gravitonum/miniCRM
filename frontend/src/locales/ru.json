@@ -105,5 +105,87 @@
         "subtitle": "Введите код организации, чтобы продолжить работу.",
         "confirm": "Присоединиться",
         "joining": "Присоединение..."
+    },
+    "nav": {
+        "dashboard": "Главная",
+        "deals": "Сделки",
+        "contacts": "Контакты",
+        "clients": "Клиенты",
+        "reports": "Отчёты",
+        "settings": "Настройки"
+    },
+    "deals": {
+        "title": "Сделки",
+        "subtitle": "Управление воронкой продаж",
+        "add": "+ Новая сделка",
+        "search": "Поиск сделок...",
+        "noDeals": "Сделок пока нет",
+        "noDealsHint": "Создайте первую сделку, нажав кнопку выше",
+        "stages": {
+            "prospecting": "Первый контакт",
+            "qualified": "Квалификация",
+            "discovery": "Выявление потребностей",
+            "proposalSent": "КП отправлено",
+            "negotiation": "Переговоры",
+            "closed": "Закрыто"
+        },
+        "table": {
+            "name": "Название сделки",
+            "amount": "Сумма",
+            "stage": "Этап",
+            "owner": "Ответственный",
+            "deadline": "Дедлайн"
+        },
+        "form": {
+            "title": "Новая сделка",
+            "editTitle": "Редактировать сделку",
+            "name": "Название сделки",
+            "namePlaceholder": "Например: Поставка оборудования",
+            "amount": "Сумма",
+            "amountPlaceholder": "0",
+            "stage": "Этап воронки",
+            "responsible": "Ответственный",
+            "responsiblePlaceholder": "Выберите менеджера",
+            "deadline": "Дедлайн",
+            "client": "Клиент",
+            "clientPlaceholder": "Выберите клиента",
+            "submit": "Создать сделку",
+            "cancel": "Отмена",
+            "submitting": "Сохранение...",
+            "errors": {
+                "nameRequired": "Введите название сделки",
+                "amountRequired": "Укажите сумму",
+                "stageRequired": "Выберите этап"
+            }
+        },
+        "details": {
+            "backToDeals": "Назад к сделкам",
+            "tabs": {
+                "overview": "Обзор",
+                "tasks": "Задачи",
+                "notes": "Заметки",
+                "history": "История"
+            },
+            "moveToNextStage": "Следующий этап →",
+            "stages": "Этапы сделки",
+            "opportunityDetails": "Детали сделки",
+            "financials": "Финансы",
+            "fields": {
+                "opportunityId": "ID сделки",
+                "industry": "Отрасль",
+                "closeDate": "Дата закрытия",
+                "probability": "Вероятность закрытия",
+                "expectedRevenue": "Ожидаемая выручка",
+                "discount": "Скидка",
+                "subscriptionDetails": "Детали подписки",
+                "competitorPricing": "Цены конкурентов"
+            },
+            "contacts": "Контакты",
+            "company": "Компания",
+            "primaryContact": "Основной контакт",
+            "industry": "Отрасль",
+            "location": "Местоположение",
+            "employeeRange": "Размер компании"
+        }
     }
 }

@@ -19,6 +19,20 @@ Stores application-level user data, synchronized with platform profiles.
 - `orgCode`: STRING (Nullable) - Reference to the `orgCode` of the `Company`.
 - `isActive`: BOOLEAN - Controls application access.
 
+### CRM Funnels & Stages
+Defines sales pipelines.
+- `crm_funnels`: Configures different sales flows.
+- `funnel_stages`: Defines steps within a funnel (e.g., Prospecting, Qualified, Won).
+
+### Deals
+Core sales opportunities linked to customers.
+- `id`: UUID (Primary Key)
+- `name`: STRING (Deal Title)
+- `amount`: NUMERIC (Value)
+- `current_stage_id`: FK to `funnel_stages`.
+- `responsible_user_id`: FK to `Users`.
+- `deadline`: TIMESTAMP.
+
 ---
 
 ## Data Synchronization Flow

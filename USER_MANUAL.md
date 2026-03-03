@@ -28,12 +28,18 @@
     4. Click **Join Organization** to confirm.
 - Once confirmed, your settings are saved, and you are redirected to the dashboard.
 
-## 4. Deals (Beta)
-- Access the **Deals** section from the left sidebar navigation menu (Briefcase icon).
-- The Deals page provides an overview of your sales pipeline.
-- **View Modes:** Toggle between a Kanban board view and a tabular list view using the icons in the toolbar.
-- **Deal Details:** Click on any deal in the list to open its detailed view, which includes:
-    - Current stage tracking in the sales funnel.
-    - Opportunity details (amount, closure probability, close date).
-    - Financial information and related contacts/company details.
-- *Note: In this version, Deal fields display the required CRM information along with preview data for advanced metrics.*
+## 4. Сделки (Deals)
+- Доступ к разделу **Сделки** осуществляется через левое боковое меню (иконка портфеля).
+- Система предоставляет два вида отображения:
+    - **Канбан-доска:** визуальное управление сделками по этапам (Первый контакт, Квалификация, КП отправлено и т.д.).
+    - **Список:** табличное представление всех сделок с возможностью поиска и фильтрации.
+- **Создание сделки:**
+    - Нажмите кнопку **+ Новая сделка** в правом верхнем углу.
+    - Заполните форму в открывшейся боковой панели (название, сумма, этап, ответственный, дедлайн).
+    - Новая сделка мгновенно появится на доске или в списке.
+- **Карточка сделки:**
+    - Кликните на карточку или строку в списке, чтобы открыть детали.
+    - Отслеживайте прогресс по этапам в верхней части экрана.
+    - Переходите к следующему этапу с помощью кнопки **Следующий этап →**.
+    - Просматривайте финансовые детали и связанные контакты.
+- **Локализация:** весь интерфейс сделок поддерживает русский и английский языки. Переключение осуществляется через иконку глобуса в хедере.

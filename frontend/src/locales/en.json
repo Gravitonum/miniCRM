@@ -105,5 +105,87 @@
         "subtitle": "Please enter your organization code to continue.",
         "confirm": "Join Organization",
         "joining": "Joining..."
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "deals": "Deals",
+        "contacts": "Contacts",
+        "clients": "Clients",
+        "reports": "Reports",
+        "settings": "Settings"
+    },
+    "deals": {
+        "title": "Deals",
+        "subtitle": "Manage your sales pipeline",
+        "add": "+ New Deal",
+        "search": "Search deals...",
+        "noDeals": "No deals yet",
+        "noDealsHint": "Create your first deal by clicking the button above",
+        "stages": {
+            "prospecting": "Prospecting",
+            "qualified": "Qualified",
+            "discovery": "Discovery",
+            "proposalSent": "Proposal Sent",
+            "negotiation": "Negotiation",
+            "closed": "Closed"
+        },
+        "table": {
+            "name": "Deal Name",
+            "amount": "Amount",
+            "stage": "Stage",
+            "owner": "Owner",
+            "deadline": "Deadline"
+        },
+        "form": {
+            "title": "New Deal",
+            "editTitle": "Edit Deal",
+            "name": "Deal Name",
+            "namePlaceholder": "e.g. Equipment Supply",
+            "amount": "Amount",
+            "amountPlaceholder": "0",
+            "stage": "Funnel Stage",
+            "responsible": "Responsible",
+            "responsiblePlaceholder": "Select manager",
+            "deadline": "Deadline",
+            "client": "Client",
+            "clientPlaceholder": "Select client",
+            "submit": "Create Deal",
+            "cancel": "Cancel",
+            "submitting": "Saving...",
+            "errors": {
+                "nameRequired": "Enter deal name",
+                "amountRequired": "Enter amount",
+                "stageRequired": "Select a stage"
+            }
+        },
+        "details": {
+            "backToDeals": "Back to Deals",
+            "tabs": {
+                "overview": "Overview",
+                "tasks": "Tasks",
+                "notes": "Notes",
+                "history": "History"
+            },
+            "moveToNextStage": "Next Stage →",
+            "stages": "Deal Stages",
+            "opportunityDetails": "Opportunity Details",
+            "financials": "Financials",
+            "fields": {
+                "opportunityId": "Deal ID",
+                "industry": "Industry",
+                "closeDate": "Close Date",
+                "probability": "Probability of Closure",
+                "expectedRevenue": "Expected Revenue",
+                "discount": "Discount",
+                "subscriptionDetails": "Subscription Details",
+                "competitorPricing": "Competitor Pricing"
+            },
+            "contacts": "Contacts",
+            "company": "Company",
+            "primaryContact": "Primary Contact",
+            "industry": "Industry",
+            "location": "Location",
+            "employeeRange": "Employee Range"
+        }
     }
 }
