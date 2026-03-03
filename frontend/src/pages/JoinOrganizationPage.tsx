@@ -119,8 +119,8 @@ export function JoinOrganizationPage(): ReactElement {
                     </div>
                 )}
 
-                <form onSubmit={handleLookup} className="space-y-6 w-full" noValidate>
-                    <div className="space-y-2">
+                <form onSubmit={handleLookup} className="flex flex-col gap-8 w-full" noValidate>
+                    <div className="flex flex-col gap-3">
                         <Label htmlFor="org-code" className="text-base">
                             {t('register.step1.orgCode')}
                         </Label>

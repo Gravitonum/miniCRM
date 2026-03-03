@@ -95,7 +95,7 @@ export function AuthLayout({ children }: AuthLayoutProps): ReactElement {
                         {t('hero.subtitle')}
                     </p>
 
-                    <div className="space-y-3">
+                    <div className="flex flex-col gap-6">
                         <FeatureCard
                             icon={<BarChart3 className="w-5 h-5 text-white" />}
                             title={t('hero.feature1.title')}

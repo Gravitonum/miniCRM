@@ -130,9 +130,9 @@ export function LoginPage(): ReactElement {
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6 w-full" noValidate>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-8 w-full" noValidate>
                     {/* Username */}
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-3">
                         <Label htmlFor="login-username">
                             {t('login.username') || 'Username'}
                         </Label>
@@ -155,7 +155,7 @@ export function LoginPage(): ReactElement {
                     </div>
 
                     {/* Password */}
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-3">
                         <div className="flex items-center justify-between">
                             <Label htmlFor="login-password">{t('login.password')}</Label>
                             <button

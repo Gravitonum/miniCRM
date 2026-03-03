@@ -128,9 +128,9 @@ export function RegisterPage(): ReactElement {
                             </div>
                         )}
 
-                        <form onSubmit={handleRegister} className="space-y-5 w-full" noValidate>
+                        <form onSubmit={handleRegister} className="flex flex-col gap-8 w-full" noValidate>
                             {/* Username */}
-                            <div className="space-y-2">
+                            <div className="flex flex-col gap-3">
                                 <Label htmlFor="reg-username">{t('register.step2.username')}</Label>
                                 <Input
                                     id="reg-username"
@@ -145,7 +145,7 @@ export function RegisterPage(): ReactElement {
                             </div>
 
                             {/* Email */}
-                            <div className="space-y-2">
+                            <div className="flex flex-col gap-3">
                                 <Label htmlFor="reg-email">{t('register.step2.email')}</Label>
                                 <Input
                                     id="reg-email"
@@ -160,7 +160,7 @@ export function RegisterPage(): ReactElement {
                             </div>
 
                             {/* Password */}
-                            <div className="space-y-2">
+                            <div className="flex flex-col gap-3">
                                 <Label htmlFor="reg-password">{t('register.step2.password')}</Label>
                                 <div className="relative">
                                     <Input
@@ -198,7 +198,7 @@ export function RegisterPage(): ReactElement {
                             </div>
 
                             {/* Confirm Password */}
-                            <div className="space-y-2">
+                            <div className="flex flex-col gap-3">
                                 <Label htmlFor="reg-confirm-password">{t('register.step2.confirmPassword')}</Label>
                                 <Input
                                     id="reg-confirm-password"
