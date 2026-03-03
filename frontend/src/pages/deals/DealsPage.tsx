@@ -256,10 +256,10 @@ function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }): React
             onClick={onClick}
             className="bg-card rounded-xl border border-border p-4 shadow-sm cursor-pointer hover:shadow-md hover:border-primary/30 transition-all group"
         >
-            <p className="font-semibold text-foreground text-sm mb-2 group-hover:text-primary transition-colors line-clamp-2">
+            <p className="font-semibold text-foreground text-sm mb-2 group-hover:text-primary transition-colors line-clamp-2 truncate">
                 {deal.name}
             </p>
-            <p className="text-primary font-bold text-base mb-3">{formatAmount(deal.amount)}</p>
+            <p className="text-primary font-bold text-base mb-3 truncate">{formatAmount(deal.amount)}</p>
             <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
                     <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -387,11 +387,11 @@ export function DealsPage(): ReactElement {
                                         {/* Column header */}
                                         <div className={cn('flex items-center justify-between px-3 py-2 rounded-xl border', colors.header)}>
                                             <div className="flex items-center gap-2">
-                                                <span className={cn('w-2 h-2 rounded-full', colors.dot)} />
-                                                <span className="text-xs font-semibold text-foreground">
+                                                <span className={cn('w-2 h-2 rounded-full shrink-0', colors.dot)} />
+                                                <span className="text-xs font-semibold text-foreground truncate max-w-[100px]">
                                                     {t(`deals.stages.${stageConfig.key}`)}
                                                 </span>
-                                                <span className="text-xs text-muted-foreground font-medium bg-background/60 rounded-full px-1.5">
+                                                <span className="text-xs text-muted-foreground font-medium bg-background/60 rounded-full px-1.5 shrink-0">
                                                     {stageDeals.length}
                                                 </span>
                                             </div>
