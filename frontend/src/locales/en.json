@@ -96,8 +96,10 @@
         }
     },
     "language": {
-        "ru": "Русский",
+        "ru": "Russian",
         "en": "English",
+        "uz": "Uzbek",
+        "kk": "Kazakh",
         "switch": "Language"
     },
     "theme": {
@@ -120,6 +122,38 @@
         "settings": "Settings",
         "profile": "Profile",
         "logout": "Sign Out"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Overview of activity and key metrics",
+        "metrics": {
+            "revenue": "Revenue",
+            "deals": "Active Deals",
+            "customers": "Customers",
+            "conversion": "Conversion",
+            "vsLastMonth": "vs last month"
+        },
+        "revenueChart": "Revenue Dynamics",
+        "pipeline": "Sales Funnel",
+        "recentActivity": "Recent Activity",
+        "months": {
+            "jan": "Jan", "feb": "Feb", "mar": "Mar", "apr": "Apr", "may": "May", "jun": "Jun",
+            "jul": "Jul", "aug": "Aug", "sep": "Sep", "oct": "Oct", "nov": "Nov", "dec": "Dec"
+        },
+        "stages": {
+            "search": "Search",
+            "qualification": "Qualification",
+            "discussion": "Discussion",
+            "proposal": "Proposal",
+            "negotiation": "Negotiation",
+            "closed": "Closed"
+        },
+        "activity": {
+            "newDeal": "New deal created",
+            "dealMoved": "Deal moved",
+            "newClient": "New client added",
+            "ago": "{{time}} ago"
+        }
     },
     "deals": {
         "title": "Deals",

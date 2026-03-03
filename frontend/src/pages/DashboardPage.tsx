@@ -22,6 +22,7 @@ interface MetricCardProps {
  * Карточка метрики
  */
 function MetricCard({ title, value, change, isPositive, icon, gradient }: MetricCardProps): ReactElement {
+    const { t } = useTranslation();
     return (
         <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 !pb-4">
@@ -38,7 +39,7 @@ function MetricCard({ title, value, change, isPositive, icon, gradient }: Metric
                         : <ArrowDownRight className="w-3 h-3 shrink-0" />
                     }
                     <span className="truncate">{change}</span>
-                    <span className="text-muted-foreground font-normal ml-1 truncate">vs прошлый месяц</span>
+                    <span className="text-muted-foreground font-normal ml-1 truncate">{t('dashboard.metrics.vsLastMonth', 'vs прошлый месяц')}</span>
                 </div>
             </CardContent>
         </Card>
@@ -123,8 +124,8 @@ export function DashboardPage(): ReactElement {
                                 ))}
                             </div>
                             <div className="flex justify-between mt-2 px-2 text-xs text-muted-foreground">
-                                {['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'].map((m) => (
-                                    <span key={m}>{m}</span>
+                                {['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].map((m) => (
+                                    <span key={m}>{t(`dashboard.months.${m}`)}</span>
                                 ))}
                             </div>
                         </CardContent>
@@ -137,16 +138,16 @@ export function DashboardPage(): ReactElement {
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {[
-                                { label: 'Поиск', value: 32, color: 'bg-slate-400' },
-                                { label: 'Квалификация', value: 24, color: 'bg-blue-500' },
-                                { label: 'Обсуждение', value: 18, color: 'bg-violet-500' },
-                                { label: 'Предложение', value: 14, color: 'bg-amber-500' },
-                                { label: 'Переговоры', value: 9, color: 'bg-orange-500' },
-                                { label: 'Закрыто', value: 5, color: 'bg-emerald-500' },
+                                { label: 'search', value: 32, color: 'bg-slate-400' },
+                                { label: 'qualification', value: 24, color: 'bg-blue-500' },
+                                { label: 'discussion', value: 18, color: 'bg-violet-500' },
+                                { label: 'proposal', value: 14, color: 'bg-amber-500' },
+                                { label: 'negotiation', value: 9, color: 'bg-orange-500' },
+                                { label: 'closed', value: 5, color: 'bg-emerald-500' },
                             ].map(({ label, value, color }) => (
                                 <div key={label} className="space-y-1.5 px-1">
                                     <div className="flex justify-between text-xs gap-2">
-                                        <span className="text-muted-foreground truncate">{label}</span>
+                                        <span className="text-muted-foreground truncate">{t(`dashboard.stages.${label}`)}</span>
                                         <span className="font-semibold text-foreground shrink-0">{value}</span>
                                     </div>
                                     <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -169,17 +170,17 @@ export function DashboardPage(): ReactElement {
                     <CardContent>
                         <div className="space-y-4">
                             {[
-                                { action: 'Новая сделка создана', name: 'Лицензия на ПО', time: '5 мин назад', dot: 'bg-blue-500' },
-                                { action: 'Сделка перемещена', name: 'Корпоративное развертывание', time: '1 час назад', dot: 'bg-violet-500' },
-                                { action: 'Новый клиент добавлен', name: 'ООО «Технологии»', time: '3 часа назад', dot: 'bg-emerald-500' },
+                                { action: 'newDeal', name: 'Лицензия на ПО', time: '5m', dot: 'bg-blue-500' },
+                                { action: 'dealMoved', name: 'Корпоративное развертывание', time: '1h', dot: 'bg-violet-500' },
+                                { action: 'newClient', name: 'ООО «Технологии»', time: '3h', dot: 'bg-emerald-500' },
                             ].map(({ action, name, time, dot }) => (
                                 <div key={name} className="flex items-start gap-3">
                                     <div className={cn('w-2 h-2 rounded-full mt-1.5 shrink-0', dot)} />
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm text-muted-foreground">{action}</p>
+                                        <p className="text-sm text-muted-foreground">{t(`dashboard.activity.${action}`)}</p>
                                         <p className="text-sm font-semibold text-foreground truncate">{name}</p>
                                     </div>
-                                    <span className="text-xs text-muted-foreground/60 shrink-0">{time}</span>
+                                    <span className="text-xs text-muted-foreground/60 shrink-0">{t(`dashboard.activity.ago`, { time })}</span>
                                 </div>
                             ))}
                         </div>

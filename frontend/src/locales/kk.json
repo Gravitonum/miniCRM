@@ -1,0 +1,232 @@
+{
+    "app": {
+        "name": "GraviSales",
+        "tagline": "Бизнесіңізге арналған шағын CRM"
+    },
+    "login": {
+        "title": "GraviSales-ке кіру",
+        "subtitle": "Тіркелгіңізге кіріңіз",
+        "username": "Пайдаланушы аты",
+        "usernamePlaceholder": "Пайдаланушы атын енгізіңіз",
+        "password": "Құпия сөз",
+        "passwordPlaceholder": "Құпия сөзді енгізіңіз",
+        "rememberMe": "Мені есте сақтау",
+        "forgotPassword": "Құпия сөзді ұмыттыңыз ба?",
+        "submit": "Кіру",
+        "submitting": "Кіру...",
+        "noAccount": "Тіркелгіңіз жоқ па?",
+        "register": "Тіркелу",
+        "errors": {
+            "invalidCredentials": "Қате пайдаланушы аты немесе құпия сөз",
+            "networkError": "Желі қатесі. Интернет байланысын тексеріңіз",
+            "serverError": "Сервер қатесі. Кейінірек қайталап көріңіз",
+            "usernameRequired": "Пайдаланушы атын енгізіңіз",
+            "passwordRequired": "Құпия сөзді енгізіңіз"
+        }
+    },
+    "register": {
+        "title": "GraviSales-ке тіркелу",
+        "subtitle": "Тіркелгіңізді жасаңыз",
+        "step1": {
+            "title": "Ұйым коды",
+            "subtitle": "Компания әкімшісі берген кодты енгізіңіз",
+            "orgCode": "Ұйым коды",
+            "orgCodePlaceholder": "Мысалы: ACME-01",
+            "orgCodeHint": "Ұйым кодын компания әкімшісінен сұраңыз",
+            "lookup": "Ұйымды табу",
+            "lookingUp": "Іздеу...",
+            "orgFound": "Ұйым табылды",
+            "orgNotFound": "Бұл кодпен ұйым табылмады",
+            "confirm": "Бұл менің ұйымым",
+            "changeOrg": "Өзгерту"
+        },
+        "step2": {
+            "title": "Тіркелгі деректері",
+            "subtitle": "{{orgName}}-ге тіркелу",
+            "username": "Пайдаланушы аты",
+            "usernamePlaceholder": "Латын әріптері, сандар, дефис (3–42 таңба)",
+            "email": "Email",
+            "emailPlaceholder": "user@company.com",
+            "password": "Құпия сөз",
+            "passwordPlaceholder": "Кемінде 8 таңба",
+            "confirmPassword": "Құпия сөзді растаңыз",
+            "confirmPasswordPlaceholder": "Құпия сөзді қайталап енгізіңіз",
+            "submit": "Тіркелгіні жасау",
+            "submitting": "Жасалуда..."
+        },
+        "haveAccount": "Тіркелгіңіз бар ма?",
+        "login": "Кіру",
+        "errors": {
+            "orgCodeRequired": "Ұйым кодын енгізіңіз",
+            "orgCodeInvalid": "Код тек әріптерден, сандардан және дефистен тұруы керек",
+            "orgNotFound": "Ұйым табылмады. Кодты тексеріңіз",
+            "usernameRequired": "Пайдаланушы атын енгізіңіз",
+            "usernameInvalid": "Тек латын әріптері, сандар және дефис",
+            "usernameTooShort": "Кемінде 3 таңба",
+            "emailRequired": "Email енгізіңіз",
+            "emailInvalid": "Жарамсыз email",
+            "passwordRequired": "Құпия сөзді енгізіңіз",
+            "passwordTooShort": "Кемінде 8 таңба",
+            "confirmPasswordRequired": "Құпия сөзді растаңыз",
+            "passwordsMismatch": "Құпия сөздер сәйкес келмейді",
+            "usernameExists": "Бұл пайдаланушы аты бос емес",
+            "registrationFailed": "Тіркелу қатесі. Кейінірек қайталап көріңіз",
+            "networkError": "Желі қатесі. Байланысты тексеріңіз"
+        },
+        "success": {
+            "title": "Тіркелгі жасалды!",
+            "message": "Сіз сәтті тіркелдіңіз. Қазір қайта бағытталасыз...",
+            "goToLogin": "Кіруге өту"
+        }
+    },
+    "hero": {
+        "title": "Шағын бизнеске арналған қарапайым және қуатты CRM",
+        "subtitle": "Мәмілелерді, клиенттерді және сату құйғыларын басқарыңыз — барлығы бір жерде. Тегін көріңіз.",
+        "feature1": {
+            "title": "Сату құйғылары",
+            "description": "Мәмілелерді басқаруға арналған визуалды Kanban тақталары"
+        },
+        "feature2": {
+            "title": "Аналитика",
+            "description": "Конверсия, менеджерлер және кіріс бойынша есептер"
+        },
+        "feature3": {
+            "title": "Топтық жұмыс",
+            "description": "Әріптестерді шақырыңыз және рөлдерді тағайындаңыз"
+        }
+    },
+    "language": {
+        "ru": "Орысша",
+        "en": "Ағылшынша",
+        "uz": "Өзбекше",
+        "kk": "Қазақша",
+        "switch": "Тіл"
+    },
+    "theme": {
+        "light": "Жарық",
+        "dark": "Күңгірт",
+        "toggle": "Тақырыпты ауыстыру"
+    },
+    "joinOrg": {
+        "title": "Ұйымға қосылу",
+        "subtitle": "Жалғастыру үшін ұйым кодын енгізіңіз.",
+        "confirm": "Қосылу",
+        "joining": "Қосылуда..."
+    },
+    "nav": {
+        "dashboard": "Басты бет",
+        "deals": "Мәмілелер",
+        "contacts": "Байланыстар",
+        "clients": "Клиенттер",
+        "reports": "Есептер",
+        "settings": "Баптаулар",
+        "profile": "Профиль",
+        "logout": "Шығу"
+    },
+    "dashboard": {
+        "title": "Басты бет",
+        "subtitle": "Белсенділік пен негізгі көрсеткіштерге шолу",
+        "metrics": {
+            "revenue": "Түсім",
+            "deals": "Белсенді мәмілелер",
+            "customers": "Клиенттер",
+            "conversion": "Конверсия",
+            "vsLastMonth": "өткен аймен салыстырғанда"
+        },
+        "revenueChart": "Түсім динамикасы",
+        "pipeline": "Сату құйғысы",
+        "recentActivity": "Соңғы белсенділік",
+        "months": {
+            "jan": "Қаң", "feb": "Ақп", "mar": "Нау", "apr": "Сәу", "may": "Мам", "jun": "Мау",
+            "jul": "Шіл", "aug": "Там", "sep": "Қыр", "oct": "Қаз", "nov": "Қар", "dec": "Жел"
+        },
+        "stages": {
+            "search": "Іздеу",
+            "qualification": "Біліктілік",
+            "discussion": "Талқылау",
+            "proposal": "Ұсыныс",
+            "negotiation": "Келіссөздер",
+            "closed": "Жабық"
+        },
+        "activity": {
+            "newDeal": "Жаңа мәміле жасалды",
+            "dealMoved": "Мәміле ауыстырылды",
+            "newClient": "Жаңа клиент қосылды",
+            "ago": "{{time}} бұрын"
+        }
+    },
+    "deals": {
+        "title": "Мәмілелер",
+        "subtitle": "Сату құйғысын басқару",
+        "add": "+ Жаңа мәміле",
+        "search": "Мәмілелерді іздеу...",
+        "noDeals": "Мәмілелер әзірге жоқ",
+        "noDealsHint": "Жоғарыдағы түймені басу арқылы алғашқы мәмілені жасаңыз",
+        "stages": {
+            "prospecting": "Алғашқы байланыс",
+            "qualified": "Біліктілік",
+            "discovery": "Қажеттіліктерді анықтау",
+            "proposalSent": "КП жіберілді",
+            "negotiation": "Келіссөздер",
+            "closed": "Жабық"
+        },
+        "table": {
+            "name": "Мәміле атауы",
+            "amount": "Сома",
+            "stage": "Кезең",
+            "owner": "Жауапты",
+            "deadline": "Мерзімі"
+        },
+        "form": {
+            "title": "Жаңа мәміле",
+            "editTitle": "Мәмілені өңдеу",
+            "name": "Мәміле атауы",
+            "namePlaceholder": "Мысалы: Жабдықты жеткізу",
+            "amount": "Сома",
+            "amountPlaceholder": "0",
+            "stage": "Құйғы кезеңі",
+            "responsible": "Жауапты",
+            "responsiblePlaceholder": "Менеджерді таңдаңыз",
+            "deadline": "Мерзімі",
+            "client": "Клиент",
+            "clientPlaceholder": "Клиентті таңдаңыз",
+            "submit": "Мәмілені жасау",
+            "cancel": "Болдырмау",
+            "submitting": "Сақталуда...",
+            "errors": {
+                "nameRequired": "Мәміле атауын енгізіңіз",
+                "amountRequired": "Соманы көрсетіңіз",
+                "stageRequired": "Кезеңді таңдаңыз"
+            }
+        },
+        "details": {
+            "backToDeals": "Мәмілелерге оралу",
+            "tabs": {
+                "overview": "Шолу",
+                "tasks": "Тапсырмалар",
+                "notes": "Ескертпелер",
+                "history": "Тарих"
+            },
+            "moveToNextStage": "Келесі кезең →",
+            "stages": "Мәміле кезеңдері",
+            "opportunityDetails": "Мәміле деректері",
+            "financials": "Қаржы",
+            "fields": {
+                "opportunityId": "Мәміле ID",
+                "industry": "Сала",
+                "closeDate": "Жабылу күні",
+                "probability": "Жабылу ықтималдығы",
+                "expectedRevenue": "Күтілетін кіріс",
+                "discount": "Жеңілдік",
+                "subscriptionDetails": "Жазылым деректері",
+                "competitorPricing": "Бәсекелестер бағасы"
+            },
+            "contacts": "Байланыстар",
+            "company": "Компания",
+            "primaryContact": "Негізгі байланыс",
+            "industry": "Сала",
+            "location": "Орналасқан жері",
+            "employeeRange": "Компания өлшемі"
+        }
+    }
+}

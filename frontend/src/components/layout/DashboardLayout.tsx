@@ -222,9 +222,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                             >
                                 <Menu className="w-5 h-5" />
                             </button>
-                            <div className="hidden sm:block">
-                                <h2 className="text-sm font-semibold text-foreground">{t('dashboard.title', 'Dashboard')}</h2>
-                            </div>
                         </div>
 
                         <div className="flex items-center gap-2">

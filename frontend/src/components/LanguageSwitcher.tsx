@@ -25,6 +25,8 @@ interface LanguageOption {
 const LANGUAGES: LanguageOption[] = [
     { code: 'ru', label: 'Русский', flag: '🇷🇺' },
     { code: 'en', label: 'English', flag: '🇬🇧' },
+    { code: 'uz', label: 'O\'zbek', flag: '🇺🇿' },
+    { code: 'kk', label: 'Қазақша', flag: '🇰🇿' },
 ];
 
 /**
@@ -44,8 +46,8 @@ export function LanguageSwitcher(): ReactElement {
                     aria-label="Switch language"
                 >
                     <Globe className="w-4 h-4" />
-                    <span className="hidden sm:inline">{currentLang.flag} {currentLang.label}</span>
-                    <span className="sm:hidden">{currentLang.flag}</span>
+                    <span className="hidden sm:inline">{currentLang.label}</span>
+                    <span className="sm:hidden">{currentLang.code.toUpperCase()}</span>
                     <ChevronDown className="w-3 h-3 transition-transform duration-200" />
                 </button>
             </DropdownMenuTrigger>

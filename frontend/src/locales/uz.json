@@ -1,0 +1,232 @@
+{
+    "app": {
+        "name": "GraviSales",
+        "tagline": "Biznesingiz uchun mini-CRM"
+    },
+    "login": {
+        "title": "GraviSales-ga kirish",
+        "subtitle": "Hisobingizga kiring",
+        "username": "Foydalanuvchi nomi",
+        "usernamePlaceholder": "Foydalanuvchi nomini kiriting",
+        "password": "Parol",
+        "passwordPlaceholder": "Parolni kiriting",
+        "rememberMe": "Meni eslab qolish",
+        "forgotPassword": "Parolni unutdingizmi?",
+        "submit": "Kirish",
+        "submitting": "Kirilmoqda...",
+        "noAccount": "Hisobingiz yo'qmi?",
+        "register": "Ro'yxatdan o'tish",
+        "errors": {
+            "invalidCredentials": "Noto'g'ri foydalanuvchi nomi yoki parol",
+            "networkError": "Tarmoq xatosi. Internet aloqasini tekshiring",
+            "serverError": "Server xatosi. Keyinroq qayta urinib ko'ring",
+            "usernameRequired": "Foydalanuvchi nomini kiriting",
+            "passwordRequired": "Parolni kiriting"
+        }
+    },
+    "register": {
+        "title": "GraviSales-da ro'yxatdan o'tish",
+        "subtitle": "Hisob yarating",
+        "step1": {
+            "title": "Tashkilot kodi",
+            "subtitle": "Kompaniyangiz ma'muri tomonidan berilgan kodni kiriting",
+            "orgCode": "Tashkilot kodi",
+            "orgCodePlaceholder": "Masalan: ACME-01",
+            "orgCodeHint": "Tashkilot kodi kompaniyangiz ma'muri tomonidan beriladi",
+            "lookup": "Tashkilotni topish",
+            "lookingUp": "Qidirilmoqda...",
+            "orgFound": "Tashkilot topildi",
+            "orgNotFound": "Bunday kodli tashkilot topilmadi",
+            "confirm": "Bu mening tashkilotim",
+            "changeOrg": "O'zgartirish"
+        },
+        "step2": {
+            "title": "Hisob ma'lumotlari",
+            "subtitle": "{{orgName}} da ro'yxatdan o'tish",
+            "username": "Foydalanuvchi nomi",
+            "usernamePlaceholder": "Lotin harflari, raqamlar, chiziqcha (3–42 belgi)",
+            "email": "Email",
+            "emailPlaceholder": "user@company.com",
+            "password": "Parol",
+            "passwordPlaceholder": "Kamida 8 ta belgi",
+            "confirmPassword": "Parolni tasdiqlang",
+            "confirmPasswordPlaceholder": "Parolni qayta kiriting",
+            "submit": "Hisob yaratish",
+            "submitting": "Yaratilmoqda..."
+        },
+        "haveAccount": "Hisobingiz bormi?",
+        "login": "Kirish",
+        "errors": {
+            "orgCodeRequired": "Tashkilot kodini kiriting",
+            "orgCodeInvalid": "Kod faqat harflar, raqamlar va chiziqchadan iborat bo'lishi kerak",
+            "orgNotFound": "Tashkilot topilmadi. Kodni tekshiring",
+            "usernameRequired": "Foydalanuvchi nomini kiriting",
+            "usernameInvalid": "Faqat lotin harflari, raqamlar va chiziqcha",
+            "usernameTooShort": "Kamida 3 ta belgi",
+            "emailRequired": "Emailni kiriting",
+            "emailInvalid": "Noto'g'ri email",
+            "passwordRequired": "Parolni kiriting",
+            "passwordTooShort": "Kamida 8 ta belgi",
+            "confirmPasswordRequired": "Parolni tasdiqlang",
+            "passwordsMismatch": "Parollar mos kelmadi",
+            "usernameExists": "Bunday ismli foydalanuvchi allaqachon mavjud",
+            "registrationFailed": "Ro'yxatdan o'tishda xatolik. Keyinroq qayta urinib ko'ring",
+            "networkError": "Tarmoq xatosi. Aloqani tekshiring"
+        },
+        "success": {
+            "title": "Hisob yaratildi!",
+            "message": "Siz muvaffaqiyatli ro'yxatdan o'tdingiz. Hozir yo'naltirilmoqdasiz...",
+            "goToLogin": "Kirishga o'tish"
+        }
+    },
+    "hero": {
+        "title": "Kichik biznes uchun oddiy va kuchli CRM",
+        "subtitle": "Bitimlar, mijozlar va savdo voronkalarini boshqaring — barchasi bir joyda. Bepul sinab ko'ring.",
+        "feature1": {
+            "title": "Savdo voronkalari",
+            "description": "Bitimlarni boshqarish uchun vizual Kanban doskalari"
+        },
+        "feature2": {
+            "title": "Analitika",
+            "description": "Konversiya, menejerlar va daromad bo'yicha hisobotlar"
+        },
+        "feature3": {
+            "title": "Jamoaviy ish",
+            "description": "Hamkasblarni taklif qiling va rollarni taqsimlang"
+        }
+    },
+    "language": {
+        "ru": "Ruscha",
+        "en": "Inglizcha",
+        "uz": "O'zbekcha",
+        "kk": "Qozoqcha",
+        "switch": "Til"
+    },
+    "theme": {
+        "light": "Yorug'",
+        "dark": "Qorong'i",
+        "toggle": "Mavzuni o'zgartirish"
+    },
+    "joinOrg": {
+        "title": "Tashkilotga qo'shilish",
+        "subtitle": "Davom etish uchun tashkilot kodini kiriting.",
+        "confirm": "Qo'shilish",
+        "joining": "Qo'shilinmoqda..."
+    },
+    "nav": {
+        "dashboard": "Bosh sahifa",
+        "deals": "Bitimlar",
+        "contacts": "Kontaktlar",
+        "clients": "Mijozlar",
+        "reports": "Hisobotlar",
+        "settings": "Sozlamalar",
+        "profile": "Profil",
+        "logout": "Chiqish"
+    },
+    "dashboard": {
+        "title": "Bosh sahifa",
+        "subtitle": "Faoliyat va asosiy ko'rsatkichlar sharhi",
+        "metrics": {
+            "revenue": "Tushum",
+            "deals": "Faol bitimlar",
+            "customers": "Mijozlar",
+            "conversion": "Konversiya",
+            "vsLastMonth": "o'tgan oyga nisbatan"
+        },
+        "revenueChart": "Tushum dinamikasi",
+        "pipeline": "Savdo voronkasi",
+        "recentActivity": "So'nggi faoliyat",
+        "months": {
+            "jan": "Yan", "feb": "Fev", "mar": "Mar", "apr": "Apr", "may": "May", "jun": "Iyun",
+            "jul": "Iyul", "aug": "Avg", "sep": "Sen", "oct": "Okt", "nov": "Noy", "dec": "Dek"
+        },
+        "stages": {
+            "search": "Qidiruv",
+            "qualification": "Kvalifikatsiya",
+            "discussion": "Muhokama",
+            "proposal": "Taklif",
+            "negotiation": "Muzokaralar",
+            "closed": "Yopildi"
+        },
+        "activity": {
+            "newDeal": "Yangi bitim yaratildi",
+            "dealMoved": "Bitim ko'chirildi",
+            "newClient": "Yangi mijoz qo'shildi",
+            "ago": "{{time}} oldin"
+        }
+    },
+    "deals": {
+        "title": "Bitimlar",
+        "subtitle": "Savdo voronkasini boshqarish",
+        "add": "+ Yangi bitim",
+        "search": "Bitimlarni qidirish...",
+        "noDeals": "Bitimlar hozircha yo'q",
+        "noDealsHint": "Yuqoridagi tugmani bosib birinchi bitimni yarating",
+        "stages": {
+            "prospecting": "Birinchi aloqa",
+            "qualified": "Kvalifikatsiya",
+            "discovery": "Ehtiyojlarni aniqlash",
+            "proposalSent": "Taklif yuborildi",
+            "negotiation": "Muzokaralar",
+            "closed": "Yopildi"
+        },
+        "table": {
+            "name": "Bitim nomi",
+            "amount": "Summa",
+            "stage": "Bosqich",
+            "owner": "Mas'ul",
+            "deadline": "Muddat"
+        },
+        "form": {
+            "title": "Yangi bitim",
+            "editTitle": "Bitimni tahrirlash",
+            "name": "Bitim nomi",
+            "namePlaceholder": "Masalan: Uskunalar yetkazib berish",
+            "amount": "Summa",
+            "amountPlaceholder": "0",
+            "stage": "Voronka bosqichi",
+            "responsible": "Mas'ul",
+            "responsiblePlaceholder": "Menejerni tanlang",
+            "deadline": "Muddat",
+            "client": "Mijoz",
+            "clientPlaceholder": "Mijozni tanlang",
+            "submit": "Bitim yaratish",
+            "cancel": "Bekor qilish",
+            "submitting": "Saqlanmoqda...",
+            "errors": {
+                "nameRequired": "Bitim nomini kiriting",
+                "amountRequired": "Summani ko'rsating",
+                "stageRequired": "Bosqichni tanlang"
+            }
+        },
+        "details": {
+            "backToDeals": "Bitimlarga qaytish",
+            "tabs": {
+                "overview": "Umumiy",
+                "tasks": "Vazifalar",
+                "notes": "Eslatmalar",
+                "history": "Tarix"
+            },
+            "moveToNextStage": "Keyingi bosqich →",
+            "stages": "Bitim bosqichlari",
+            "opportunityDetails": "Bitim tafsilotlari",
+            "financials": "Moliya",
+            "fields": {
+                "opportunityId": "Bitim ID",
+                "industry": "Soha",
+                "closeDate": "Yopilish sanasi",
+                "probability": "Yopilish ehtimoli",
+                "expectedRevenue": "Kutilayotgan daromad",
+                "discount": "Chegirma",
+                "subscriptionDetails": "Obuna tafsilotlari",
+                "competitorPricing": "Raqobatchilar narxlari"
+            },
+            "contacts": "Kontaktlar",
+            "company": "Kompaniya",
+            "primaryContact": "Asosiy kontakt",
+            "industry": "Soha",
+            "location": "Joylashuv",
+            "employeeRange": "Kompaniya hajmi"
+        }
+    }
+}
