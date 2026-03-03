@@ -24,21 +24,21 @@ interface MetricCardProps {
 function MetricCard({ title, value, change, isPositive, icon, gradient }: MetricCardProps): ReactElement {
     return (
         <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
-            <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 !pb-4">
                 <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
                 <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center', gradient)}>
                     {icon}
                 </div>
             </CardHeader>
             <CardContent>
-                <p className="text-2xl font-extrabold text-foreground mb-1">{value}</p>
+                <p className="text-2xl font-extrabold text-foreground mb-1 truncate">{value}</p>
                 <div className={cn('flex items-center gap-1 text-xs font-medium', isPositive ? 'text-emerald-600' : 'text-red-500')}>
                     {isPositive
-                        ? <ArrowUpRight className="w-3 h-3" />
-                        : <ArrowDownRight className="w-3 h-3" />
+                        ? <ArrowUpRight className="w-3 h-3 shrink-0" />
+                        : <ArrowDownRight className="w-3 h-3 shrink-0" />
                     }
-                    <span>{change}</span>
-                    <span className="text-muted-foreground font-normal ml-1">vs прошлый месяц</span>
+                    <span className="truncate">{change}</span>
+                    <span className="text-muted-foreground font-normal ml-1 truncate">vs прошлый месяц</span>
                 </div>
             </CardContent>
         </Card>
@@ -144,10 +144,10 @@ export function DashboardPage(): ReactElement {
                                 { label: 'Переговоры', value: 9, color: 'bg-orange-500' },
                                 { label: 'Закрыто', value: 5, color: 'bg-emerald-500' },
                             ].map(({ label, value, color }) => (
-                                <div key={label} className="space-y-1">
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-muted-foreground">{label}</span>
-                                        <span className="font-semibold text-foreground">{value}</span>
+                                <div key={label} className="space-y-1.5 px-1">
+                                    <div className="flex justify-between text-xs gap-2">
+                                        <span className="text-muted-foreground truncate">{label}</span>
+                                        <span className="font-semibold text-foreground shrink-0">{value}</span>
                                     </div>
                                     <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                                         <div

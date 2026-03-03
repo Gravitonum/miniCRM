@@ -71,7 +71,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
 
     return (
         <TooltipProvider>
-            <div className="min-h-screen bg-secondary/30">
+            <div className="flex min-h-screen bg-secondary/30 w-full relative">
                 {/* Mobile Backdrop */}
                 {sidebarOpen && (
                     <div
@@ -138,8 +138,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
 
                     {/* Navigation */}
                     <nav className={cn(
-                        "flex-1 py-6 space-y-2 overflow-y-auto overflow-x-hidden transition-all duration-300",
-                        isCollapsed ? "px-0" : "px-3"
+                        "flex-1 py-6 space-y-1 overflow-y-auto overflow-x-hidden transition-all duration-300",
+                        isCollapsed ? "px-2" : "px-3"
                     )}>
                         {navigation.map((item) => {
                             const isActive = item.href === '/'
@@ -154,19 +154,22 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                                             end={item.href === '/'}
                                             onClick={() => setSidebarOpen(false)}
                                             className={cn(
-                                                'flex items-center gap-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 flex-nowrap whitespace-nowrap w-full',
+                                                'group relative flex items-center gap-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 flex-nowrap whitespace-nowrap w-full',
                                                 isActive
-                                                    ? 'bg-indigo-500/20 text-white border border-indigo-500/30 shadow-sm'
+                                                    ? 'bg-indigo-500/20 text-white shadow-sm'
                                                     : 'text-white/50 hover:bg-white/5 hover:text-white/90',
                                                 isCollapsed ? "justify-center px-0 flex-col" : "px-3"
                                             )}
                                         >
-                                            <item.icon className={cn('w-5 h-5 shrink-0', isActive ? 'text-indigo-400' : 'text-white/40')} />
+                                            {isActive && (
+                                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-indigo-500 rounded-r-full shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                                            )}
+                                            <item.icon className={cn(
+                                                'w-5 h-5 shrink-0 transition-all duration-200 group-hover:scale-110',
+                                                isActive ? 'text-indigo-400' : 'text-white/40 group-hover:text-white/90'
+                                            )} />
                                             {!isCollapsed && (
                                                 <span className="truncate flex-1">{item.name}</span>
-                                            )}
-                                            {!isCollapsed && isActive && (
-                                                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
                                             )}
                                         </NavLink>
                                     </TooltipTrigger>
@@ -204,12 +207,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
 
                 {/* ── Main Content ── */}
                 <div className={cn(
-                    "flex flex-col min-h-screen transition-all duration-300",
-                    isCollapsed ? "lg:ml-20" : "lg:ml-64"
+                    "flex flex-col flex-1 min-h-screen min-w-0 transition-all duration-300",
+                    isCollapsed ? "dashboard-offset-collapsed" : "dashboard-offset"
                 )}>
 
                     {/* Topbar */}
-                    <header className="sticky top-0 z-30 h-16 bg-background/80 border-b border-border backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between gap-4">
+                    <header className="sticky top-0 z-30 h-16 bg-background/80 border-b border-border backdrop-blur-xl topbar-padding flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setSidebarOpen(true)}
@@ -247,11 +250,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                                         <ChevronDown className="w-3.5 h-3.5 text-muted-foreground hidden md:block" />
                                     </button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuContent align="end" className="w-64 max-w-[calc(100vw-2rem)]">
                                     <DropdownMenuLabel className="font-normal">
-                                        <div className="flex flex-col space-y-1">
-                                            <p className="text-sm font-semibold text-foreground">{username}</p>
-                                            <p className="text-xs text-muted-foreground">user@example.com</p>
+                                        <div className="flex flex-col space-y-1 min-w-0">
+                                            <p className="text-sm font-semibold text-foreground truncate">{username}</p>
+                                            <p className="text-xs text-muted-foreground truncate" title="user@example.com">user@example.com</p>
                                         </div>
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
@@ -277,8 +280,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                     </header>
 
                     {/* Page Content */}
-                    <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-                        <div className="max-w-7xl mx-auto">
+                    <main className="flex-1 main-padding overflow-y-auto">
+                        <div className="w-full">
                             {children}
                         </div>
                     </main>

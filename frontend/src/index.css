@@ -109,6 +109,32 @@
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+/* Dashboard Sidebar Offset Fix */
+@media (min-width: 1024px) {
+    .dashboard-offset {
+        padding-left: 16rem !important;
+        /* 256px */
+    }
+
+    .dashboard-offset-collapsed {
+        padding-left: 5rem !important;
+        /* 80px */
+    }
+}
+
+/* Dashboard Layout Specific Fixes */
+@media (min-width: 1024px) {
+    .dashboard-main-content {
+        margin-left: 16rem !important;
+        /* w-64 */
+    }
+
+    .dashboard-main-content-collapsed {
+        margin-left: 5rem !important;
+        /* w-20 */
+    }
+}
+
 /* ==============================
    Global Reset & Base
    ============================== */
@@ -265,4 +291,60 @@ body {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
     border-radius: 6px;
+}
+
+/* Global Card Padding Fixes */
+.card-header-padding {
+    padding: 2.5rem !important;
+    /* 40px */
+}
+
+.card-content-padding {
+    padding: 0 2.5rem 2.5rem 2.5rem !important;
+}
+
+@media (min-width: 1024px) {
+    .card-header-padding {
+        padding: 3.5rem !important;
+        /* 56px */
+    }
+
+    .card-content-padding {
+        padding: 0 3.5rem 3.5rem 3.5rem !important;
+    }
+}
+
+/* Topbar Padding Fixes */
+.topbar-padding {
+    padding-left: 2.5rem !important;
+    padding-right: 2.5rem !important;
+}
+
+@media (min-width: 1024px) {
+    .topbar-padding {
+        padding-left: 3.5rem !important;
+        padding-right: 3.5rem !important;
+    }
+}
+
+/* Main Content Padding Fixes */
+.main-padding {
+    padding: 2.5rem !important;
+}
+
+@media (min-width: 1024px) {
+    .main-padding {
+        padding: 3.5rem !important;
+    }
+}
+
+/* Sidebar Navigation Spacing Fixes */
+.sidebar-nav-spacing>*+* {
+    margin-top: 1rem !important;
+    /* Huge gap between items */
+}
+
+.sidebar-nav-item {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
 }
