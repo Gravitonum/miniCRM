@@ -254,7 +254,7 @@ function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }): React
     return (
         <div
             onClick={onClick}
-            className="bg-card rounded-xl border border-border p-5 shadow-sm cursor-pointer hover:shadow-md hover:border-primary/30 transition-all group flex flex-col gap-3.5 overflow-hidden relative min-w-0"
+            className="bg-card rounded-xl border border-border !p-5 shadow-sm cursor-pointer hover:shadow-md hover:border-primary/30 transition-all group flex flex-col gap-3.5 overflow-hidden relative min-w-0"
         >
             <div className="flex flex-col min-w-0 gap-1">
                 <p className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors line-clamp-2 leading-snug" title={deal.name}>
@@ -279,7 +279,7 @@ function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }): React
             </div>
 
             {stageConf && (
-                <div className="pt-3.5 border-t border-border flex items-center overflow-hidden">
+                <div className="pt-3.5 px-2 border-t border-border flex items-center overflow-hidden">
                     <Badge variant={stageConf.badge} className="truncate max-w-full" title={t(`deals.stages.${deal.stage}`)}>
                         <span className="truncate">{t(`deals.stages.${deal.stage}`)}</span>
                     </Badge>
