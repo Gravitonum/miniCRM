@@ -491,7 +491,7 @@ export function ContactsPage(): ReactElement {
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <div className="px-6 py-5 max-h-[80vh] overflow-y-auto">
+                        <div className="!p-4 max-h-[80vh] overflow-y-auto">
                             <AddContactForm
                                 companies={companies}
                                 onSuccess={() => { setShowAddModal(false); loadData(); }}

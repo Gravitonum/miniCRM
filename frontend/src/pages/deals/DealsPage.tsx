@@ -132,9 +132,9 @@ function NewDealForm({ open, onClose, onSubmit, managers, clients }: NewDealForm
 
     return (
         <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
-            <DialogContent className="max-w-md sm:max-w-xl overflow-y-auto max-h-[90vh] shadow-2xl border-border/50">
+            <DialogContent className="max-w-md sm:max-w-xl overflow-y-auto max-h-[90vh] shadow-2xl border-border/50 !p-4">
                 {/* Header с градиентом */}
-                <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-border/50 -mx-6 -mt-6 px-6 pt-6 pb-5 flex items-start gap-4">
+                <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-border/50 -mx-4 -mt-4 px-4 pt-4 pb-4 flex items-start gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
                         <Briefcase className="w-6 h-6 text-primary" />
                     </div>
@@ -418,7 +418,7 @@ export function DealsPage(): ReactElement {
         // Если переставили в closed (или если бы были этапы won/lost), запрашиваем подтверждение
         // В нашем конфиге STAGES закрытым считается 'closed'
         if (newStage === 'closed') {
-            setConfirmStage({ dealId, oldStage: deal.stage, newStage });
+            setConfirmStage({ dealId, oldStage: deal.stage as StageKey, newStage });
             setConfirmComment('');
             return;
         }

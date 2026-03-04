@@ -573,7 +573,7 @@ export function ClientsPage(): ReactElement {
                             </button>
                         </div>
                         {/* Modal Body */}
-                        <div className="px-6 py-5">
+                        <div className="!p-4">
                             <ClientForm
                                 directories={directories}
                                 onSuccess={() => {
