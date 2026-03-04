@@ -1,12 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ==============================
    shadcn/ui CSS Variables (Tailwind v4 compatible)
    ============================== */
 :root {
     --background: #ffffff;
     --foreground: #0f172a;
+    color-scheme: light;
 
     --card: #ffffff;
     --card-foreground: #0f172a;
@@ -40,16 +43,17 @@
     --cyan-hover: #17a8d4;
 
     /* Sidebar */
-    --sidebar: #1e1e2d;
-    --sidebar-foreground: #a0a0b8;
-    --sidebar-active: #6366f1;
+    --sidebar: #ffffff;
+    --sidebar-foreground: #0f172a;
+    --sidebar-active: #4f46e5;
     --sidebar-active-foreground: #ffffff;
-    --sidebar-hover: #2b2b40;
+    --sidebar-hover: #f1f5f9;
 }
 
 .dark {
     --background: #0f172a;
     --foreground: #f8fafc;
+    color-scheme: dark;
 
     --card: #1e293b;
     --card-foreground: #f8fafc;
@@ -75,6 +79,13 @@
     --border: #334155;
     --input: #334155;
     --ring: #6366f1;
+
+    /* Sidebar */
+    --sidebar: #0f172a;
+    --sidebar-foreground: #94a3b8;
+    --sidebar-active: #6366f1;
+    --sidebar-active-foreground: #ffffff;
+    --sidebar-hover: #1e293b;
 }
 
 /* ==============================
@@ -153,6 +164,27 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     line-height: 1.6;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--muted-foreground);
+    opacity: 0.5;
+    border-radius: 5px;
+    border: 2px solid var(--background); /* Creates padding effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--foreground);
 }
 
 /* ==============================

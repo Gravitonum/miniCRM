@@ -93,7 +93,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                 <aside
                     className={cn(
                         'fixed top-0 left-0 z-50 h-screen flex flex-col',
-                        'bg-[var(--sidebar)] text-[var(--sidebar-foreground)]',
+                        'bg-[var(--sidebar)] text-[var(--sidebar-foreground)] border-r border-border',
                         'transition-all duration-300 ease-in-out shadow-2xl',
                         isCollapsed ? 'w-20' : 'w-64',
                         'lg:translate-x-0',
@@ -102,7 +102,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                 >
                     {/* Logo & Toggle */}
                     <div className={cn(
-                        "flex h-20 items-center border-b border-white/5 transition-all duration-300",
+                        "flex h-20 items-center border-b border-border transition-all duration-300",
                         isCollapsed ? "justify-center px-0" : "px-6"
                     )}>
                         <div className={cn("flex items-center gap-3 min-w-0 transition-opacity duration-300", isCollapsed ? "justify-center" : "flex-1")}>
@@ -111,8 +111,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                             </div>
                             {!isCollapsed && (
                                 <div className="truncate flex-1">
-                                    <p className="text-sm font-bold text-white leading-none truncate">{t('app.name', 'GraviSales')}</p>
-                                    <p className="text-[10px] text-white/40 mt-1 whitespace-nowrap truncate">CRM Platform</p>
+                                    <p className="text-sm font-bold text-[var(--sidebar-foreground)] leading-none truncate">{t('app.name', 'GraviSales')}</p>
+                                    <p className="text-[10px] text-[var(--sidebar-foreground)]/40 mt-1 whitespace-nowrap truncate">CRM Platform</p>
                                 </div>
                             )}
                         </div>
@@ -120,7 +120,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                         {!isCollapsed && (
                             <button
                                 onClick={() => setIsCollapsed(true)}
-                                className="hidden lg:flex p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors ml-2"
+                                className="hidden lg:flex p-2 rounded-lg text-[var(--sidebar-foreground)]/40 hover:text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-hover)] transition-colors ml-2"
                             >
                                 <PanelLeftClose className="w-5 h-5" />
                             </button>
@@ -128,17 +128,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
 
                         <button
                             onClick={() => setSidebarOpen(false)}
-                            className="lg:hidden p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors"
+                            className="lg:hidden p-2 rounded-lg text-[var(--sidebar-foreground)]/40 hover:text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-hover)] transition-colors"
                         >
                             <X className="w-5 h-5" />
                         </button>
                     </div>
 
                     {isCollapsed && (
-                        <div className="hidden lg:flex justify-center py-4 border-b border-white/5">
+                        <div className="hidden lg:flex justify-center py-4 border-b border-border">
                             <button
                                 onClick={() => setIsCollapsed(false)}
-                                className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors"
+                                className="p-2 rounded-lg text-[var(--sidebar-foreground)]/40 hover:text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-hover)] transition-colors"
                             >
                                 <PanelLeftOpen className="w-5 h-5" />
                             </button>
@@ -165,17 +165,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                                             className={cn(
                                                 'group relative flex items-center gap-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 flex-nowrap whitespace-nowrap w-full',
                                                 isActive
-                                                    ? 'bg-indigo-500/20 text-white shadow-sm'
-                                                    : 'text-white/50 hover:bg-white/5 hover:text-white/90',
+                                                    ? 'bg-[var(--sidebar-active)]/10 text-[var(--sidebar-active)] shadow-sm'
+                                                    : 'text-[var(--sidebar-foreground)]/50 hover:bg-[var(--sidebar-hover)] hover:text-[var(--sidebar-foreground)]/90',
                                                 isCollapsed ? "justify-center px-0 flex-col" : "px-3"
                                             )}
                                         >
                                             {isActive && (
-                                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-indigo-500 rounded-r-full shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[var(--sidebar-active)] rounded-r-full shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
                                             )}
                                             <item.icon className={cn(
                                                 'w-5 h-5 shrink-0 transition-all duration-200 group-hover:scale-110',
-                                                isActive ? 'text-indigo-400' : 'text-white/40 group-hover:text-white/90'
+                                                isActive ? 'text-[var(--sidebar-active)]' : 'text-[var(--sidebar-foreground)]/40 group-hover:text-[var(--sidebar-foreground)]/90'
                                             )} />
                                             {!isCollapsed && (
                                                 <span className="truncate flex-1">{item.name}</span>
@@ -183,7 +183,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                                         </NavLink>
                                     </TooltipTrigger>
                                     {isCollapsed && (
-                                        <TooltipContent side="right" sideOffset={20} className="bg-slate-900 border-white/10 text-white shadow-xl">
+                                        <TooltipContent side="right" sideOffset={20} className="bg-[var(--sidebar)] border-border text-[var(--sidebar-foreground)] shadow-xl">
                                             {item.name}
                                         </TooltipContent>
                                     )}
@@ -193,21 +193,21 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                     </nav>
 
                     {/* User section at bottom */}
-                    <div className="px-3 py-4 border-t border-white/5">
+                    <div className="px-3 py-4 border-t border-border">
                         <div className={cn(
-                            "flex items-center rounded-xl hover:bg-white/5 transition-colors cursor-pointer flex-nowrap whitespace-nowrap py-2.5 min-h-[44px]",
+                            "flex items-center rounded-xl hover:bg-[var(--sidebar-hover)] transition-colors cursor-pointer flex-nowrap whitespace-nowrap py-2.5 min-h-[44px]",
                             isCollapsed ? "justify-center px-0 flex-col" : "px-3 gap-3"
                         )}>
-                            <Avatar className="w-8 h-8 shrink-0 border border-white/10 mx-auto">
+                            <Avatar className="w-8 h-8 shrink-0 border border-border mx-auto">
                                 <AvatarImage src={undefined} />
-                                <AvatarFallback className="text-[10px] bg-indigo-500/30 text-indigo-300">
+                                <AvatarFallback className="text-[10px] bg-[var(--sidebar-active)]/30 text-[var(--sidebar-active)]">
                                     {getInitials(username)}
                                 </AvatarFallback>
                             </Avatar>
                             {!isCollapsed && (
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-semibold text-white/80 truncate">{username}</p>
-                                    <p className="text-[10px] text-white/30 truncate">Admin</p>
+                                    <p className="text-xs font-semibold text-[var(--sidebar-foreground)]/80 truncate">{username}</p>
+                                    <p className="text-[10px] text-[var(--sidebar-foreground)]/30 truncate">Admin</p>
                                 </div>
                             )}
                         </div>

@@ -50,12 +50,12 @@ const STAGES: { key: StageKey; badge: BadgeProps['variant'] }[] = [
 ];
 
 const STAGE_KANBAN_COLORS: Record<StageKey, { header: string; dot: string }> = {
-    prospecting: { header: 'bg-slate-50 border-slate-200', dot: 'bg-slate-400' },
-    qualified: { header: 'bg-blue-50 border-blue-200', dot: 'bg-blue-500' },
-    discovery: { header: 'bg-violet-50 border-violet-200', dot: 'bg-violet-500' },
-    proposalSent: { header: 'bg-amber-50 border-amber-200', dot: 'bg-amber-500' },
-    negotiation: { header: 'bg-orange-50 border-orange-200', dot: 'bg-orange-500' },
-    closed: { header: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' },
+    prospecting: { header: 'bg-slate-50 border-slate-200 dark:bg-slate-900/50 dark:border-slate-800', dot: 'bg-slate-400' },
+    qualified: { header: 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800', dot: 'bg-blue-500' },
+    discovery: { header: 'bg-violet-50 border-violet-200 dark:bg-violet-900/20 dark:border-violet-800', dot: 'bg-violet-500' },
+    proposalSent: { header: 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800', dot: 'bg-amber-500' },
+    negotiation: { header: 'bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800', dot: 'bg-orange-500' },
+    closed: { header: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800', dot: 'bg-emerald-500' },
 };
 
 /** Форматирование суммы в рублях */
