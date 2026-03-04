@@ -10,9 +10,11 @@ import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useTranslation } from 'react-i18next';
 import {
     Plus, Filter, LayoutGrid, List, ChevronRight,
-    Calendar, DollarSign, User
+    Calendar, Banknote, User, Briefcase, Layers
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { dealsApi } from '../../api/deals';
+import { getAppUser } from '../../lib/api';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
@@ -21,7 +23,6 @@ import { Card } from '../../components/ui/card';
 import {
     Dialog,
     DialogContent,
-    DialogHeader,
     DialogTitle,
     DialogFooter,
 } from '../../components/ui/dialog';
@@ -47,16 +48,7 @@ interface Deal {
     deadline?: string;
 }
 
-/** Демо-данные */
-const MOCK_DEALS: Deal[] = [
-    { id: '1', name: 'Лицензия на ПО', amount: 8000, stage: 'proposalSent', responsible: 'Иван Смирнов', deadline: '2025-12-15' },
-    { id: '2', name: 'Корпоративное развертывание', amount: 25000, stage: 'negotiation', responsible: 'Мария Иванова', deadline: '2025-11-30' },
-    { id: '3', name: 'Сервисный контракт', amount: 5500, stage: 'discovery', responsible: 'Алексей Петров', deadline: '2025-12-20' },
-    { id: '4', name: 'Поставка оборудования', amount: 12000, stage: 'qualified', responsible: 'Екатерина Кузнецова' },
-    { id: '5', name: 'Консалтинговый проект', amount: 3200, stage: 'prospecting', responsible: 'Дмитрий Волков' },
-];
-
-/** Конфигурация этапов */
+/** Config of stages */
 const STAGES: { key: StageKey; badge: BadgeProps['variant'] }[] = [
     { key: 'prospecting', badge: 'slate' },
     { key: 'qualified', badge: 'blue' },
@@ -88,12 +80,13 @@ interface NewDealFormProps {
     open: boolean;
     onClose: () => void;
     onSubmit: (deal: Omit<Deal, 'id'>) => void;
+    managers: { username: string; id: string }[];
 }
 
 /**
  * Модальная форма создания новой сделки (Dialog).
  */
-function NewDealForm({ open, onClose, onSubmit }: NewDealFormProps): ReactElement {
+function NewDealForm({ open, onClose, onSubmit, managers }: NewDealFormProps): ReactElement {
     const { t } = useTranslation();
     const [name, setName] = useState('');
     const [amount, setAmount] = useState('');
@@ -145,97 +138,126 @@ function NewDealForm({ open, onClose, onSubmit }: NewDealFormProps): ReactElemen
 
     return (
         <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
-            <DialogContent className="max-w-md">
-                <DialogHeader>
-                    <DialogTitle>{t('deals.form.title')}</DialogTitle>
-                </DialogHeader>
+            <DialogContent className="max-w-md sm:max-w-xl overflow-hidden shadow-2xl border-border/50">
+                {/* Header с градиентом */}
+                <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-border/50 -mx-6 -mt-6 px-6 pt-6 pb-5 flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                        <Briefcase className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                        <DialogTitle className="text-xl font-bold text-foreground">
+                            {t('deals.form.title')}
+                        </DialogTitle>
+                        <p className="text-sm text-muted-foreground mt-1 font-medium">
+                            Заполните поля ниже, чтобы добавить сделку
+                        </p>
+                    </div>
+                </div>
 
-                <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4 py-2">
+                <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-6">
                     {/* Название */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="deal-name">{t('deals.form.name')}</Label>
-                        <Input
-                            ref={firstInputRef}
-                            id="deal-name"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder={t('deals.form.namePlaceholder')}
-                            hasError={!!errors.name}
-                        />
-                        {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
-                    </div>
-
-                    {/* Сумма */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="deal-amount">{t('deals.form.amount')}</Label>
-                        <div className="relative">
-                            <DollarSign className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+                    <div className="space-y-2">
+                        <Label htmlFor="deal-name" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('deals.form.name')}</Label>
+                        <div className="relative flex items-center">
+                            <Briefcase className="w-5 h-5 absolute left-4 text-muted-foreground/50 transition-colors peer-focus:text-primary pointer-events-none" />
                             <Input
-                                id="deal-amount"
-                                type="number"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                placeholder={t('deals.form.amountPlaceholder')}
-                                min="0"
-                                hasError={!!errors.amount}
-                                className="pl-9"
+                                ref={firstInputRef}
+                                id="deal-name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder={t('deals.form.namePlaceholder')}
+                                hasError={!!errors.name}
+                                className="bg-background peer h-[56px] rounded-2xl"
+                                style={{ paddingLeft: '3.2rem' }}
                             />
                         </div>
-                        {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
+                        {errors.name && <p className="text-xs text-destructive font-medium">{errors.name}</p>}
                     </div>
 
-                    {/* Этап */}
-                    <div className="space-y-1.5">
-                        <Label>{t('deals.form.stage')}</Label>
-                        <Select value={stage} onValueChange={(v) => setStage(v as StageKey)}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {STAGES.map((s) => (
-                                    <SelectItem key={s.key} value={s.key}>
-                                        {t(`deals.stages.${s.key}`)}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        {/* Сумма */}
+                        <div className="space-y-2">
+                            <Label htmlFor="deal-amount" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('deals.form.amount')}</Label>
+                            <div className="relative flex items-center">
+                                <Banknote className="w-5 h-5 absolute left-4 text-muted-foreground/50 transition-colors peer-focus:text-primary pointer-events-none" />
+                                <Input
+                                    id="deal-amount"
+                                    type="text"
+                                    value={amount ? new Intl.NumberFormat('ru-RU').format(Number(amount)) : ''}
+                                    onChange={(e) => setAmount(e.target.value.replace(/\D/g, ''))}
+                                    placeholder={t('deals.form.amountPlaceholder')}
+                                    hasError={!!errors.amount}
+                                    className="bg-background font-medium peer h-[56px] rounded-2xl"
+                                    style={{ paddingLeft: '3.2rem' }}
+                                />
+                            </div>
+                            {errors.amount && <p className="text-xs text-destructive font-medium">{errors.amount}</p>}
+                        </div>
 
-                    {/* Ответственный */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="deal-responsible">{t('deals.form.responsible')}</Label>
-                        <div className="relative">
-                            <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
-                            <Input
-                                id="deal-responsible"
-                                value={responsible}
-                                onChange={(e) => setResponsible(e.target.value)}
-                                placeholder={t('deals.form.responsiblePlaceholder')}
-                                className="pl-9"
-                            />
+                        {/* Этап */}
+                        <div className="space-y-2">
+                            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('deals.form.stage')}</Label>
+                            <Select value={stage} onValueChange={(v) => setStage(v as StageKey)}>
+                                <SelectTrigger className="bg-background transition-colors h-[56px] px-5 border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-2xl w-full">
+                                    <div className="flex items-center gap-3">
+                                        <Layers className="w-5 h-5 text-muted-foreground/50" />
+                                        <SelectValue />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent className="border-border/50">
+                                    {STAGES.map((s) => (
+                                        <SelectItem key={s.key} value={s.key} className="cursor-pointer">
+                                            {t(`deals.stages.${s.key}`)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
 
-                    {/* Дедлайн */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="deal-deadline">{t('deals.form.deadline')}</Label>
-                        <div className="relative">
-                            <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
-                            <Input
-                                id="deal-deadline"
-                                type="date"
-                                value={deadline}
-                                onChange={(e) => setDeadline(e.target.value)}
-                                className="pl-9"
-                            />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        {/* Ответственный */}
+                        <div className="space-y-2">
+                            <Label htmlFor="deal-responsible" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('deals.form.responsible')}</Label>
+                            <Select value={responsible} onValueChange={(v) => setResponsible(v)}>
+                                <SelectTrigger id="deal-responsible" className="bg-background transition-colors h-[56px] px-5 border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-2xl w-full">
+                                    <div className="flex items-center gap-3">
+                                        <User className="w-5 h-5 text-muted-foreground/50" />
+                                        <SelectValue placeholder={t('deals.form.responsiblePlaceholder')} />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent className="border-border/50">
+                                    {managers.map((m) => (
+                                        <SelectItem key={m.username} value={m.username} className="cursor-pointer">
+                                            {m.username}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Дедлайн */}
+                        <div className="space-y-2">
+                            <Label htmlFor="deal-deadline" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('deals.form.deadline')}</Label>
+                            <div className="relative flex items-center">
+                                <Calendar className="w-5 h-5 absolute left-4 text-muted-foreground/50 transition-colors peer-focus:text-primary pointer-events-none" />
+                                <Input
+                                    id="deal-deadline"
+                                    type="date"
+                                    value={deadline}
+                                    onChange={(e) => setDeadline(e.target.value)}
+                                    className="bg-background peer h-[56px] rounded-2xl"
+                                    style={{ paddingLeft: '3.2rem' }}
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <DialogFooter className="pt-2 gap-3">
-                        <Button type="button" variant="outline" onClick={handleClose} className="flex-1">
+                    <DialogFooter className="pt-6 border-t border-border/50 gap-3">
+                        <Button type="button" variant="outline" onClick={handleClose} className="flex-1 py-6 border-border/60 transition-colors text-base font-medium rounded-xl">
                             {t('deals.form.cancel')}
                         </Button>
-                        <Button type="submit" disabled={submitting} className="flex-1">
+                        <Button type="submit" disabled={submitting} className="flex-1 py-6 shadow-md hover:shadow-lg transition-all text-base font-medium rounded-xl">
                             {submitting ? t('deals.form.submitting') : t('deals.form.submit')}
                         </Button>
                     </DialogFooter>
@@ -297,12 +319,47 @@ export function DealsPage(): ReactElement {
     const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
     const [showNewDealForm, setShowNewDealForm] = useState(false);
-    const [deals, setDeals] = useState<Deal[]>(MOCK_DEALS);
+    const [deals, setDeals] = useState<Deal[]>([]);
     const [search, setSearch] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [managers, setManagers] = useState<{ username: string; id: string }[]>([]);
+
+    useEffect(() => {
+        setIsLoading(true);
+
+        async function fetchData() {
+            try {
+                // Fetch deals
+                const dealsData = await dealsApi.getDeals();
+                setDeals(dealsData as Deal[]);
+
+                // Fetch managers (users in same org)
+                const username = localStorage.getItem('gravisales_username') || sessionStorage.getItem('gravisales_current_user');
+                if (username) {
+                    const appUserResult = await getAppUser(username);
+                    if (appUserResult.success && appUserResult.user?.orgCode) {
+                        const orgUsers = await dealsApi.getOrgUsers(appUserResult.user.orgCode);
+                        setManagers(orgUsers);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to fetch DealsPage data', err);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        void fetchData();
+    }, []);
 
     /** Добавление новой сделки */
-    function handleAddDeal(newDeal: Omit<Deal, 'id'>): void {
-        setDeals((prev) => [{ ...newDeal, id: String(Date.now()) }, ...prev]);
+    async function handleAddDeal(newDeal: Omit<Deal, 'id'>): Promise<void> {
+        try {
+            const savedDeal = await dealsApi.createDeal(newDeal);
+            setDeals((prev) => [savedDeal as Deal, ...prev]);
+        } catch (error) {
+            console.error('Failed to save deal', error);
+        }
     }
 
     const filteredDeals = deals.filter(
@@ -379,7 +436,11 @@ export function DealsPage(): ReactElement {
                 </Card>
 
                 {/* Kanban / List */}
-                {viewMode === 'kanban' ? (
+                {isLoading ? (
+                    <div className="flex justify-center items-center py-16 text-muted-foreground">
+                        {t('deals.loading', 'Загрузка сделок...')}
+                    </div>
+                ) : viewMode === 'kanban' ? (
                     <div className="overflow-x-auto pb-4">
                         <div className="flex gap-4 min-w-max">
                             {STAGES.map((stageConfig) => {
@@ -489,6 +550,7 @@ export function DealsPage(): ReactElement {
                 open={showNewDealForm}
                 onClose={() => setShowNewDealForm(false)}
                 onSubmit={handleAddDeal}
+                managers={managers}
             />
         </DashboardLayout>
     );
