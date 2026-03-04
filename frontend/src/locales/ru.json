@@ -137,8 +137,18 @@
         "pipeline": "Воронка продаж",
         "recentActivity": "Последняя активность",
         "months": {
-            "jan": "Янв", "feb": "Фев", "mar": "Мар", "apr": "Апр", "may": "Май", "jun": "Июн",
-            "jul": "Июл", "aug": "Авг", "sep": "Сен", "oct": "Окт", "nov": "Ноя", "dec": "Дек"
+            "jan": "Янв",
+            "feb": "Фев",
+            "mar": "Мар",
+            "apr": "Апр",
+            "may": "Май",
+            "jun": "Июн",
+            "jul": "Июл",
+            "aug": "Авг",
+            "sep": "Сен",
+            "oct": "Окт",
+            "nov": "Ноя",
+            "dec": "Дек"
         },
         "stages": {
             "search": "Поиск",
@@ -227,6 +237,123 @@
             "industry": "Отрасль",
             "location": "Местоположение",
             "employeeRange": "Размер компании"
+        }
+    },
+    "clients": {
+        "title": "Клиенты",
+        "subtitle": "Управление базой компаний-клиентов",
+        "add": "+ Добавить клиента",
+        "search": "Поиск по названию или ИНН...",
+        "filters": "Фильтры",
+        "filterTitle": "Фильтрация",
+        "clearFilters": "Сбросить",
+        "refresh": "Обновить",
+        "all": "Все",
+        "loading": "Загрузка...",
+        "empty": "Клиентов пока нет",
+        "emptyHint": "Нажмите «+ Добавить клиента», чтобы начать",
+        "noResults": "Ничего не найдено",
+        "noResultsHint": "Попробуйте изменить параметры поиска",
+        "retry": "Попробовать снова",
+        "total": "Показано",
+        "outOf": "из",
+        "table": {
+            "name": "Название",
+            "inn": "ИНН",
+            "legalForm": "ОПФ",
+            "relationType": "Тип отношений",
+            "source": "Источник",
+            "contacts": "Контактов",
+            "deals": "Сделок"
+        },
+        "form": {
+            "title": "Новый клиент",
+            "editTitle": "Редактировать клиента",
+            "name": "Название компании",
+            "namePlaceholder": "ООО «Ромашка»",
+            "inn": "ИНН",
+            "legalForm": "ОПФ",
+            "relationType": "Тип отношений",
+            "source": "Источник лида",
+            "address": "Адрес",
+            "addressPlaceholder": "г. Москва, ул. Ленина, 1",
+            "website": "Сайт",
+            "notSelected": "Не выбрано",
+            "cancel": "Отмена",
+            "submit": "Создать клиента",
+            "saving": "Сохранение...",
+            "errors": {
+                "nameRequired": "Введите название компании",
+                "createFailed": "Ошибка при создании клиента"
+            }
+        },
+        "card": {
+            "backToList": "Клиенты",
+            "edit": "Редактировать",
+            "save": "Сохранить",
+            "basicInfo": "Основная информация",
+            "contactInfo": "Контактная информация",
+            "tabs": {
+                "main": "Основное",
+                "contacts": "Контакты",
+                "deals": "Сделки",
+                "history": "История"
+            },
+            "stats": {
+                "contacts": "Контактов",
+                "deals": "Сделок",
+                "interactions": "Событий"
+            },
+            "errors": {
+                "loadFailed": "Не удалось загрузить карточку клиента",
+                "notFound": "Клиент не найден"
+            }
+        },
+        "contacts": {
+            "add": "+ Добавить контакт",
+            "empty": "Контактных лиц пока нет",
+            "form": {
+                "firstName": "Имя",
+                "firstNamePlaceholder": "Иван",
+                "lastName": "Фамилия",
+                "lastNamePlaceholder": "Иванов",
+                "position": "Должность",
+                "positionPlaceholder": "Директор по продажам",
+                "phone": "Телефон",
+                "email": "Email",
+                "submit": "Добавить контакт"
+            },
+            "errors": {
+                "nameRequired": "Введите имя или фамилию",
+                "createFailed": "Ошибка при добавлении контакта"
+            }
+        },
+        "deals": {
+            "create": "+ Создать сделку",
+            "empty": "Сделок пока нет"
+        },
+        "history": {
+            "add": "+ Добавить",
+            "empty": "Взаимодействий пока нет",
+            "types": {
+                "call": "Звонок",
+                "meeting": "Встреча",
+                "email": "Email",
+                "note": "Заметка"
+            },
+            "form": {
+                "date": "Дата и время",
+                "description": "Описание",
+                "descriptionPlaceholder": "Что произошло...",
+                "submit": "Добавить"
+            },
+            "errors": {
+                "descriptionRequired": "Введите описание",
+                "createFailed": "Ошибка при сохранении"
+            }
+        },
+        "errors": {
+            "loadFailed": "Не удалось загрузить клиентов"
         }
     }
 }

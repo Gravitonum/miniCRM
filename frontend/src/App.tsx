@@ -6,6 +6,8 @@ import { JoinOrganizationPage } from './pages/JoinOrganizationPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { DealsPage } from './pages/deals/DealsPage';
 import { DealDetailsPage } from './pages/deals/DealDetailsPage';
+import { ClientsPage } from './pages/clients/ClientsPage';
+import { ClientCardPage } from './pages/clients/ClientCardPage';
 import { getAppUser } from './lib/api';
 
 function ProtectedRoute({ children }: { children: ReactElement }): ReactElement {
@@ -130,6 +132,18 @@ export default function App(): ReactElement {
         <Route path="/deals/:id" element={
           <ProtectedRoute>
             <DealDetailsPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/clients" element={
+          <ProtectedRoute>
+            <ClientsPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/clients/:id" element={
+          <ProtectedRoute>
+            <ClientCardPage />
           </ProtectedRoute>
         } />
 

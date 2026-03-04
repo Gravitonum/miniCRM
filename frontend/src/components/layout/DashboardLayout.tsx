@@ -23,6 +23,9 @@ import {
     Sparkles,
     PanelLeftClose,
     PanelLeftOpen,
+    Building2,
+    Users,
+    BarChart2,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import {
@@ -68,7 +71,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
 
     const navigation = [
         { name: t('nav.dashboard', 'Dashboard'), href: '/', icon: LayoutDashboard },
-        { name: t('nav.deals', 'Deals'), href: '/deals', icon: Briefcase },
+        { name: t('nav.deals', 'Сделки'), href: '/deals', icon: Briefcase },
+        { name: t('nav.clients', 'Клиенты'), href: '/clients', icon: Building2 },
+        { name: t('nav.contacts', 'Контакты'), href: '/contacts', icon: Users },
+        { name: t('nav.reports', 'Отчёты'), href: '/reports', icon: BarChart2 },
+        { name: t('nav.settings', 'Настройки'), href: '/settings', icon: Settings },
     ];
 
     return (

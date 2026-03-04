@@ -137,8 +137,18 @@
         "pipeline": "Sales Funnel",
         "recentActivity": "Recent Activity",
         "months": {
-            "jan": "Jan", "feb": "Feb", "mar": "Mar", "apr": "Apr", "may": "May", "jun": "Jun",
-            "jul": "Jul", "aug": "Aug", "sep": "Sep", "oct": "Oct", "nov": "Nov", "dec": "Dec"
+            "jan": "Jan",
+            "feb": "Feb",
+            "mar": "Mar",
+            "apr": "Apr",
+            "may": "May",
+            "jun": "Jun",
+            "jul": "Jul",
+            "aug": "Aug",
+            "sep": "Sep",
+            "oct": "Oct",
+            "nov": "Nov",
+            "dec": "Dec"
         },
         "stages": {
             "search": "Search",
@@ -227,6 +237,123 @@
             "industry": "Industry",
             "location": "Location",
             "employeeRange": "Employee Range"
+        }
+    },
+    "clients": {
+        "title": "Clients",
+        "subtitle": "Manage your client company database",
+        "add": "+ Add Client",
+        "search": "Search by name or tax ID...",
+        "filters": "Filters",
+        "filterTitle": "Filtering",
+        "clearFilters": "Clear",
+        "refresh": "Refresh",
+        "all": "All",
+        "loading": "Loading...",
+        "empty": "No clients yet",
+        "emptyHint": "Click «+ Add Client» to get started",
+        "noResults": "Nothing found",
+        "noResultsHint": "Try adjusting your search parameters",
+        "retry": "Try again",
+        "total": "Showing",
+        "outOf": "of",
+        "table": {
+            "name": "Name",
+            "inn": "Tax ID",
+            "legalForm": "Legal Form",
+            "relationType": "Relation Type",
+            "source": "Source",
+            "contacts": "Contacts",
+            "deals": "Deals"
+        },
+        "form": {
+            "title": "New Client",
+            "editTitle": "Edit Client",
+            "name": "Company Name",
+            "namePlaceholder": "Acme Corp.",
+            "inn": "Tax ID",
+            "legalForm": "Legal Form",
+            "relationType": "Relation Type",
+            "source": "Lead Source",
+            "address": "Address",
+            "addressPlaceholder": "123 Main St, New York",
+            "website": "Website",
+            "notSelected": "Not selected",
+            "cancel": "Cancel",
+            "submit": "Create Client",
+            "saving": "Saving...",
+            "errors": {
+                "nameRequired": "Enter company name",
+                "createFailed": "Failed to create client"
+            }
+        },
+        "card": {
+            "backToList": "Clients",
+            "edit": "Edit",
+            "save": "Save",
+            "basicInfo": "Basic Information",
+            "contactInfo": "Contact Information",
+            "tabs": {
+                "main": "Overview",
+                "contacts": "Contacts",
+                "deals": "Deals",
+                "history": "History"
+            },
+            "stats": {
+                "contacts": "Contacts",
+                "deals": "Deals",
+                "interactions": "Activities"
+            },
+            "errors": {
+                "loadFailed": "Failed to load client card",
+                "notFound": "Client not found"
+            }
+        },
+        "contacts": {
+            "add": "+ Add Contact",
+            "empty": "No contacts yet",
+            "form": {
+                "firstName": "First Name",
+                "firstNamePlaceholder": "John",
+                "lastName": "Last Name",
+                "lastNamePlaceholder": "Doe",
+                "position": "Position",
+                "positionPlaceholder": "Sales Director",
+                "phone": "Phone",
+                "email": "Email",
+                "submit": "Add Contact"
+            },
+            "errors": {
+                "nameRequired": "Enter first or last name",
+                "createFailed": "Failed to add contact"
+            }
+        },
+        "deals": {
+            "create": "+ Create Deal",
+            "empty": "No deals yet"
+        },
+        "history": {
+            "add": "+ Add",
+            "empty": "No interactions yet",
+            "types": {
+                "call": "Call",
+                "meeting": "Meeting",
+                "email": "Email",
+                "note": "Note"
+            },
+            "form": {
+                "date": "Date & Time",
+                "description": "Description",
+                "descriptionPlaceholder": "What happened...",
+                "submit": "Add"
+            },
+            "errors": {
+                "descriptionRequired": "Enter description",
+                "createFailed": "Failed to save"
+            }
+        },
+        "errors": {
+            "loadFailed": "Failed to load clients"
         }
     }
 }
