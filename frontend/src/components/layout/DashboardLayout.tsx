@@ -102,7 +102,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                 >
                     {/* Logo & Toggle */}
                     <div className={cn(
-                        "flex h-20 items-center border-b border-border transition-all duration-300",
+                        "flex h-16 items-center border-b border-border transition-all duration-300",
                         isCollapsed ? "justify-center px-0" : "px-6"
                     )}>
                         <div className={cn("flex items-center gap-3 min-w-0 transition-opacity duration-300", isCollapsed ? "justify-center" : "flex-1")}>
