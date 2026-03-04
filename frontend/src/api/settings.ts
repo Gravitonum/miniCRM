@@ -172,3 +172,70 @@ export const companyApi = {
         await apiClient.put(`/application/api/Company/${id}`, data);
     }
 };
+
+// ─────────────────────────────────────────
+// Invite API
+// ─────────────────────────────────────────
+
+export interface CompanyInvite {
+    id: string;
+    email: string;
+    role: string;
+    companyId: string;
+    token: string;
+    isAccepted: boolean;
+    expiresAt?: string;
+}
+
+export const inviteApi = {
+    /**
+     * Создать приглашение по email + роль
+     * @example inviteApi.create(companyId, 'user@example.com', 'manager')
+     */
+    async create(companyId: string, email: string, role: string): Promise<CompanyInvite> {
+        const resp = await apiClient.post('/application/api/CompanyInvite', {
+            companyId,
+            email,
+            role,
+            isAccepted: false,
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const d = resp.data as any;
+        return {
+            id: d.id,
+            email: d.email,
+            role: d.role,
+            companyId: d.companyId,
+            token: d.token || '',
+            isAccepted: d.isAccepted || false,
+            expiresAt: d.expiresAt,
+        };
+    },
+
+    /**
+     * Получить все приглашения компании
+     */
+    async getAll(companyId: string): Promise<CompanyInvite[]> {
+        const resp = await apiClient.get('/application/api/CompanyInvite', {
+            params: { filter: `companyId=="${companyId}"` },
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return unwrap(resp.data as any[]).map((d: any) => ({
+            id: d.id,
+            email: d.email,
+            role: d.role,
+            companyId: d.companyId,
+            token: d.token || '',
+            isAccepted: d.isAccepted || false,
+            expiresAt: d.expiresAt,
+        }));
+    },
+
+    /**
+     * Отозвать приглашение
+     */
+    async revoke(id: string): Promise<void> {
+        await apiClient.delete(`/application/api/CompanyInvite/${id}`);
+    },
+};
+

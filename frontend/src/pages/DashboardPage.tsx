@@ -1,28 +1,59 @@
 /**
- * DashboardPage — главная страница дашборда с карточками метрик.
- * Использует shadcn/ui Card компоненты.
+ * DashboardPage — главная страница дашборда.
+ * Реальные виджеты: «Мои сделки», «Выиграно в этом месяце»,
+ * «Дедлайны этой недели», «Клиенты».
  */
-import { type ReactElement } from 'react';
+import { useEffect, useState, type ReactElement } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useTranslation } from 'react-i18next';
-import { TrendingUp, Users, Briefcase, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import {
+    TrendingUp, Users, Briefcase, DollarSign,
+    ArrowUpRight, ArrowDownRight, Trophy, Calendar,
+    Loader2, AlertCircle,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { cn } from '../lib/utils';
+import { dealsApi, type Deal } from '../api/deals';
+import { clientsApi } from '../api/clients';
+import { getAppUser } from '../lib/api';
+
+// ─────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────
+
+interface DashboardStats {
+    myDeals: number;
+    wonThisMonth: number;
+    wonAmountThisMonth: number;
+    deadlinesThisWeek: number;
+    totalClients: number;
+}
+
+interface RecentDeal {
+    id: string;
+    name: string;
+    amount: number;
+    deadline?: string;
+}
+
+// ─────────────────────────────────────────
+// Sub-components
+// ─────────────────────────────────────────
 
 interface MetricCardProps {
     title: string;
     value: string;
-    change: string;
-    isPositive: boolean;
+    sub?: string;
+    isPositive?: boolean;
     icon: React.ReactNode;
     gradient: string;
+    loading?: boolean;
 }
 
 /**
- * Карточка метрики
+ * Карточка метрики дашборда.
  */
-function MetricCard({ title, value, change, isPositive, icon, gradient }: MetricCardProps): ReactElement {
-    const { t } = useTranslation();
+function MetricCard({ title, value, sub, isPositive, icon, gradient, loading }: MetricCardProps): ReactElement {
     return (
         <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 !pb-4">
@@ -32,57 +63,165 @@ function MetricCard({ title, value, change, isPositive, icon, gradient }: Metric
                 </div>
             </CardHeader>
             <CardContent>
-                <p className="text-2xl font-extrabold text-foreground mb-1 truncate">{value}</p>
-                <div className={cn('flex items-center gap-1 text-xs font-medium', isPositive ? 'text-emerald-600' : 'text-red-500')}>
-                    {isPositive
-                        ? <ArrowUpRight className="w-3 h-3 shrink-0" />
-                        : <ArrowDownRight className="w-3 h-3 shrink-0" />
-                    }
-                    <span className="truncate">{change}</span>
-                    <span className="text-muted-foreground font-normal ml-1 truncate">{t('dashboard.metrics.vsLastMonth', 'vs прошлый месяц')}</span>
-                </div>
+                {loading ? (
+                    <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                        <span className="text-muted-foreground text-sm">загрузка...</span>
+                    </div>
+                ) : (
+                    <>
+                        <p className="text-2xl font-extrabold text-foreground mb-1 truncate">{value}</p>
+                        {sub && (
+                            <div className={cn('flex items-center gap-1 text-xs font-medium', isPositive !== false ? 'text-emerald-600' : 'text-red-500')}>
+                                {isPositive !== false ? <ArrowUpRight className="w-3 h-3 shrink-0" /> : <ArrowDownRight className="w-3 h-3 shrink-0" />}
+                                <span className="truncate">{sub}</span>
+                            </div>
+                        )}
+                    </>
+                )}
             </CardContent>
         </Card>
     );
 }
 
+// ─────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────
+
+function isThisMonth(dateStr?: string): boolean {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    const now = new Date();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+}
+
+function isThisWeek(dateStr?: string): boolean {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setHours(0, 0, 0, 0);
+    startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Mon
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    return d >= startOfWeek && d <= endOfWeek;
+}
+
+function formatAmount(n: number): string {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
+    return String(n);
+}
+
+// ─────────────────────────────────────────
+// Main component
+// ─────────────────────────────────────────
+
 export function DashboardPage(): ReactElement {
     const { t } = useTranslation();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [stats, setStats] = useState<DashboardStats>({
+        myDeals: 0,
+        wonThisMonth: 0,
+        wonAmountThisMonth: 0,
+        deadlinesThisWeek: 0,
+        totalClients: 0,
+    });
+    const [recentDeals, setRecentDeals] = useState<RecentDeal[]>([]);
+    const [pipelineStages, setPipelineStages] = useState<{ name: string; count: number; color: string }[]>([]);
 
-    const metrics: MetricCardProps[] = [
-        {
-            title: t('dashboard.metrics.revenue', 'Выручка'),
-            value: '₽4.2M',
-            change: '+12.5%',
-            isPositive: true,
-            icon: <DollarSign className="w-5 h-5 text-violet-600" />,
-            gradient: 'bg-violet-100',
-        },
-        {
-            title: t('dashboard.metrics.deals', 'Активных сделок'),
-            value: '84',
-            change: '+8.2%',
-            isPositive: true,
-            icon: <Briefcase className="w-5 h-5 text-blue-600" />,
-            gradient: 'bg-blue-100',
-        },
-        {
-            title: t('dashboard.metrics.customers', 'Клиентов'),
-            value: '1,240',
-            change: '+4.1%',
-            isPositive: true,
-            icon: <Users className="w-5 h-5 text-emerald-600" />,
-            gradient: 'bg-emerald-100',
-        },
-        {
-            title: t('dashboard.metrics.conversion', 'Конверсия'),
-            value: '24.5%',
-            change: '-2.3%',
-            isPositive: false,
-            icon: <TrendingUp className="w-5 h-5 text-orange-600" />,
-            gradient: 'bg-orange-100',
-        },
+    const STAGE_COLORS: Record<string, string> = {
+        won: 'bg-emerald-500',
+        lost: 'bg-red-400',
+        open: 'bg-blue-500',
+    };
+    const STAGE_BG_COLORS: string[] = [
+        'bg-slate-400', 'bg-blue-500', 'bg-violet-500',
+        'bg-amber-500', 'bg-orange-500', 'bg-emerald-500',
     ];
+
+    useEffect(() => {
+        async function loadDashboard() {
+            setLoading(true);
+            setError(null);
+            try {
+                const username = localStorage.getItem('gravisales_username') || '';
+
+                // Fetch all deals and clients in parallel
+                const [allDeals, allClients] = await Promise.all([
+                    dealsApi.getDeals(),
+                    clientsApi.getAll().catch(() => [] as ReturnType<typeof clientsApi.getAll> extends Promise<infer T> ? T : never[]),
+                ]);
+
+                // My deals (responsible = current user)
+                const myDeals = username
+                    ? allDeals.filter(d => d.responsible === username)
+                    : allDeals;
+
+                // Won this month
+                const wonDeals = allDeals.filter(d => {
+                    const stage = d.stage?.toLowerCase?.() || '';
+                    return stage === 'won' || stage === 'won' || d.stage === 'won';
+                });
+                const wonThisMonth = wonDeals.filter(d => isThisMonth(d.deadline)).length;
+                const wonAmountThisMonth = wonDeals
+                    .filter(d => isThisMonth(d.deadline))
+                    .reduce((sum, d) => sum + (d.amount || 0), 0);
+
+                // Deadlines this week (active deals only)
+                const activeDeals = allDeals.filter(d => {
+                    const s = d.stage?.toLowerCase?.() || '';
+                    return s !== 'won' && s !== 'lost';
+                });
+                const deadlinesThisWeek = activeDeals.filter(d => isThisWeek(d.deadline)).length;
+
+                // Build pipeline breakdown by stage
+                const stageMap = new Map<string, number>();
+                activeDeals.forEach(d => {
+                    const s = d.stage || 'unknown';
+                    stageMap.set(s, (stageMap.get(s) || 0) + 1);
+                });
+                const pipeline = Array.from(stageMap.entries())
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 6)
+                    .map(([name, count], i) => ({
+                        name,
+                        count,
+                        color: STAGE_BG_COLORS[i] || 'bg-primary',
+                    }));
+
+                // Recent active deals (top 3 with upcoming deadlines)
+                const sortedByDeadline = [...activeDeals]
+                    .filter(d => d.deadline)
+                    .sort((a, b) => new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime())
+                    .slice(0, 5);
+
+                setStats({
+                    myDeals: myDeals.length,
+                    wonThisMonth,
+                    wonAmountThisMonth,
+                    deadlinesThisWeek,
+                    totalClients: (allClients as Deal[]).length,
+                });
+                setRecentDeals(sortedByDeadline.map(d => ({
+                    id: d.id,
+                    name: d.name,
+                    amount: d.amount,
+                    deadline: d.deadline,
+                })));
+                setPipelineStages(pipeline);
+            } catch (err) {
+                console.error('Dashboard load failed:', err);
+                setError('Не удалось загрузить данные');
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadDashboard();
+    }, []);
+
+    const maxPipelineCount = Math.max(...pipelineStages.map(s => s.count), 1);
 
     return (
         <DashboardLayout>
@@ -95,97 +234,177 @@ export function DashboardPage(): ReactElement {
                     </p>
                 </div>
 
+                {/* Error banner */}
+                {error && (
+                    <div className="flex items-center gap-2 p-4 bg-destructive/10 text-destructive rounded-xl text-sm">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        {error}
+                    </div>
+                )}
+
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                    {metrics.map((m) => (
-                        <MetricCard key={m.title} {...m} />
-                    ))}
+                    <MetricCard
+                        loading={loading}
+                        title={t('dashboard.metrics.deals', 'Мои активные сделки')}
+                        value={String(stats.myDeals)}
+                        icon={<Briefcase className="w-5 h-5 text-blue-600" />}
+                        gradient="bg-blue-100 dark:bg-blue-900/30"
+                    />
+                    <MetricCard
+                        loading={loading}
+                        title={t('dashboard.metrics.revenue', 'Выиграно в этом месяце')}
+                        value={stats.wonAmountThisMonth > 0
+                            ? `₽${formatAmount(stats.wonAmountThisMonth)}`
+                            : `${stats.wonThisMonth} сд.`}
+                        sub={stats.wonThisMonth > 0 ? `${stats.wonThisMonth} сделок закрыто` : undefined}
+                        isPositive
+                        icon={<Trophy className="w-5 h-5 text-amber-600" />}
+                        gradient="bg-amber-100 dark:bg-amber-900/30"
+                    />
+                    <MetricCard
+                        loading={loading}
+                        title="Дедлайны на этой неделе"
+                        value={String(stats.deadlinesThisWeek)}
+                        sub={stats.deadlinesThisWeek > 0 ? 'Требуют внимания' : 'Нет срочных сделок'}
+                        isPositive={stats.deadlinesThisWeek === 0}
+                        icon={<Calendar className="w-5 h-5 text-violet-600" />}
+                        gradient="bg-violet-100 dark:bg-violet-900/30"
+                    />
+                    <MetricCard
+                        loading={loading}
+                        title={t('dashboard.metrics.customers', 'Клиентов')}
+                        value={String(stats.totalClients)}
+                        icon={<Users className="w-5 h-5 text-emerald-600" />}
+                        gradient="bg-emerald-100 dark:bg-emerald-900/30"
+                    />
                 </div>
 
                 {/* Charts row */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                    {/* Main chart placeholder */}
+                    {/* Pipeline breakdown */}
                     <Card className="lg:col-span-2">
                         <CardHeader>
-                            <CardTitle className="text-base">{t('dashboard.revenueChart', 'Динамика выручки')}</CardTitle>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                                {t('dashboard.pipeline', 'Воронка продаж')} — активные сделки
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                            <div className="h-48 flex items-end gap-1.5 px-2">
-                                {[60, 45, 80, 55, 70, 90, 75, 85, 95, 65, 88, 100].map((h, i) => (
-                                    <div
-                                        key={i}
-                                        className="flex-1 rounded-t-sm bg-primary/20 hover:bg-primary/40 transition-colors cursor-pointer relative group"
-                                        style={{ height: `${h}%` }}
-                                    >
-                                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                                            ₽{h * 42}K
+                        <CardContent className="space-y-4">
+                            {loading ? (
+                                <div className="py-8 flex justify-center">
+                                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                                </div>
+                            ) : pipelineStages.length === 0 ? (
+                                <p className="text-sm text-muted-foreground text-center py-8">Нет активных сделок</p>
+                            ) : (
+                                pipelineStages.map(({ name, count, color }) => (
+                                    <div key={name} className="space-y-1.5 px-1">
+                                        <div className="flex justify-between text-xs gap-2">
+                                            <span className="text-muted-foreground truncate">{name}</span>
+                                            <span className="font-semibold text-foreground shrink-0">{count}</span>
+                                        </div>
+                                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                                            <div
+                                                className={cn('h-full rounded-full transition-all duration-500', color)}
+                                                style={{ width: `${(count / maxPipelineCount) * 100}%` }}
+                                            />
                                         </div>
                                     </div>
-                                ))}
-                            </div>
-                            <div className="flex justify-between mt-2 px-2 text-xs text-muted-foreground">
-                                {['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].map((m) => (
-                                    <span key={m}>{t(`dashboard.months.${m}`)}</span>
-                                ))}
-                            </div>
+                                ))
+                            )}
                         </CardContent>
                     </Card>
 
-                    {/* Pipeline */}
+                    {/* Deadlines this week */}
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-base">{t('dashboard.pipeline', 'Воронка продаж')}</CardTitle>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <Calendar className="w-4 h-4 text-muted-foreground" />
+                                Ближайшие дедлайны
+                            </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            {[
-                                { label: 'search', value: 32, color: 'bg-slate-400' },
-                                { label: 'qualification', value: 24, color: 'bg-blue-500' },
-                                { label: 'discussion', value: 18, color: 'bg-violet-500' },
-                                { label: 'proposal', value: 14, color: 'bg-amber-500' },
-                                { label: 'negotiation', value: 9, color: 'bg-orange-500' },
-                                { label: 'closed', value: 5, color: 'bg-emerald-500' },
-                            ].map(({ label, value, color }) => (
-                                <div key={label} className="space-y-1.5 px-1">
-                                    <div className="flex justify-between text-xs gap-2">
-                                        <span className="text-muted-foreground truncate">{t(`dashboard.stages.${label}`)}</span>
-                                        <span className="font-semibold text-foreground shrink-0">{value}</span>
-                                    </div>
-                                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                        <div
-                                            className={cn('h-full rounded-full transition-all duration-500', color)}
-                                            style={{ width: `${(value / 32) * 100}%` }}
-                                        />
-                                    </div>
+                        <CardContent>
+                            {loading ? (
+                                <div className="py-8 flex justify-center">
+                                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                                 </div>
-                            ))}
+                            ) : recentDeals.length === 0 ? (
+                                <p className="text-sm text-muted-foreground text-center py-6">Нет предстоящих дедлайнов</p>
+                            ) : (
+                                <div className="space-y-3">
+                                    {recentDeals.map(deal => {
+                                        const daysLeft = deal.deadline
+                                            ? Math.ceil((new Date(deal.deadline).getTime() - Date.now()) / 86400000)
+                                            : null;
+                                        return (
+                                            <div key={deal.id} className="flex items-start gap-3">
+                                                <div className={cn(
+                                                    'w-2 h-2 rounded-full mt-1.5 shrink-0',
+                                                    daysLeft !== null && daysLeft <= 2 ? 'bg-red-500' :
+                                                        daysLeft !== null && daysLeft <= 5 ? 'bg-amber-500' : 'bg-emerald-500'
+                                                )} />
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-foreground truncate">{deal.name}</p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {deal.deadline}
+                                                        {daysLeft !== null && (
+                                                            <span className={cn(
+                                                                'ml-1',
+                                                                daysLeft <= 0 ? 'text-red-500 font-medium' :
+                                                                    daysLeft <= 2 ? 'text-amber-600' : ''
+                                                            )}>
+                                                                ({daysLeft <= 0 ? 'просрочено' : `${daysLeft} дн.`})
+                                                            </span>
+                                                        )}
+                                                    </p>
+                                                </div>
+                                                {deal.amount > 0 && (
+                                                    <span className="text-xs text-muted-foreground shrink-0">
+                                                        ₽{formatAmount(deal.amount)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* Recent activity */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-base">{t('dashboard.recentActivity', 'Последняя активность')}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {[
-                                { action: 'newDeal', name: 'Лицензия на ПО', time: '5m', dot: 'bg-blue-500' },
-                                { action: 'dealMoved', name: 'Корпоративное развертывание', time: '1h', dot: 'bg-violet-500' },
-                                { action: 'newClient', name: 'ООО «Технологии»', time: '3h', dot: 'bg-emerald-500' },
-                            ].map(({ action, name, time, dot }) => (
-                                <div key={name} className="flex items-start gap-3">
-                                    <div className={cn('w-2 h-2 rounded-full mt-1.5 shrink-0', dot)} />
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm text-muted-foreground">{t(`dashboard.activity.${action}`)}</p>
-                                        <p className="text-sm font-semibold text-foreground truncate">{name}</p>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground/60 shrink-0">{t(`dashboard.activity.ago`, { time })}</span>
+                {/* Stats row */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <Card className="sm:col-span-3">
+                        <CardHeader>
+                            <CardTitle className="text-base flex items-center gap-2">
+                                <DollarSign className="w-4 h-4 text-muted-foreground" />
+                                Сводка по сделкам
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {loading ? (
+                                <div className="flex justify-center py-4">
+                                    <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
                                 </div>
-                            ))}
-                        </div>
-                    </CardContent>
-                </Card>
+                            ) : (
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                                    {[
+                                        { label: 'Всего сделок (у меня)', value: String(stats.myDeals), color: 'text-blue-600' },
+                                        { label: 'Выиграно в месяце', value: String(stats.wonThisMonth), color: 'text-emerald-600' },
+                                        { label: 'Выручка в месяце', value: `₽${formatAmount(stats.wonAmountThisMonth)}`, color: 'text-amber-600' },
+                                        { label: 'Дедлайны на неделе', value: String(stats.deadlinesThisWeek), color: stats.deadlinesThisWeek > 3 ? 'text-red-500' : 'text-violet-600' },
+                                    ].map(({ label, value, color }) => (
+                                        <div key={label} className="text-center">
+                                            <p className={cn('text-2xl font-extrabold', color)}>{value}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">{label}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </DashboardLayout>
     );

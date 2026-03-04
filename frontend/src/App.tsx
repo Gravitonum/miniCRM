@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { JoinOrganizationPage } from './pages/JoinOrganizationPage';
+import { OnboardingPage } from './pages/OnboardingPage';
+import { InvitePage } from './pages/InvitePage';
 import { DashboardPage } from './pages/DashboardPage';
 import { DealsPage } from './pages/deals/DealsPage';
 import { DealDetailsPage } from './pages/deals/DealDetailsPage';
@@ -13,6 +15,7 @@ import { ContactCardPage } from './pages/contacts/ContactCardPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { getAppUser } from './lib/api';
 
+/** Protected route wrapper: checks auth token, org association, and onboarding completion */
 function ProtectedRoute({ children }: { children: ReactElement }): ReactElement {
   const token = localStorage.getItem('gravisales_token');
   const location = useLocation();
@@ -32,14 +35,8 @@ function ProtectedRoute({ children }: { children: ReactElement }): ReactElement 
         try {
           const result = await getAppUser(username);
           if (result.success && result.user) {
-            // App user record found
-            if (result.user.orgCode) {
-              setHasOrg(true);
-            } else {
-              setHasOrg(false);
-            }
+            setHasOrg(Boolean(result.user.orgCode));
           } else {
-            // User record not found in app table
             console.warn('App user record missing for:', username);
             setHasOrg(false);
           }
@@ -52,31 +49,33 @@ function ProtectedRoute({ children }: { children: ReactElement }): ReactElement 
       }
       setIsLoading(false);
     }
-    checkProfile();
+    void checkProfile();
   }, [token, location.pathname]);
 
+  // ── No token ──────────────────────────────────────────────────────────────
   if (!token) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
+  // ── Profile error ─────────────────────────────────────────────────────────
   if (profileError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-red-100 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="bg-card p-8 rounded-2xl shadow-sm border border-border max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-2xl">⚠️</span>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Profile Error</h2>
-          <p className="text-gray-500 mb-8">{profileError}</p>
-
+          <h2 className="text-xl font-bold text-foreground mb-2">Profile Error</h2>
+          <p className="text-muted-foreground mb-8">{profileError}</p>
           <button
             onClick={() => {
               localStorage.removeItem('gravisales_token');
@@ -85,7 +84,7 @@ function ProtectedRoute({ children }: { children: ReactElement }): ReactElement 
               sessionStorage.removeItem('gravisales_current_user');
               window.location.href = '/login';
             }}
-            className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold rounded-xl transition-colors cursor-pointer"
+            className="w-full py-3 px-4 bg-muted hover:bg-muted/80 text-foreground font-semibold rounded-xl transition-colors cursor-pointer"
           >
             Back to Login
           </button>
@@ -94,32 +93,52 @@ function ProtectedRoute({ children }: { children: ReactElement }): ReactElement 
     );
   }
 
-  // If no org code and trying to go to dashboard (/) -> redirect to join
-  if (!hasOrg && location.pathname === '/') {
+  // ── No org yet ────────────────────────────────────────────────────────────
+  if (!hasOrg && location.pathname !== '/join-organization') {
     return <Navigate to="/join-organization" replace />;
   }
 
-  // If has org code and trying to join -> redirect to dashboard
+  // ── Has org but visiting join page ────────────────────────────────────────
   if (hasOrg && location.pathname === '/join-organization') {
     return <Navigate to="/" replace />;
+  }
+
+  // ── Onboarding guard: redirect if wizard not completed ────────────────────
+  const onboardingDone = localStorage.getItem('gravisales_onboarding_done');
+  const exemptFromOnboarding = ['/onboarding', '/join-organization'].includes(location.pathname);
+  if (hasOrg && !onboardingDone && !exemptFromOnboarding) {
+    return <Navigate to="/onboarding" replace />;
   }
 
   return children;
 }
 
+/** Main application with routing */
 export default function App(): ReactElement {
   return (
     <BrowserRouter>
       <Routes>
+        {/* ── Public routes ─────────────────────────────────────────────── */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        {/* Invite acceptance page is public (no login required to accept) */}
+        <Route path="/invite/:token" element={<InvitePage />} />
 
+        {/* ── Protected: org join ────────────────────────────────────────── */}
         <Route path="/join-organization" element={
           <ProtectedRoute>
             <JoinOrganizationPage />
           </ProtectedRoute>
         } />
 
+        {/* ── Protected: onboarding wizard ───────────────────────────────── */}
+        <Route path="/onboarding" element={
+          <ProtectedRoute>
+            <OnboardingPage />
+          </ProtectedRoute>
+        } />
+
+        {/* ── Protected: main pages ──────────────────────────────────────── */}
         <Route path="/" element={
           <ProtectedRoute>
             <DashboardPage />
@@ -150,19 +169,6 @@ export default function App(): ReactElement {
           </ProtectedRoute>
         } />
 
-        <Route path="/contacts/:id" element={
-          <ProtectedRoute>
-            <ContactCardPage />
-          </ProtectedRoute>
-        } />
-
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <SettingsPage />
-          </ProtectedRoute>
-        } />
-
-        {/* Catch-all redirect */}
         <Route path="/contacts" element={
           <ProtectedRoute>
             <ContactsPage />
@@ -175,6 +181,13 @@ export default function App(): ReactElement {
           </ProtectedRoute>
         } />
 
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        } />
+
+        {/* ── Catch-all ─────────────────────────────────────────────────── */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

@@ -97,5 +97,30 @@ export const dealsApi = {
         });
         const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
         return data.map(u => ({ username: u.username, id: u.id, email: u.email }));
-    }
+    },
+
+    /**
+     * Записать историю смены этапа сделки в DealStageHistory.
+     * Вызывается при drag-and-drop или ручном изменении этапа.
+     *
+     * @param dealId - ID сделки
+     * @param fromStageId - ID предыдущего этапа
+     * @param toStageId - ID нового этапа
+     * @param changedBy - ID или username пользователя
+     */
+    async recordStageHistory(
+        dealId: string,
+        fromStageId: string | undefined,
+        toStageId: string,
+        changedBy: string
+    ): Promise<void> {
+        await apiClient.post('/application/api/DealStageHistory', {
+            dealId,
+            fromStageId: fromStageId || null,
+            toStageId,
+            changedBy,
+            changedAt: new Date().toISOString(),
+        });
+    },
 };
+

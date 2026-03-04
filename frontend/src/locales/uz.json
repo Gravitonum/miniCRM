@@ -137,8 +137,18 @@
         "pipeline": "Savdo voronkasi",
         "recentActivity": "So'nggi faoliyat",
         "months": {
-            "jan": "Yan", "feb": "Fev", "mar": "Mar", "apr": "Apr", "may": "May", "jun": "Iyun",
-            "jul": "Iyul", "aug": "Avg", "sep": "Sen", "oct": "Okt", "nov": "Noy", "dec": "Dek"
+            "jan": "Yan",
+            "feb": "Fev",
+            "mar": "Mar",
+            "apr": "Apr",
+            "may": "May",
+            "jun": "Iyun",
+            "jul": "Iyul",
+            "aug": "Avg",
+            "sep": "Sen",
+            "oct": "Okt",
+            "nov": "Noy",
+            "dec": "Dek"
         },
         "stages": {
             "search": "Qidiruv",
@@ -429,6 +439,83 @@
         },
         "errors": {
             "loadFailed": "Kontaktlarni yuklab bo'lmadi"
+        }
+    },
+    "onboarding": {
+        "title": "GraviSales-ga xush kelibsiz!",
+        "subtitle": "Ish joyingizni sozlaylik",
+        "step": "{{current}}/{{total}} qadam",
+        "next": "Keyingi",
+        "back": "Orqaga",
+        "skip": "O'tkazib yuborish",
+        "finish": "Sozlashni yakunlash",
+        "finishing": "Saqlanmoqda...",
+        "steps": {
+            "language": {
+                "title": "Tilni tanlash",
+                "subtitle": "Qaysi tilda ishlashni xohlaysiz?",
+                "hint": "Interfeys tilini sozlamalarda o'zgartirish mumkin"
+            },
+            "company": {
+                "title": "Sizning kompaniyangiz",
+                "subtitle": "Tashkilotingiz haqida gapirib bering",
+                "name": "Kompaniya nomi",
+                "namePlaceholder": "\"Romashka\" MChJ",
+                "timezone": "Vaqt zonasi",
+                "currency": "Valyuta",
+                "errors": {
+                    "nameRequired": "Kompaniya nomini kiriting"
+                }
+            },
+            "funnel": {
+                "title": "Birinchi savdo voronkasi",
+                "subtitle": "Voronka yarating yoki standart birini ishlating",
+                "nameLabel": "Voronka nomi",
+                "namePlaceholder": "Masalan: Asosiy sotuv",
+                "defaultName": "Asosiy voronka",
+                "defaultStages": "Standart bosqichlar avtomatik yaratiladi:",
+                "stagesList": "Yangi → Kvalifikatsiya → Taklif yuborildi → Muzokaralar → Yutdi → Yutqazdi",
+                "skipHint": "Voronkalarni keyinroq \"Sozlamalar\" bo'limida konfiguratsiya qilish mumkin"
+            },
+            "invite": {
+                "title": "Jamoangizni taklif qiling",
+                "subtitle": "Hamkasblarni kompaniyaga qo'shing",
+                "emailLabel": "Hamkasb email",
+                "emailPlaceholder": "colleague@company.com",
+                "roleLabel": "Rol",
+                "roleManager": "Menejer",
+                "roleViewer": "Kuzatuvchi",
+                "addMore": "+ Yana qo'shish",
+                "inviteSent": "Takliflar yuboriladi",
+                "skipHint": "Takliflarni keyinroq \"Sozlamalar\" bo'limida yuborish mumkin"
+            }
+        }
+    },
+    "invite": {
+        "title": "GraviSales-ga taklif",
+        "subtitle": "Sizni kompaniyaga taklif qilishdi",
+        "company": "Kompaniya",
+        "role": "Rol",
+        "email": "Email",
+        "passwordLabel": "Parol o'ylab toping",
+        "passwordPlaceholder": "Kamida 8 ta belgi",
+        "confirmLabel": "Parolni tasdiqlang",
+        "confirmPlaceholder": "Parolni qayta kiriting",
+        "submit": "Taklifni qabul qilish",
+        "submitting": "Ishlanmoqda...",
+        "expired": "Taklif muddati tugagan",
+        "notFound": "Taklif topilmadi",
+        "loading": "Taklif yuklanmoqda...",
+        "errors": {
+            "passwordRequired": "Parolni kiriting",
+            "passwordTooShort": "Kamida 8 ta belgi",
+            "passwordsMismatch": "Parollar mos kelmadi",
+            "failed": "Taklifni qabul qilishda xatolik yuz berdi"
+        },
+        "roles": {
+            "company_admin": "Administrator",
+            "manager": "Menejer",
+            "viewer": "Kuzatuvchi"
         }
     },
     "settings": {

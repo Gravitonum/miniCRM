@@ -441,6 +441,83 @@
             "loadFailed": "Failed to load contacts"
         }
     },
+    "onboarding": {
+        "title": "Welcome to GraviSales!",
+        "subtitle": "Let's set up your workspace",
+        "step": "Step {{current}} of {{total}}",
+        "next": "Next",
+        "back": "Back",
+        "skip": "Skip",
+        "finish": "Finish Setup",
+        "finishing": "Saving...",
+        "steps": {
+            "language": {
+                "title": "Choose Language",
+                "subtitle": "Which language do you want to work in?",
+                "hint": "You can change the interface language in settings"
+            },
+            "company": {
+                "title": "Your Company",
+                "subtitle": "Tell us about your organization",
+                "name": "Company Name",
+                "namePlaceholder": "Acme Corp.",
+                "timezone": "Timezone",
+                "currency": "Currency",
+                "errors": {
+                    "nameRequired": "Enter your company name"
+                }
+            },
+            "funnel": {
+                "title": "Your First Sales Funnel",
+                "subtitle": "Create a funnel or use the default one",
+                "nameLabel": "Funnel Name",
+                "namePlaceholder": "e.g. Main Sales",
+                "defaultName": "Main Funnel",
+                "defaultStages": "Default stages will be created automatically:",
+                "stagesList": "New → Qualification → Proposal Sent → Negotiation → Won → Lost",
+                "skipHint": "Funnels can be configured later in Settings"
+            },
+            "invite": {
+                "title": "Invite Your Team",
+                "subtitle": "Add colleagues to your company",
+                "emailLabel": "Colleague Email",
+                "emailPlaceholder": "colleague@company.com",
+                "roleLabel": "Role",
+                "roleManager": "Manager",
+                "roleViewer": "Viewer",
+                "addMore": "+ Add Another",
+                "inviteSent": "Invitations will be sent",
+                "skipHint": "Invites can be sent later in Settings"
+            }
+        }
+    },
+    "invite": {
+        "title": "Invitation to GraviSales",
+        "subtitle": "You've been invited to join a company",
+        "company": "Company",
+        "role": "Role",
+        "email": "Email",
+        "passwordLabel": "Create a password",
+        "passwordPlaceholder": "At least 8 characters",
+        "confirmLabel": "Confirm password",
+        "confirmPlaceholder": "Re-enter password",
+        "submit": "Accept Invitation",
+        "submitting": "Processing...",
+        "expired": "This invitation has expired",
+        "notFound": "Invitation not found",
+        "loading": "Loading invitation...",
+        "errors": {
+            "passwordRequired": "Password is required",
+            "passwordTooShort": "At least 8 characters required",
+            "passwordsMismatch": "Passwords do not match",
+            "failed": "Failed to accept invitation"
+        },
+        "roles": {
+            "company_admin": "Admin",
+            "manager": "Manager",
+            "viewer": "Viewer"
+        }
+    },
     "settings": {
         "title": "Settings",
         "subtitle": "Manage application parameters and access",
