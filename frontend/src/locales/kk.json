@@ -228,5 +228,275 @@
             "location": "Орналасқан жері",
             "employeeRange": "Компания өлшемі"
         }
+    },
+    "clients": {
+        "title": "Клиенттер",
+        "subtitle": "Клиент-компаниялар базасын басқару",
+        "add": "+ Клиент қосу",
+        "search": "Атауы немесе БСН бойынша іздеу...",
+        "filters": "Сүзгілер",
+        "filterTitle": "Сүзгілеу",
+        "clearFilters": "Тазалау",
+        "refresh": "Жаңарту",
+        "all": "Барлығы",
+        "loading": "Жүктелуде...",
+        "empty": "Клиенттер әзірге жоқ",
+        "emptyHint": "Бастау үшін «+ Клиент қосу» түймесін басыңыз",
+        "noResults": "Ештеңе табылмады",
+        "noResultsHint": "Іздеу параметрлерін өзгертіп көріңіз",
+        "retry": "Қайталап көру",
+        "total": "Көрсетілді",
+        "outOf": "барлығынан",
+        "table": {
+            "name": "Атауы",
+            "inn": "БСН",
+            "legalForm": "ҰПН",
+            "relationType": "Қарым-қатынас түрі",
+            "source": "Дереккөз",
+            "contacts": "Байланыстар",
+            "deals": "Мәмілелер"
+        },
+        "form": {
+            "title": "Жаңа клиент",
+            "editTitle": "Клиентті өңдеу",
+            "name": "Компания атауы",
+            "namePlaceholder": "\"Ромашка\" ЖШС",
+            "inn": "БСН",
+            "legalForm": "ҰПН",
+            "relationType": "Қарым-қатынас түрі",
+            "source": "Лид көзі",
+            "address": "Мекенжай",
+            "addressPlaceholder": "Алматы қ., Абай даңғ., 1",
+            "website": "Сайт",
+            "notSelected": "Таңдалмаған",
+            "cancel": "Болдырмау",
+            "submit": "Клиентті құру",
+            "saving": "Сақталуда...",
+            "errors": {
+                "nameRequired": "Компания атауын енгізіңіз",
+                "createFailed": "Клиентті құру кезінде қате шықты"
+            }
+        },
+        "card": {
+            "backToList": "Клиенттер",
+            "edit": "Өңдеу",
+            "save": "Сақтау",
+            "basicInfo": "Негізгі ақпарат",
+            "contactInfo": "Байланыс ақпараты",
+            "tabs": {
+                "main": "Негізгі",
+                "contacts": "Байланыстар",
+                "deals": "Мәмілелер",
+                "history": "Тарих"
+            },
+            "stats": {
+                "contacts": "Байланыстар",
+                "deals": "Мәмілелер",
+                "interactions": "Оқиғалар"
+            },
+            "errors": {
+                "loadFailed": "Клиент карточкасын жүктеу сәтсіз аяқталды",
+                "notFound": "Клиент табылмады"
+            }
+        },
+        "contacts": {
+            "add": "+ Байланыс қосу",
+            "empty": "Байланыс тұлғалары әзірге жоқ",
+            "form": {
+                "firstName": "Аты",
+                "firstNamePlaceholder": "Иван",
+                "lastName": "Тегі",
+                "lastNamePlaceholder": "Иванов",
+                "position": "Лауазымы",
+                "positionPlaceholder": "Сату бөлімінің директоры",
+                "phone": "Телефон",
+                "email": "Email",
+                "submit": "Байланыс қосу"
+            },
+            "errors": {
+                "nameRequired": "Атын немесе тегін енгізіңіз",
+                "createFailed": "Байланыс қосу кезінде қате шықты"
+            }
+        },
+        "deals": {
+            "create": "+ Мәміле жасау",
+            "empty": "Мәмілелер әзірге жоқ"
+        },
+        "history": {
+            "add": "+ Қосу",
+            "empty": "Өзара әрекеттесулер әзірге жоқ",
+            "types": {
+                "call": "Қоңырау",
+                "meeting": "Кездесу",
+                "email": "Email",
+                "note": "Ескертпе"
+            },
+            "form": {
+                "date": "Күні мен уақыты",
+                "description": "Сипаттама",
+                "descriptionPlaceholder": "Не болды...",
+                "submit": "Қосу"
+            },
+            "errors": {
+                "descriptionRequired": "Сипаттаманы енгізіңіз",
+                "createFailed": "Сақтау кезінде қате шықты"
+            }
+        },
+        "errors": {
+            "loadFailed": "Клиенттерді жүктеу сәтсіз аяқталды"
+        }
+    },
+    "contacts": {
+        "title": "Байланыстар",
+        "subtitle": "Байланыс тұлғаларының базасы",
+        "add": "+ Байланыс қосу",
+        "search": "Аты, email, лауазымы бойынша іздеу...",
+        "refresh": "Жаңарту",
+        "loading": "Жүктелуде...",
+        "empty": "Байланыстар әзірге жоқ",
+        "emptyHint": "Бастау үшін «+ Байланыс қосу» түймесін басыңыз",
+        "noResults": "Ештеңе табылмады",
+        "noResultsHint": "Сұранысты өзгертіп көріңіз",
+        "retry": "Қайталап көру",
+        "total": "Көрсетілді",
+        "outOf": "барлығынан",
+        "table": {
+            "name": "Байланыс",
+            "company": "Компания",
+            "email": "Email",
+            "phone": "Телефон",
+            "position": "Лауазымы"
+        },
+        "form": {
+            "title": "Жаңа байланыс",
+            "firstName": "Аты",
+            "firstNamePlaceholder": "Иван",
+            "lastName": "Тегі",
+            "lastNamePlaceholder": "Иванов",
+            "position": "Лауазымы",
+            "positionPlaceholder": "Сату бөлімінің директоры",
+            "phoneWork": "Жұмыс тел.",
+            "phoneMobile": "Ұялы тел.",
+            "email": "Email",
+            "company": "Компания",
+            "noCompany": "Компаниясыз",
+            "comment": "Түсініктеме",
+            "commentPlaceholder": "Қосымша ақпарат...",
+            "cancel": "Болдырмау",
+            "submit": "Байланыс құру",
+            "saving": "Сақталуда...",
+            "errors": {
+                "nameRequired": "Атын немесе тегін енгізіңіз",
+                "createFailed": "Байланыс құру кезінде қате шықты"
+            }
+        },
+        "card": {
+            "backToList": "Байланыстар",
+            "edit": "Өңдеу",
+            "save": "Сақтау",
+            "personalInfo": "Жеке деректер",
+            "contactInfo": "Байланыс ақпараты",
+            "tabs": {
+                "main": "Негізгі",
+                "companies": "Компаниялар",
+                "history": "Тарих"
+            },
+            "stats": {
+                "companies": "Компаниялар",
+                "interactions": "Оқиғалар"
+            },
+            "errors": {
+                "loadFailed": "Байланыс карточкасын жүктеу сәтсіз аяқталды",
+                "notFound": "Байланыс табылмады"
+            }
+        },
+        "companies": {
+            "link": "Компанияны тіркеу",
+            "empty": "Компаниялар тіркелмеген",
+            "noAvailable": "Тіркеуге қолжетімді компаниялар жоқ",
+            "select": "Компанияны таңдаңыз",
+            "isPrimary": "Негізгі компания",
+            "errors": {
+                "selectRequired": "Компанияны таңдаңыз",
+                "linkFailed": "Тіркеу кезінде қате шықты"
+            }
+        },
+        "history": {
+            "errors": {
+                "descriptionRequired": "Сипаттаманы енгізіңіз",
+                "createFailed": "Сақтау кезінде қате шықты"
+            }
+        },
+        "errors": {
+            "loadFailed": "Байланыстарды жүктеу сәтсіз аяқталды"
+        }
+    },
+    "settings": {
+        "title": "Баптаулар",
+        "subtitle": "Қолданба параметрлерін және рұқсатты басқару",
+        "save": "Өзгерістерді сақтау",
+        "tabs": {
+            "users": "Пайдаланушылар",
+            "company": "Компания профилі",
+            "directories": "Анықтамалықтар",
+            "funnels": "Құйғылар мен кезеңдер"
+        },
+        "users": {
+            "title": "Пайдаланушылар",
+            "subtitle": "Әріптестерді шақырыңыз және олардың рұқсатын басқарыңыз",
+            "noCompany": "Сіз ешқандай компанияға тіркелмегенсіз.",
+            "inviteTitle": "Пайдаланушыны шақыру",
+            "sendInvite": "Жіберу",
+            "listTitle": "Ағымдағы пайдаланушылар",
+            "count": "адам",
+            "you": "Сіз",
+            "statusActive": "Белсенді",
+            "statusInactive": "Бұғатталған",
+            "block": "Бұғаттау",
+            "unblock": "Бұғаттан шығару",
+            "loadError": "Пайдаланушыларды жүктеу сәтсіз аяқталды"
+        },
+        "company": {
+            "title": "Компания профилі",
+            "subtitle": "Жұмыс кеңістігіңіздің негізгі баптаулары мен деректемелері",
+            "notFound": "Компания профилі қолжетімсіз.",
+            "orgCodeLabel": "Ұйым коды",
+            "orgCodeHint": "Компанияға қосылу үшін қызметкерлеріңізге осы кодты хабарлаңыз",
+            "name": "Компания атауы",
+            "timezone": "Сағаттық белдеу",
+            "currency": "Валюта",
+            "defaultLanguage": "Әдепкі тіл",
+            "integrations": "Интеграциялар",
+            "konturKey": "Kontur.Focus API кілті",
+            "konturHint": "Деректемелерді автоматты толтыру үшін қажет"
+        },
+        "dir": {
+            "title": "Анықтамалықтар",
+            "subtitle": "Ашылмалы тізімдерді баптау",
+            "leadSource": "Лид көздері",
+            "leadSourceDesc": "Клиент қайдан келді",
+            "legalForm": "ҰПН",
+            "legalFormDesc": "ЖШС, ЖК, АҚ және т.б.",
+            "relation": "Қарым-қатынас түрлері",
+            "relationDesc": "Жылылық деңгейі",
+            "empty": "Тізім бос",
+            "addPlaceholder": "Жаңа мән"
+        },
+        "funnels": {
+            "title": "Құйғылар мен кезеңдер",
+            "subtitle": "Сату процестерін баптау",
+            "createFunnel": "Құйғы жасау",
+            "newFunnelPrompt": "Құйғы атауы",
+            "listTitle": "Құйғылар тізімі",
+            "emptyFunnels": "Құйғылар жоқ",
+            "stagesFor": "Құйғы кезеңдері",
+            "addStage": "Кезең қосу",
+            "newStagePrompt": "Кезең атауы",
+            "typeOpen": "Жұмыста",
+            "typeWon": "Сәтті жабылды",
+            "typeLost": "Сәтсіз жабылды",
+            "emptyStages": "Кезеңдер жоқ",
+            "selectHint": "Құйғыны таңдаңыз"
+        }
     }
 }

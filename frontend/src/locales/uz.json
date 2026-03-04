@@ -228,5 +228,275 @@
             "location": "Joylashuv",
             "employeeRange": "Kompaniya hajmi"
         }
+    },
+    "clients": {
+        "title": "Mijozlar",
+        "subtitle": "Mijoz-kompaniyalar bazasini boshqarish",
+        "add": "+ Mijoz qo'shish",
+        "search": "Nomi yoki STIR bo'yicha qidirish...",
+        "filters": "Filtrlar",
+        "filterTitle": "Filtrlash",
+        "clearFilters": "Tozalash",
+        "refresh": "Yangilash",
+        "all": "Barchasi",
+        "loading": "Yuklanmoqda...",
+        "empty": "Mijozlar hozircha yo'q",
+        "emptyHint": "Boshlash uchun \"+ Mijoz qo'shish\" tugmasini bosing",
+        "noResults": "Hech narsa topilmadi",
+        "noResultsHint": "Qidiruv parametrlarini o'zgartirib ko'ring",
+        "retry": "Qayta urinib ko'rish",
+        "total": "Ko'rsatildi",
+        "outOf": "jami",
+        "table": {
+            "name": "Nomi",
+            "inn": "STIR",
+            "legalForm": "Tashkiliy shakl",
+            "relationType": "Aloqa turi",
+            "source": "Manba",
+            "contacts": "Kontaktlar",
+            "deals": "Bitimlar"
+        },
+        "form": {
+            "title": "Yangi mijoz",
+            "editTitle": "Mijozni tahrirlash",
+            "name": "Kompaniya nomi",
+            "namePlaceholder": "\"Romashka\" MChJ",
+            "inn": "STIR",
+            "legalForm": "Tashkiliy shakl",
+            "relationType": "Aloqa turi",
+            "source": "Lid manbasi",
+            "address": "Manzil",
+            "addressPlaceholder": "Toshkent sh., A.Temur ko'ch., 1",
+            "website": "Sayt",
+            "notSelected": "Tanlanmagan",
+            "cancel": "Bekor qilish",
+            "submit": "Mijoz yaratish",
+            "saving": "Saqlanmoqda...",
+            "errors": {
+                "nameRequired": "Kompaniya nomini kiriting",
+                "createFailed": "Mijoz yaratishda xatolik yuz berdi"
+            }
+        },
+        "card": {
+            "backToList": "Mijozlar",
+            "edit": "Tahrirlash",
+            "save": "Saqlash",
+            "basicInfo": "Asosiy ma'lumot",
+            "contactInfo": "Aloqa ma'lumotlari",
+            "tabs": {
+                "main": "Asosiy",
+                "contacts": "Kontaktlar",
+                "deals": "Bitimlar",
+                "history": "Tarix"
+            },
+            "stats": {
+                "contacts": "Kontaktlar",
+                "deals": "Bitimlar",
+                "interactions": "Voqealar"
+            },
+            "errors": {
+                "loadFailed": "Mijoz kartasini yuklab bo'lmadi",
+                "notFound": "Mijoz topilmadi"
+            }
+        },
+        "contacts": {
+            "add": "+ Kontakt qo'shish",
+            "empty": "Kontakt shaxslar hozircha yo'q",
+            "form": {
+                "firstName": "Ism",
+                "firstNamePlaceholder": "Ivan",
+                "lastName": "Familiya",
+                "lastNamePlaceholder": "Ivanov",
+                "position": "Lavozim",
+                "positionPlaceholder": "Sotuv bo'limi direktori",
+                "phone": "Telefon",
+                "email": "Email",
+                "submit": "Kontakt qo'shish"
+            },
+            "errors": {
+                "nameRequired": "Ism yoki familiyani kiriting",
+                "createFailed": "Kontakt qo'shishda xatolik yuz berdi"
+            }
+        },
+        "deals": {
+            "create": "+ Bitim yaratish",
+            "empty": "Bitimlar hozircha yo'q"
+        },
+        "history": {
+            "add": "+ Qo'shish",
+            "empty": "O'zaro aloqalar hozircha yo'q",
+            "types": {
+                "call": "Qo'ng'iroq",
+                "meeting": "Uchrashuv",
+                "email": "Email",
+                "note": "Eslatma"
+            },
+            "form": {
+                "date": "Sana va vaqt",
+                "description": "Tavsif",
+                "descriptionPlaceholder": "Nima sodir bo'ldi...",
+                "submit": "Qo'shish"
+            },
+            "errors": {
+                "descriptionRequired": "Tavsifni kiriting",
+                "createFailed": "Saqlashda xatolik yuz berdi"
+            }
+        },
+        "errors": {
+            "loadFailed": "Mijozlarni yuklab bo'lmadi"
+        }
+    },
+    "contacts": {
+        "title": "Kontaktlar",
+        "subtitle": "Kontakt shaxslar bazasi",
+        "add": "+ Kontakt qo'shish",
+        "search": "Ism, email, lavozim bo'yicha qidirish...",
+        "refresh": "Yangilash",
+        "loading": "Yuklanmoqda...",
+        "empty": "Kontaktlar hozircha yo'q",
+        "emptyHint": "Boshlash uchun \"+ Kontakt qo'shish\" tugmasini bosing",
+        "noResults": "Hech narsa topilmadi",
+        "noResultsHint": "So'rovni o'zgartirib ko'ring",
+        "retry": "Qayta urinib ko'rish",
+        "total": "Ko'rsatildi",
+        "outOf": "jami",
+        "table": {
+            "name": "Kontakt",
+            "company": "Kompaniya",
+            "email": "Email",
+            "phone": "Telefon",
+            "position": "Lavozim"
+        },
+        "form": {
+            "title": "Yangi kontakt",
+            "firstName": "Ism",
+            "firstNamePlaceholder": "Ivan",
+            "lastName": "Familiya",
+            "lastNamePlaceholder": "Ivanov",
+            "position": "Lavozim",
+            "positionPlaceholder": "Sotuv bo'limi direktori",
+            "phoneWork": "Ish telefoni",
+            "phoneMobile": "Mobil telefon",
+            "email": "Email",
+            "company": "Kompaniya",
+            "noCompany": "Kompaniyasiz",
+            "comment": "Izoh",
+            "commentPlaceholder": "Qo'shimcha ma'lumot...",
+            "cancel": "Bekor qilish",
+            "submit": "Kontakt yaratish",
+            "saving": "Saqlanmoqda...",
+            "errors": {
+                "nameRequired": "Ism yoki familiyani kiriting",
+                "createFailed": "Kontakt yaratishda xatolik yuz berdi"
+            }
+        },
+        "card": {
+            "backToList": "Kontaktlar",
+            "edit": "Tahrirlash",
+            "save": "Saqlash",
+            "personalInfo": "Shaxsiy ma'lumotlar",
+            "contactInfo": "Aloqa ma'lumotlari",
+            "tabs": {
+                "main": "Asosiy",
+                "companies": "Kompaniyalar",
+                "history": "Tarix"
+            },
+            "stats": {
+                "companies": "Kompaniyalar",
+                "interactions": "Voqealar"
+            },
+            "errors": {
+                "loadFailed": "Kontakt kartasini yuklab bo'lmadi",
+                "notFound": "Kontakt topilmadi"
+            }
+        },
+        "companies": {
+            "link": "Kompaniyani biriktirish",
+            "empty": "Kompaniyalar biriktirilmagan",
+            "noAvailable": "Biriktirish uchun mavjud kompaniyalar yo'q",
+            "select": "Kompaniyani tanlang",
+            "isPrimary": "Asosiy kompaniya",
+            "errors": {
+                "selectRequired": "Kompaniyani tanlang",
+                "linkFailed": "Biriktirishda xatolik yuz berdi"
+            }
+        },
+        "history": {
+            "errors": {
+                "descriptionRequired": "Tavsifni kiriting",
+                "createFailed": "Saqlashda xatolik yuz berdi"
+            }
+        },
+        "errors": {
+            "loadFailed": "Kontaktlarni yuklab bo'lmadi"
+        }
+    },
+    "settings": {
+        "title": "Sozlamalar",
+        "subtitle": "Ilova parametrlari va ruxsatlarni boshqarish",
+        "save": "O'zgarishlarni saqlash",
+        "tabs": {
+            "users": "Foydalanuvchilar",
+            "company": "Kompaniya profili",
+            "directories": "Ma'lumotnomalar",
+            "funnels": "Voronkalar va bosqichlar"
+        },
+        "users": {
+            "title": "Foydalanuvchilar",
+            "subtitle": "Hamkasblarni taklif qiling va ularning ruxsatlarini boshqaring",
+            "noCompany": "Siz hech qanday kompaniyaga biriktirilmagansiz.",
+            "inviteTitle": "Foydalanuvchini taklif qilish",
+            "sendInvite": "Yuborish",
+            "listTitle": "Joriy foydalanuvchilar",
+            "count": "kishi",
+            "you": "Siz",
+            "statusActive": "Faol",
+            "statusInactive": "Bloklangan",
+            "block": "Bloklash",
+            "unblock": "Blokdan chiqarish",
+            "loadError": "Foydalanuvchilarni yuklab bo'lmadi"
+        },
+        "company": {
+            "title": "Kompaniya profili",
+            "subtitle": "Ish joyingizning asosiy sozlamalari va rekvizitlari",
+            "notFound": "Kompaniya profili mavjud emas.",
+            "orgCodeLabel": "Tashkilot kodi",
+            "orgCodeHint": "Kompaniyaga qo'shilish uchun ushbu kodni xodimlaringizga xabar qiling",
+            "name": "Kompaniya nomi",
+            "timezone": "Vaqt zonasi",
+            "currency": "Valyuta",
+            "defaultLanguage": "Standart til",
+            "integrations": "Integratsiyalar",
+            "konturKey": "Kontur.Focus API kaliti",
+            "konturHint": "Rekvizitlarni avtomatik to'ldirish uchun kerak"
+        },
+        "dir": {
+            "title": "Ma'lumotnomalar",
+            "subtitle": "Açiladigan ro'yxatlarni sozlash",
+            "leadSource": "Lid manbalari",
+            "leadSourceDesc": "Mijoz qayerdan keldi",
+            "legalForm": "Tashkiliy shakl",
+            "legalFormDesc": "MChJ, YaTT, AJ va h.k.",
+            "relation": "Aloqa turlari",
+            "relationDesc": "Iliqlik darajasi",
+            "empty": "Ro'yxat bo'sh",
+            "addPlaceholder": "Yangi qiymat"
+        },
+        "funnels": {
+            "title": "Voronkalar va bosqichlar",
+            "subtitle": "Sotuv jarayonlarini sozlash",
+            "createFunnel": "Voronka yaratish",
+            "newFunnelPrompt": "Voronka nomi",
+            "listTitle": "Voronkalar ro'yxati",
+            "emptyFunnels": "Voronkalar yo'q",
+            "stagesFor": "Voronka bosqichlari",
+            "addStage": "Bosqich qo'shish",
+            "newStagePrompt": "Bosqich nomi",
+            "typeOpen": "Ishda",
+            "typeWon": "Muvaffaqiyatli yopildi",
+            "typeLost": "Muvaffaqiyatsiz yopildi",
+            "emptyStages": "Bosqichlar yo'q",
+            "selectHint": "Voronkani tanlang"
+        }
     }
 }
