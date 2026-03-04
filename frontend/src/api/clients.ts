@@ -27,13 +27,15 @@ export interface ClientCompany {
 
 export interface ContactPerson {
     id: string;
-    firstName: string;
-    lastName: string;
+    firstName?: string;
+    lastName?: string;
     position?: string;
     phoneWork?: string;
+    phoneMobile?: string;
     phonePersonal?: string;
     email?: string;
     comment?: string;
+    clientCompanyId?: string;
     companies?: { id: string; name: string }[];
 }
 
@@ -50,6 +52,7 @@ export interface Interaction {
     clientCompanyId?: string;
     dealId?: string;
     contactId?: string;
+    contactPersonId?: string;
     interactionDate: string;
     description: string;
     authorUserId?: string;
@@ -64,11 +67,12 @@ interface RawClient {
 }
 interface RawContact {
     id: string; firstName?: string; lastName?: string; position?: string;
-    phoneWork?: string; phonePersonal?: string; email?: string; comment?: string;
+    phoneWork?: string; phoneMobile?: string; phonePersonal?: string;
+    email?: string; comment?: string; clientCompanyId?: string;
 }
 interface RawInteraction {
     id: string; type: string;
-    clientCompanyId?: string; dealId?: string; contactId?: string;
+    clientCompanyId?: string; dealId?: string; contactId?: string; contactPersonId?: string;
     interactionDate?: string; description?: string; authorUserId?: string;
 }
 
@@ -252,13 +256,15 @@ export const contactsApi = {
         const resp = await apiClient.get<RawContact[] | { data: RawContact[] }>('/application/api/ContactPerson');
         return unwrap(resp.data).map(c => ({
             id: c.id,
-            firstName: c.firstName || '',
-            lastName: c.lastName || '',
+            firstName: c.firstName,
+            lastName: c.lastName,
             position: c.position,
             phoneWork: c.phoneWork,
+            phoneMobile: c.phoneMobile,
             phonePersonal: c.phonePersonal,
             email: c.email,
             comment: c.comment,
+            clientCompanyId: c.clientCompanyId,
         }));
     },
 
@@ -269,9 +275,10 @@ export const contactsApi = {
         const resp = await apiClient.get<RawContact>(`/application/api/ContactPerson/${id}`);
         const c = resp.data;
         return {
-            id: c.id, firstName: c.firstName || '', lastName: c.lastName || '',
-            position: c.position, phoneWork: c.phoneWork, phonePersonal: c.phonePersonal,
-            email: c.email, comment: c.comment,
+            id: c.id, firstName: c.firstName, lastName: c.lastName,
+            position: c.position, phoneWork: c.phoneWork, phoneMobile: c.phoneMobile,
+            phonePersonal: c.phonePersonal, email: c.email, comment: c.comment,
+            clientCompanyId: c.clientCompanyId,
         };
     },
 
@@ -302,15 +309,16 @@ export const contactsApi = {
             lastName: data.lastName,
             position: data.position || null,
             phoneWork: data.phoneWork || null,
+            phoneMobile: data.phoneMobile || null,
             phonePersonal: data.phonePersonal || null,
             email: data.email || null,
             comment: data.comment || null,
         });
         const c = resp.data;
         return {
-            id: c.id, firstName: c.firstName || '', lastName: c.lastName || '',
-            position: c.position, phoneWork: c.phoneWork, phonePersonal: c.phonePersonal,
-            email: c.email, comment: c.comment
+            id: c.id, firstName: c.firstName, lastName: c.lastName,
+            position: c.position, phoneWork: c.phoneWork, phoneMobile: c.phoneMobile,
+            phonePersonal: c.phonePersonal, email: c.email, comment: c.comment
         };
     },
 
@@ -361,6 +369,7 @@ export const interactionsApi = {
             clientCompanyId: i.clientCompanyId,
             dealId: i.dealId,
             contactId: i.contactId,
+            contactPersonId: i.contactPersonId,
             interactionDate: i.interactionDate || new Date().toISOString(),
             description: i.description || '',
             authorUserId: i.authorUserId,
@@ -376,6 +385,7 @@ export const interactionsApi = {
             clientCompanyId: data.clientCompanyId || null,
             dealId: data.dealId || null,
             contactId: data.contactId || null,
+            contactPersonId: data.contactPersonId || null,
             interactionDate: data.interactionDate,
             description: data.description,
         });

@@ -355,5 +355,90 @@
         "errors": {
             "loadFailed": "Не удалось загрузить клиентов"
         }
+    },
+    "contacts": {
+        "title": "Контакты",
+        "subtitle": "База контактных лиц",
+        "add": "+ Добавить контакт",
+        "search": "Поиск по имени, email, должности...",
+        "refresh": "Обновить",
+        "loading": "Загрузка...",
+        "empty": "Контактов пока нет",
+        "emptyHint": "Нажмите «+ Добавить контакт», чтобы начать",
+        "noResults": "Ничего не найдено",
+        "noResultsHint": "Попробуйте изменить запрос",
+        "retry": "Попробовать снова",
+        "total": "Показано",
+        "outOf": "из",
+        "table": {
+            "name": "Контакт",
+            "company": "Компания",
+            "email": "Email",
+            "phone": "Телефон",
+            "position": "Должность"
+        },
+        "form": {
+            "title": "Новый контакт",
+            "firstName": "Имя",
+            "firstNamePlaceholder": "Иван",
+            "lastName": "Фамилия",
+            "lastNamePlaceholder": "Иванов",
+            "position": "Должность",
+            "positionPlaceholder": "Директор по продажам",
+            "phoneWork": "Рабочий тел.",
+            "phoneMobile": "Мобильный",
+            "email": "Email",
+            "company": "Компания",
+            "noCompany": "Без компании",
+            "comment": "Комментарий",
+            "commentPlaceholder": "Дополнительная информация...",
+            "cancel": "Отмена",
+            "submit": "Создать контакт",
+            "saving": "Сохранение...",
+            "errors": {
+                "nameRequired": "Введите имя или фамилию",
+                "createFailed": "Ошибка при создании контакта"
+            }
+        },
+        "card": {
+            "backToList": "Контакты",
+            "edit": "Редактировать",
+            "save": "Сохранить",
+            "personalInfo": "Личные данные",
+            "contactInfo": "Контактная информация",
+            "tabs": {
+                "main": "Основное",
+                "companies": "Компании",
+                "history": "История"
+            },
+            "stats": {
+                "companies": "Компаний",
+                "interactions": "Событий"
+            },
+            "errors": {
+                "loadFailed": "Не удалось загрузить карточку контакта",
+                "notFound": "Контакт не найден"
+            }
+        },
+        "companies": {
+            "link": "Привязать компанию",
+            "empty": "Компании не привязаны",
+            "noAvailable": "Нет доступных компаний для привязки",
+            "select": "Выберите компанию",
+            "isPrimary": "Основная компания",
+            "errors": {
+                "selectRequired": "Выберите компанию",
+                "linkFailed": "Ошибка при привязке"
+            }
+        },
+        "history": {
+            "errors": {
+                "descriptionRequired": "Введите описание",
+                "createFailed": "Ошибка при сохранении"
+            }
+        },
+        "errors": {
+            "loadFailed": "Не удалось загрузить контакты"
+        }
     }
 }

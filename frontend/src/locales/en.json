@@ -355,5 +355,90 @@
         "errors": {
             "loadFailed": "Failed to load clients"
         }
+    },
+    "contacts": {
+        "title": "Contacts",
+        "subtitle": "Contact persons database",
+        "add": "+ Add Contact",
+        "search": "Search by name, email, position...",
+        "refresh": "Refresh",
+        "loading": "Loading...",
+        "empty": "No contacts yet",
+        "emptyHint": "Click «+ Add Contact» to get started",
+        "noResults": "Nothing found",
+        "noResultsHint": "Try adjusting your search",
+        "retry": "Try again",
+        "total": "Showing",
+        "outOf": "of",
+        "table": {
+            "name": "Contact",
+            "company": "Company",
+            "email": "Email",
+            "phone": "Phone",
+            "position": "Position"
+        },
+        "form": {
+            "title": "New Contact",
+            "firstName": "First Name",
+            "firstNamePlaceholder": "John",
+            "lastName": "Last Name",
+            "lastNamePlaceholder": "Doe",
+            "position": "Position",
+            "positionPlaceholder": "Sales Director",
+            "phoneWork": "Work Phone",
+            "phoneMobile": "Mobile",
+            "email": "Email",
+            "company": "Company",
+            "noCompany": "No Company",
+            "comment": "Comment",
+            "commentPlaceholder": "Additional information...",
+            "cancel": "Cancel",
+            "submit": "Create Contact",
+            "saving": "Saving...",
+            "errors": {
+                "nameRequired": "Enter first or last name",
+                "createFailed": "Failed to create contact"
+            }
+        },
+        "card": {
+            "backToList": "Contacts",
+            "edit": "Edit",
+            "save": "Save",
+            "personalInfo": "Personal Details",
+            "contactInfo": "Contact Information",
+            "tabs": {
+                "main": "Overview",
+                "companies": "Companies",
+                "history": "History"
+            },
+            "stats": {
+                "companies": "Companies",
+                "interactions": "Activities"
+            },
+            "errors": {
+                "loadFailed": "Failed to load contact card",
+                "notFound": "Contact not found"
+            }
+        },
+        "companies": {
+            "link": "Link Company",
+            "empty": "No companies linked",
+            "noAvailable": "No available companies to link",
+            "select": "Select a company",
+            "isPrimary": "Primary company",
+            "errors": {
+                "selectRequired": "Select a company",
+                "linkFailed": "Failed to link company"
+            }
+        },
+        "history": {
+            "errors": {
+                "descriptionRequired": "Enter description",
+                "createFailed": "Failed to save"
+            }
+        },
+        "errors": {
+            "loadFailed": "Failed to load contacts"
+        }
     }
 }

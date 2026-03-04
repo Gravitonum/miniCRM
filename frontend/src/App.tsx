@@ -8,6 +8,8 @@ import { DealsPage } from './pages/deals/DealsPage';
 import { DealDetailsPage } from './pages/deals/DealDetailsPage';
 import { ClientsPage } from './pages/clients/ClientsPage';
 import { ClientCardPage } from './pages/clients/ClientCardPage';
+import { ContactsPage } from './pages/contacts/ContactsPage';
+import { ContactCardPage } from './pages/contacts/ContactCardPage';
 import { getAppUser } from './lib/api';
 
 function ProtectedRoute({ children }: { children: ReactElement }): ReactElement {
@@ -148,6 +150,18 @@ export default function App(): ReactElement {
         } />
 
         {/* Catch-all redirect */}
+        <Route path="/contacts" element={
+          <ProtectedRoute>
+            <ContactsPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/contacts/:id" element={
+          <ProtectedRoute>
+            <ContactCardPage />
+          </ProtectedRoute>
+        } />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
