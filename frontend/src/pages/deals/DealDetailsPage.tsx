@@ -1,14 +1,30 @@
-import { type ReactElement, useState } from 'react';
+import { type ReactElement, useState, useEffect, useCallback } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
     ArrowLeft, CheckCircle2, MoreHorizontal, Plus,
-    Mail, Phone, MapPin, Building2, Users
+    Mail, Phone, MapPin, Building2, Loader2, AlertCircle, Phone as PhoneIcon, Video, FileText, StickyNote, History
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
+import { dealsApi, type Deal } from '../../api/deals';
+import { clientsApi, interactionsApi, type ClientCompany, type Interaction } from '../../api/clients';
+
+const INTERACTION_ICONS = {
+    call: PhoneIcon,
+    meeting: Video,
+    email: Mail,
+    note: StickyNote,
+};
+
+const INTERACTION_COLORS = {
+    call: 'text-blue-500 bg-blue-500/10',
+    meeting: 'text-violet-500 bg-violet-500/10',
+    email: 'text-amber-500 bg-amber-500/10',
+    note: 'text-green-500 bg-green-500/10',
+};
 
 /** Тип этапа сделки */
 type StageStatus = 'completed' | 'current' | 'pending';
@@ -50,15 +66,65 @@ export function DealDetailsPage(): ReactElement {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState<'overview' | 'tasks' | 'notes' | 'history'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'notes' | 'history'>('overview');
 
-    const dealName = 'SaaS Collaboration Tool Deal';
-    void id;
+    const [deal, setDeal] = useState<Deal | null>(null);
+    const [company, setCompany] = useState<ClientCompany | null>(null);
+    const [interactions, setInteractions] = useState<Interaction[]>([]);
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const loadData = useCallback(async () => {
+        if (!id) return;
+        setIsLoading(true);
+        setError(null);
+        try {
+            const dealData = await dealsApi.getDealById(id);
+            setDeal(dealData);
+
+            if (dealData.clientCompanyId) {
+                const compData = await clientsApi.getById(dealData.clientCompanyId);
+                setCompany(compData);
+            }
+
+            const historyData = await interactionsApi.get({ dealId: id });
+            setInteractions(historyData.sort((a, b) => new Date(b.interactionDate).getTime() - new Date(a.interactionDate).getTime()));
+        } catch (err) {
+            console.error('Failed to load deal details', err);
+            setError(t('deals.details.loadError', 'Не удалось загрузить данные сделки'));
+        } finally {
+            setIsLoading(false);
+        }
+    }, [id, t]);
+
+    useEffect(() => { void loadData(); }, [loadData]);
+
+    if (isLoading) {
+        return (
+            <DashboardLayout>
+                <div className="flex items-center justify-center py-32">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+            </DashboardLayout>
+        );
+    }
+
+    if (error || !deal) {
+        return (
+            <DashboardLayout>
+                <div className="flex flex-col items-center justify-center py-24 gap-4">
+                    <AlertCircle className="w-12 h-12 text-destructive" />
+                    <p className="text-sm text-destructive">{error || t('deals.details.notFound', 'Сделка не найдена')}</p>
+                    <Button onClick={() => navigate('/deals')}>{t('deals.details.backToDeals')}</Button>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     const tabs: { key: typeof activeTab; label: string }[] = [
         { key: 'overview', label: t('deals.details.tabs.overview') },
-        { key: 'tasks', label: t('deals.details.tabs.tasks') },
-        { key: 'notes', label: t('deals.details.tabs.notes') },
+        { key: 'products', label: t('deals.details.tabs.products', 'Продукты') },
         { key: 'history', label: t('deals.details.tabs.history') },
     ];
 
@@ -75,7 +141,7 @@ export function DealDetailsPage(): ReactElement {
                         <ArrowLeft className="w-4 h-4 mr-1.5" />
                         {t('deals.details.backToDeals')}
                     </button>
-                    <h1 className="text-2xl font-bold text-foreground">{dealName}</h1>
+                    <h1 className="text-2xl font-bold text-foreground">{deal.name}</h1>
 
                     <div className="flex gap-0.5 mt-5 border-b border-border">
                         {tabs.map((tab) => (
@@ -154,18 +220,14 @@ export function DealDetailsPage(): ReactElement {
                                 </CardHeader>
                                 <CardContent className="space-y-8">
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                                        <FieldBlock label={t('deals.details.fields.opportunityId')} value="OP-001" />
-                                        <FieldBlock label={t('deals.details.fields.industry')} value="Технологии / ПО" />
-                                        <FieldBlock label={t('deals.details.fields.closeDate')} value="05.12.2025" />
-                                        <FieldBlock label={t('deals.details.fields.probability')} value="70%" />
+                                        <FieldBlock label={t('deals.details.fields.opportunityId')} value={deal.id.split('-')[0].toUpperCase()} />
+                                        <FieldBlock label={t('deals.details.fields.industry')} value={company?.name || '—'} />
+                                        <FieldBlock label={t('deals.details.fields.closeDate')} value={deal.deadline ? new Date(deal.deadline).toLocaleDateString('ru-RU') : '—'} />
                                     </div>
                                     <div>
                                         <h3 className="text-sm font-semibold text-foreground mb-4">{t('deals.details.financials')}</h3>
                                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                                            <FieldBlock label={t('deals.details.fields.expectedRevenue')} value="8 000 ₽" />
-                                            <FieldBlock label={t('deals.details.fields.discount')} value="10%" />
-                                            <FieldBlock label={t('deals.details.fields.subscriptionDetails')} value="80 ₽/пользователь/год" />
-                                            <FieldBlock label={t('deals.details.fields.competitorPricing')} value="85 ₽/пользователь/год" />
+                                            <FieldBlock label={t('deals.details.fields.expectedRevenue')} value={`${deal.amount.toLocaleString('ru-RU')} ₽`} />
                                         </div>
                                     </div>
                                 </CardContent>
@@ -225,49 +287,121 @@ export function DealDetailsPage(): ReactElement {
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                                     <CardTitle className="text-base">{t('deals.details.company')}</CardTitle>
-                                    <button className="text-muted-foreground hover:text-foreground">
-                                        <MoreHorizontal className="w-5 h-5" />
-                                    </button>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="flex items-center gap-3 mb-5">
-                                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500 to-primary flex items-center justify-center text-white shadow-sm flex-shrink-0">
-                                            <Building2 className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-foreground text-sm">Code Sphere</p>
-                                            <p className="text-xs text-muted-foreground">Технологии</p>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FieldBlock label={t('deals.details.industry')} value="Технологии" />
-                                        <div>
-                                            <p className="text-xs text-muted-foreground mb-1">{t('deals.details.location')}</p>
-                                            <div className="flex items-center gap-1">
-                                                <MapPin className="w-3 h-3 text-muted-foreground/60" />
-                                                <p className="text-sm font-semibold text-foreground">Москва</p>
+                                    {company ? (
+                                        <>
+                                            <div className="flex items-center gap-3 mb-5 cursor-pointer group" onClick={() => navigate(`/clients/${company.id}`)}>
+                                                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500 to-primary flex items-center justify-center text-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
+                                                    <Building2 className="w-5 h-5" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-foreground text-sm group-hover:text-primary transition-colors">{company.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{company.inn ? `ИНН: ${company.inn}` : 'Отрасль не указана'}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-muted-foreground mb-1">{t('deals.details.employeeRange')}</p>
-                                            <div className="flex items-center gap-1">
-                                                <Users className="w-3 h-3 text-muted-foreground/60" />
-                                                <span className="text-sm font-semibold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-md">100K+</span>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <p className="text-xs text-muted-foreground mb-1">{t('deals.details.location')}</p>
+                                                    <div className="flex items-center gap-1">
+                                                        <MapPin className="w-3 h-3 text-muted-foreground/60" />
+                                                        <p className="text-sm font-semibold text-foreground">{company.address || '—'}</p>
+                                                    </div>
+                                                </div>
                                             </div>
+                                        </>
+                                    ) : (
+                                        <div className="text-sm text-muted-foreground flex items-center justify-center py-6">
+                                            Компания не привязана
                                         </div>
-                                    </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>
                     </div>
                 )}
 
-                {/* Other tabs placeholders */}
-                {activeTab !== 'overview' && (
+                {/* Вкладка Продукты (Моки) */}
+                {activeTab === 'products' && (
                     <Card>
-                        <CardContent className="py-16 flex flex-col items-center justify-center text-center">
-                            <p className="text-muted-foreground/40 text-lg font-medium mb-2">{t(`deals.details.tabs.${activeTab}`)}</p>
-                            <p className="text-muted-foreground/30 text-sm">{t('deals.noDealsHint')}</p>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="text-base">{t('deals.details.tabs.products', 'Продукты')}</CardTitle>
+                            <Button size="sm">
+                                <Plus className="w-4 h-4 mr-1 lg:hidden" />
+                                <span className="hidden lg:inline">{t('deals.products.add', '+ Добавить продукт')}</span>
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="border border-border rounded-xl overflow-hidden">
+                                <table className="w-full text-left">
+                                    <thead className="bg-muted/50 border-b border-border text-xs font-semibold text-muted-foreground">
+                                        <tr>
+                                            <th className="px-4 py-3 pb-2">{t('deals.products.table.name', 'Наименование')}</th>
+                                            <th className="px-4 py-3 pb-2">{t('deals.products.table.price', 'Цена')}</th>
+                                            <th className="px-4 py-3 pb-2">{t('deals.products.table.quantity', 'Кол-во')}</th>
+                                            <th className="px-4 py-3 pb-2">{t('deals.products.table.total', 'Сумма')}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border">
+                                        <tr className="hover:bg-accent/30 transition-colors">
+                                            <td className="px-4 py-3 text-sm font-medium text-foreground">Основной тариф</td>
+                                            <td className="px-4 py-3 text-sm text-foreground">{deal.amount.toLocaleString()} ₽</td>
+                                            <td className="px-4 py-3 text-sm text-foreground">1 шт.</td>
+                                            <td className="px-4 py-3 text-sm font-bold text-primary">{deal.amount.toLocaleString()} ₽</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Вкладка История (Взаимодействия) */}
+                {activeTab === 'history' && (
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="text-base">{t('deals.details.tabs.history')}</CardTitle>
+                            <Button size="sm" variant="outline">
+                                <Plus className="w-4 h-4 mr-1" />
+                                Оставить заметку
+                            </Button>
+                        </CardHeader>
+                        <CardContent>
+                            {interactions.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-10">
+                                    <History className="w-8 h-8 text-muted-foreground/40 mb-2" />
+                                    <p className="text-sm font-medium text-muted-foreground">Нет событий в истории</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    {interactions.map(interaction => {
+                                        const date = new Date(interaction.interactionDate);
+                                        const Icon = INTERACTION_ICONS[interaction.type] || FileText;
+                                        const color = INTERACTION_COLORS[interaction.type] || 'text-muted-foreground bg-muted';
+
+                                        return (
+                                            <div key={interaction.id} className="flex gap-4">
+                                                <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center mt-1 ${color}`}>
+                                                    <Icon className="w-4 h-4" />
+                                                </div>
+                                                <div className="flex-1 bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md hover:border-primary/20 transition-all group">
+                                                    <div className="flex items-start justify-between mb-2">
+                                                        <div className="font-semibold text-sm text-foreground capitalize">
+                                                            {t(`clients.history.types.${interaction.type}`)}
+                                                        </div>
+                                                        <div className="text-xs text-muted-foreground font-medium bg-muted/50 px-2 py-1 rounded-md">
+                                                            {date.toLocaleDateString('ru-RU')} в {date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                                                        {interaction.description}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 )}

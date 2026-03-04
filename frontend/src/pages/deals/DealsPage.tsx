@@ -10,10 +10,11 @@ import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useTranslation } from 'react-i18next';
 import {
     Plus, Filter, LayoutGrid, List, ChevronRight,
-    Calendar, Banknote, User, Briefcase, Layers
+    Calendar, Banknote, User, Briefcase, Layers, Building2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { dealsApi } from '../../api/deals';
+import { dealsApi, type Deal } from '../../api/deals';
+import { clientsApi, type ClientCompany } from '../../api/clients';
 import { getAppUser } from '../../lib/api';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -37,16 +38,6 @@ import { cn } from '../../lib/utils';
 
 /** Статусы этапов воронки */
 type StageKey = 'prospecting' | 'qualified' | 'discovery' | 'proposalSent' | 'negotiation' | 'closed';
-
-/** Модель сделки */
-interface Deal {
-    id: string;
-    name: string;
-    amount: number;
-    stage: StageKey;
-    responsible: string;
-    deadline?: string;
-}
 
 /** Config of stages */
 const STAGES: { key: StageKey; badge: BadgeProps['variant'] }[] = [
@@ -79,20 +70,22 @@ function formatAmount(amount: number): string {
 interface NewDealFormProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (deal: Omit<Deal, 'id'>) => void;
+    onSubmit: (deal: Omit<Deal, 'id' | 'clientCompanyName'>) => void;
     managers: { username: string; id: string }[];
+    clients: ClientCompany[];
 }
 
 /**
  * Модальная форма создания новой сделки (Dialog).
  */
-function NewDealForm({ open, onClose, onSubmit, managers }: NewDealFormProps): ReactElement {
+function NewDealForm({ open, onClose, onSubmit, managers, clients }: NewDealFormProps): ReactElement {
     const { t } = useTranslation();
     const [name, setName] = useState('');
     const [amount, setAmount] = useState('');
     const [stage, setStage] = useState<StageKey>('prospecting');
     const [responsible, setResponsible] = useState('');
     const [deadline, setDeadline] = useState('');
+    const [clientCompanyId, setClientCompanyId] = useState<string>('none');
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
     const firstInputRef = useRef<HTMLInputElement>(null);
@@ -106,7 +99,7 @@ function NewDealForm({ open, onClose, onSubmit, managers }: NewDealFormProps): R
     /** Сброс формы при закрытии */
     function handleClose() {
         setName(''); setAmount(''); setStage('prospecting');
-        setResponsible(''); setDeadline(''); setErrors({});
+        setResponsible(''); setDeadline(''); setClientCompanyId('none'); setErrors({});
         onClose();
     }
 
@@ -131,6 +124,7 @@ function NewDealForm({ open, onClose, onSubmit, managers }: NewDealFormProps): R
             stage,
             responsible: responsible.trim() || 'Не назначен',
             deadline: deadline || undefined,
+            clientCompanyId: clientCompanyId !== 'none' ? clientCompanyId : undefined,
         });
         setSubmitting(false);
         handleClose();
@@ -138,7 +132,7 @@ function NewDealForm({ open, onClose, onSubmit, managers }: NewDealFormProps): R
 
     return (
         <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); }}>
-            <DialogContent className="max-w-md sm:max-w-xl overflow-hidden shadow-2xl border-border/50">
+            <DialogContent className="max-w-md sm:max-w-xl overflow-y-auto max-h-[90vh] shadow-2xl border-border/50">
                 {/* Header с градиентом */}
                 <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-border/50 -mx-6 -mt-6 px-6 pt-6 pb-5 flex items-start gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
@@ -215,6 +209,28 @@ function NewDealForm({ open, onClose, onSubmit, managers }: NewDealFormProps): R
                         </div>
                     </div>
 
+                    <div className="space-y-2">
+                        <Label htmlFor="deal-client" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('deals.form.client')}</Label>
+                        <Select value={clientCompanyId} onValueChange={(v) => setClientCompanyId(v)}>
+                            <SelectTrigger id="deal-client" className="bg-background transition-colors h-[56px] px-5 border-2 border-border focus:border-primary focus:ring-4 focus:ring-primary/20 rounded-2xl w-full">
+                                <div className="flex items-center gap-3">
+                                    <Building2 className="w-5 h-5 text-muted-foreground/50" />
+                                    <SelectValue placeholder={t('deals.form.clientPlaceholder', 'Выберите компанию клиента')} />
+                                </div>
+                            </SelectTrigger>
+                            <SelectContent className="border-border/50 max-h-[250px]">
+                                <SelectItem value="none" className="cursor-pointer text-muted-foreground italic">
+                                    {t('deals.form.noClient', 'Без привязки к компании')}
+                                </SelectItem>
+                                {clients.map((c) => (
+                                    <SelectItem key={c.id} value={c.id} className="cursor-pointer">
+                                        {c.name} {c.inn ? `(ИНН: ${c.inn})` : ''}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                         {/* Ответственный */}
                         <div className="space-y-2">
@@ -268,7 +284,7 @@ function NewDealForm({ open, onClose, onSubmit, managers }: NewDealFormProps): R
 }
 
 /** Карточка сделки на Kanban-доске */
-function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }): ReactElement {
+function DealCard({ deal, onClick, onDragStart }: { deal: Deal; onClick: () => void; onDragStart?: (e: React.DragEvent) => void }): ReactElement {
     const { t } = useTranslation();
     const isOverdue = deal.deadline ? new Date(deal.deadline) < new Date() : false;
     const stageConf = STAGES.find((s) => s.key === deal.stage);
@@ -276,6 +292,8 @@ function DealCard({ deal, onClick }: { deal: Deal; onClick: () => void }): React
     return (
         <div
             onClick={onClick}
+            draggable={!!onDragStart}
+            onDragStart={onDragStart}
             className="bg-card rounded-xl border border-border !p-5 shadow-sm cursor-pointer hover:shadow-md hover:border-primary/30 transition-all group flex flex-col gap-3.5 overflow-hidden relative min-w-0"
         >
             <div className="flex flex-col min-w-0 gap-1">
@@ -320,18 +338,28 @@ export function DealsPage(): ReactElement {
     const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
     const [showNewDealForm, setShowNewDealForm] = useState(false);
     const [deals, setDeals] = useState<Deal[]>([]);
+    const [clients, setClients] = useState<ClientCompany[]>([]);
     const [search, setSearch] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [managers, setManagers] = useState<{ username: string; id: string }[]>([]);
+
+    // State for Confirm Dialog on Won/Lost
+    const [confirmStage, setConfirmStage] = useState<{ dealId: string, oldStage: StageKey, newStage: StageKey } | null>(null);
+    const [confirmComment, setConfirmComment] = useState('');
+    const [isConfirming, setIsConfirming] = useState(false);
 
     useEffect(() => {
         setIsLoading(true);
 
         async function fetchData() {
             try {
-                // Fetch deals
-                const dealsData = await dealsApi.getDeals();
+                // Fetch deals & clients
+                const [dealsData, clientsData] = await Promise.all([
+                    dealsApi.getDeals(),
+                    clientsApi.getAll()
+                ]);
                 setDeals(dealsData as Deal[]);
+                setClients(clientsData);
 
                 // Fetch managers (users in same org)
                 const username = localStorage.getItem('gravisales_username') || sessionStorage.getItem('gravisales_current_user');
@@ -353,7 +381,7 @@ export function DealsPage(): ReactElement {
     }, []);
 
     /** Добавление новой сделки */
-    async function handleAddDeal(newDeal: Omit<Deal, 'id'>): Promise<void> {
+    async function handleAddDeal(newDeal: Omit<Deal, 'id' | 'clientCompanyName'>): Promise<void> {
         try {
             const savedDeal = await dealsApi.createDeal(newDeal);
             setDeals((prev) => [savedDeal as Deal, ...prev]);
@@ -367,6 +395,67 @@ export function DealsPage(): ReactElement {
             d.name.toLowerCase().includes(search.toLowerCase()) ||
             d.responsible.toLowerCase().includes(search.toLowerCase())
     );
+
+    /** Drag-and-Drop handlers */
+    function handleDragStart(e: React.DragEvent, dealId: string) {
+        e.dataTransfer.setData('dealId', dealId);
+        e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragOver(e: React.DragEvent) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    async function handleDrop(e: React.DragEvent, newStage: StageKey) {
+        e.preventDefault();
+        const dealId = e.dataTransfer.getData('dealId');
+        if (!dealId) return;
+
+        const deal = deals.find((d) => d.id === dealId);
+        if (!deal || deal.stage === newStage) return;
+
+        // Если переставили в closed (или если бы были этапы won/lost), запрашиваем подтверждение
+        // В нашем конфиге STAGES закрытым считается 'closed'
+        if (newStage === 'closed') {
+            setConfirmStage({ dealId, oldStage: deal.stage, newStage });
+            setConfirmComment('');
+            return;
+        }
+
+        // Optimistic update
+        const oldStage = deal.stage;
+        setDeals((prev) => prev.map((d) => (d.id === dealId ? { ...d, stage: newStage } : d)));
+
+        try {
+            await dealsApi.updateDeal(dealId, { stage: newStage });
+        } catch (error) {
+            console.error('Failed to move deal', error);
+            // Revert on error
+            setDeals((prev) => prev.map((d) => (d.id === dealId ? { ...d, stage: oldStage } : d)));
+        }
+    }
+
+    async function handleConfirmStageChange() {
+        if (!confirmStage) return;
+        setIsConfirming(true);
+        const { dealId, oldStage, newStage } = confirmStage;
+
+        // Optimistic update
+        setDeals((prev) => prev.map((d) => (d.id === dealId ? { ...d, stage: newStage } : d)));
+
+        try {
+            // В будущем тут можно сохранять комментарий confirmComment в ленту взаимодействий сделки
+            await dealsApi.updateDeal(dealId, { stage: newStage });
+        } catch (error) {
+            console.error('Failed to move deal', error);
+            // Revert on error
+            setDeals((prev) => prev.map((d) => (d.id === dealId ? { ...d, stage: oldStage } : d)));
+        } finally {
+            setIsConfirming(false);
+            setConfirmStage(null);
+        }
+    }
 
     return (
         <DashboardLayout>
@@ -449,7 +538,12 @@ export function DealsPage(): ReactElement {
                                 const colors = STAGE_KANBAN_COLORS[stageConfig.key];
 
                                 return (
-                                    <div key={stageConfig.key} className="w-64 shrink-0 flex flex-col gap-3">
+                                    <div
+                                        key={stageConfig.key}
+                                        className="w-64 shrink-0 flex flex-col gap-3"
+                                        onDragOver={handleDragOver}
+                                        onDrop={(e) => { void handleDrop(e, stageConfig.key); }}
+                                    >
                                         <div className={cn('flex items-center justify-between px-3 py-2 rounded-xl border gap-2', colors.header)}>
                                             <div className="flex items-center gap-2 min-w-0 flex-1">
                                                 <span className={cn('w-2 h-2 rounded-full shrink-0', colors.dot)} />
@@ -474,6 +568,7 @@ export function DealsPage(): ReactElement {
                                                     key={deal.id}
                                                     deal={deal}
                                                     onClick={() => navigate(`/deals/${deal.id}`)}
+                                                    onDragStart={(e) => handleDragStart(e, deal.id)}
                                                 />
                                             ))}
                                             {stageDeals.length === 0 && (
@@ -551,7 +646,33 @@ export function DealsPage(): ReactElement {
                 onClose={() => setShowNewDealForm(false)}
                 onSubmit={handleAddDeal}
                 managers={managers}
+                clients={clients}
             />
+
+            {/* Confirm Stage Modal */}
+            <Dialog open={!!confirmStage} onOpenChange={(v) => { if (!v && !isConfirming) setConfirmStage(null); }}>
+                <DialogContent className="max-w-md shadow-2xl border-border/50">
+                    <DialogTitle className="text-xl font-bold">{t('deals.confirmStageTitle', 'Подтверждение статуса')}</DialogTitle>
+                    <div className="space-y-4 py-4">
+                        <p className="text-sm text-muted-foreground">
+                            {t('deals.confirmStageDesc', 'Вы переносите сделку в закрытый этап. Пожалуйста, укажите комментарий (причину):')}
+                        </p>
+                        <Input
+                            value={confirmComment}
+                            onChange={(e) => setConfirmComment(e.target.value)}
+                            placeholder={t('deals.confirmCommentPlaceholder', 'Например: Клиент подписал договор...')}
+                        />
+                    </div>
+                    <DialogFooter className="gap-2">
+                        <Button variant="outline" onClick={() => setConfirmStage(null)} disabled={isConfirming}>
+                            {t('deals.form.cancel')}
+                        </Button>
+                        <Button onClick={handleConfirmStageChange} disabled={isConfirming}>
+                            {t('deals.form.submit')}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </DashboardLayout>
     );
 }
