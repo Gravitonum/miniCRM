@@ -10,6 +10,7 @@ import { ClientsPage } from './pages/clients/ClientsPage';
 import { ClientCardPage } from './pages/clients/ClientCardPage';
 import { ContactsPage } from './pages/contacts/ContactsPage';
 import { ContactCardPage } from './pages/contacts/ContactCardPage';
+import { SettingsPage } from './pages/settings/SettingsPage';
 import { getAppUser } from './lib/api';
 
 function ProtectedRoute({ children }: { children: ReactElement }): ReactElement {
@@ -146,6 +147,18 @@ export default function App(): ReactElement {
         <Route path="/clients/:id" element={
           <ProtectedRoute>
             <ClientCardPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/contacts/:id" element={
+          <ProtectedRoute>
+            <ContactCardPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <SettingsPage />
           </ProtectedRoute>
         } />
 

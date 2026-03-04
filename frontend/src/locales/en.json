@@ -440,5 +440,73 @@
         "errors": {
             "loadFailed": "Failed to load contacts"
         }
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Manage application parameters and access",
+        "save": "Save Changes",
+        "tabs": {
+            "users": "Users",
+            "company": "Company Profile",
+            "directories": "Directories",
+            "funnels": "Funnels & Stages"
+        },
+        "users": {
+            "title": "Users",
+            "subtitle": "Invite colleagues and manage access",
+            "noCompany": "You are not linked to any company.",
+            "inviteTitle": "Invite User",
+            "sendInvite": "Send Invite",
+            "listTitle": "Current Users",
+            "count": "users",
+            "you": "You",
+            "statusActive": "Active",
+            "statusInactive": "Blocked",
+            "block": "Block",
+            "unblock": "Unblock",
+            "loadError": "Failed to load users"
+        },
+        "company": {
+            "title": "Company Profile",
+            "subtitle": "Core settings and workspace details",
+            "notFound": "Company profile is not available.",
+            "orgCodeLabel": "Organization Code",
+            "orgCodeHint": "Share this code with your employees to join",
+            "name": "Company Name",
+            "timezone": "Timezone",
+            "currency": "Currency",
+            "defaultLanguage": "Default Language",
+            "integrations": "Integrations",
+            "konturKey": "Kontur.Focus API Key",
+            "konturHint": "Required for fetching company details by INN"
+        },
+        "dir": {
+            "title": "Directories",
+            "subtitle": "Manage dropdown lists",
+            "leadSource": "Lead Sources",
+            "leadSourceDesc": "Where the client came from",
+            "legalForm": "Legal Forms",
+            "legalFormDesc": "LLC, JSC, etc.",
+            "relation": "Relation Types",
+            "relationDesc": "Client, Partner, etc.",
+            "empty": "List is empty",
+            "addPlaceholder": "New value"
+        },
+        "funnels": {
+            "title": "Funnels & Stages",
+            "subtitle": "Configure sales processes",
+            "createFunnel": "Create Funnel",
+            "newFunnelPrompt": "New funnel name",
+            "listTitle": "Funnels List",
+            "emptyFunnels": "No funnels yet",
+            "stagesFor": "Stages for",
+            "addStage": "Add stage",
+            "newStagePrompt": "Stage name",
+            "typeOpen": "Open",
+            "typeWon": "Won",
+            "typeLost": "Lost",
+            "emptyStages": "No stages in this funnel",
+            "selectHint": "Select a funnel from the list"
+        }
     }
 }
