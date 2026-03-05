@@ -442,12 +442,14 @@
         }
     },
     "onboarding": {
+        "exit": "Exit Setup Wizard",
         "title": "Welcome to GraviSales!",
         "subtitle": "Let's set up your workspace",
         "step": "Step {{current}} of {{total}}",
         "next": "Next",
         "back": "Back",
         "skip": "Skip",
+        "doNotShowAgain": "Do not show again",
         "finish": "Finish Setup",
         "finishing": "Saving...",
         "steps": {
@@ -553,6 +555,8 @@
             "timezone": "Timezone",
             "currency": "Currency",
             "defaultLanguage": "Default Language",
+            "launchWizard": "Launch setup wizard",
+            "launchWizardHint": "Go through the initial setup again",
             "integrations": "Integrations",
             "konturKey": "Kontur.Focus API Key",
             "konturHint": "Required for fetching company details by INN"

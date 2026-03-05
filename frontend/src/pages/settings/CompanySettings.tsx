@@ -2,13 +2,15 @@
  * CompanySettings — настройки тенанта.
  */
 import { useEffect, useState, type ReactElement } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Save, Globe, DollarSign, Fingerprint } from 'lucide-react';
+import { Loader2, Save, Globe, DollarSign, Fingerprint, Sparkles } from 'lucide-react';
 import { getAppUser, type AppUser } from '../../lib/api';
 import { companyApi, type Company } from '../../api/settings';
 
 export function CompanySettings(): ReactElement {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [company, setCompany] = useState<Company | null>(null);
     const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
     const [loading, setLoading] = useState(true);
@@ -142,8 +144,14 @@ export function CompanySettings(): ReactElement {
                                 className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                             >
                                 <option value="Europe/Moscow">Москва (UTC+3)</option>
-                                <option value="Europe/London">London (UTC)</option>
-                                <option value="Asia/Dubai">Dubai (UTC+4)</option>
+                                <option value="Europe/Kaliningrad">Калининград (UTC+2)</option>
+                                <option value="Asia/Yekaterinburg">Екатеринбург (UTC+5)</option>
+                                <option value="Asia/Novosibirsk">Новосибирск (UTC+7)</option>
+                                <option value="Asia/Vladivostok">Владивосток (UTC+10)</option>
+                                <option value="Asia/Almaty">Алматы (UTC+6)</option>
+                                <option value="Asia/Tashkent">Ташкент (UTC+5)</option>
+                                <option value="UTC">UTC</option>
+                                <option value="Europe/London">Лондон (UTC+0)</option>
                             </select>
                         </div>
                         <div>
@@ -174,6 +182,8 @@ export function CompanySettings(): ReactElement {
                         >
                             <option value="ru">Русский</option>
                             <option value="en">English</option>
+                            <option value="kk">Қазақша</option>
+                            <option value="uz">O'zbek</option>
                         </select>
                     </div>
 
@@ -197,7 +207,18 @@ export function CompanySettings(): ReactElement {
                     </div>
                 </div>
 
-                <div className="px-6 py-4 bg-muted/20 flex justify-end">
+                <div className="px-6 py-4 bg-muted/20 flex items-center justify-between">
+                    <div>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/onboarding')}
+                            className="px-5 py-2.5 rounded-lg border border-border bg-background text-foreground text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors flex items-center justify-center gap-2"
+                            title={t('settings.company.launchWizardHint', 'Пройти первоначальную настройку заново')}
+                        >
+                            <Sparkles className="w-4 h-4 text-primary" />
+                            {t('settings.company.launchWizard', 'Запустить мастер настройки')}
+                        </button>
+                    </div>
                     <button
                         type="submit"
                         disabled={saving}

@@ -442,12 +442,14 @@
         }
     },
     "onboarding": {
+        "exit": "Sozlash ustasidan chiqish",
         "title": "GraviSales-ga xush kelibsiz!",
         "subtitle": "Ish joyingizni sozlaylik",
         "step": "{{current}}/{{total}} qadam",
         "next": "Keyingi",
         "back": "Orqaga",
         "skip": "O'tkazib yuborish",
+        "doNotShowAgain": "Boshqa taklif qilinmasin",
         "finish": "Sozlashni yakunlash",
         "finishing": "Saqlanmoqda...",
         "steps": {
@@ -553,6 +555,8 @@
             "timezone": "Vaqt zonasi",
             "currency": "Valyuta",
             "defaultLanguage": "Standart til",
+            "launchWizard": "Sozlash ustasini ishga tushirish",
+            "launchWizardHint": "Dastlabki sozlashni qaytadan o'tish",
             "integrations": "Integratsiyalar",
             "konturKey": "Kontur.Focus API kaliti",
             "konturHint": "Rekvizitlarni avtomatik to'ldirish uchun kerak"

@@ -11,7 +11,7 @@
  * @example
  * <Route path="/onboarding" element={<OnboardingPage />} />
  */
-import { useState, type ReactElement } from 'react';
+import { useState, useEffect, type ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -20,7 +20,7 @@ import {
     Sparkles, Plus, X, Loader2
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { getAppUser } from '../lib/api';
+import { getAppUser, updateOnboardingStatus } from '../lib/api';
 import { funnelsApi, companyApi } from '../api/settings';
 import apiClient from '../api/client';
 
@@ -116,7 +116,7 @@ interface Step2Props {
  * Шаг 2: Настройка профиля компании.
  */
 function Step2Company({ onNext, onBack }: Step2Props): ReactElement {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [name, setName] = useState('');
     const [currency, setCurrency] = useState('RUB');
     const [timezone, setTimezone] = useState('Europe/Moscow');
@@ -143,6 +143,28 @@ function Step2Company({ onNext, onBack }: Step2Props): ReactElement {
         { value: 'UZS', label: "So'm Сум (UZS)" },
     ];
 
+    useEffect(() => {
+        async function load() {
+            try {
+                const username = localStorage.getItem('gravisales_username') || sessionStorage.getItem('gravisales_current_user');
+                if (username) {
+                    const appUserResult = await getAppUser(username);
+                    if (appUserResult.success && appUserResult.user?.orgCode) {
+                        const company = await companyApi.getByOrgCode(appUserResult.user.orgCode);
+                        if (company) {
+                            if (company.name) setName(company.name);
+                            if (company.currency) setCurrency(company.currency);
+                            if (company.timezone) setTimezone(company.timezone);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load company details for onboarding:', err);
+            }
+        }
+        void load();
+    }, []);
+
     /**
      * Сохранить данные компании через API и перейти к следующему шагу.
      */
@@ -160,7 +182,12 @@ function Step2Company({ onNext, onBack }: Step2Props): ReactElement {
                 if (appUserResult.success && appUserResult.user?.orgCode) {
                     const company = await companyApi.getByOrgCode(appUserResult.user.orgCode);
                     if (company) {
-                        await companyApi.update(company.id, { name: name.trim(), currency, timezone });
+                        await companyApi.update(company.id, {
+                            name: name.trim(),
+                            currency,
+                            timezone,
+                            defaultLanguage: i18n.language.split('-')[0]
+                        });
                     }
                 }
             }
@@ -555,11 +582,30 @@ export function OnboardingPage(): ReactElement {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
 
+    const [doNotShowAgain, setDoNotShowAgain] = useState(false);
+
     /**
      * Сохранить флаг завершения онбординга и перейти на главную.
      */
-    function handleFinish() {
+    async function handleFinish() {
+        const username = localStorage.getItem('gravisales_username') || sessionStorage.getItem('gravisales_current_user');
+        if (username) {
+            if (doNotShowAgain || step === TOTAL_STEPS) {
+                await updateOnboardingStatus(username, true);
+                localStorage.setItem('gravisales_onboarding_done', '1');
+            }
+        }
+        void navigate('/', { replace: true });
+    }
+
+    async function handleSkip() {
+        const username = localStorage.getItem('gravisales_username') || sessionStorage.getItem('gravisales_current_user');
+        // Always set the flag when skipping to avoid being redirected back to onboarding immediately
         localStorage.setItem('gravisales_onboarding_done', '1');
+
+        if (username && doNotShowAgain) {
+            await updateOnboardingStatus(username, true);
+        }
         void navigate('/', { replace: true });
     }
 
@@ -613,6 +659,25 @@ export function OnboardingPage(): ReactElement {
                             onBack={() => setStep(3)}
                         />
                     )}
+
+                    {/* Do not show again & Skip */}
+                    <div className="mt-8 pt-6 border-t border-border flex flex-col items-center gap-4">
+                        <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+                            <input
+                                type="checkbox"
+                                checked={doNotShowAgain}
+                                onChange={(e) => setDoNotShowAgain(e.target.checked)}
+                                className="rounded border-border text-primary focus:ring-primary h-4 w-4 bg-background"
+                            />
+                            {t('onboarding.doNotShowAgain')}
+                        </label>
+                        <button
+                            onClick={handleSkip}
+                            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            {t('onboarding.exit', 'Выход из мастера настройки')} →
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

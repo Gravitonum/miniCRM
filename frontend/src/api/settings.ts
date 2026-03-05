@@ -169,7 +169,23 @@ export const companyApi = {
 
     /** Обновить данные компании */
     async update(id: string, data: Partial<Omit<Company, 'id' | 'orgCode'>>): Promise<void> {
-        await apiClient.put(`/application/api/Company/${id}`, data);
+        // Fetch current company data to ensure we have all required fields (like orgCode)
+        const currentResp = await apiClient.get<Company>(`/application/api/Company/${id}`);
+        const current = currentResp.data;
+
+        // Merge current data with updates
+        const fullPayload = {
+            ...current,
+            ...data,
+            id // Ensure ID is present in body
+        };
+
+        // Strip system-only/read-only fields that might cause 400 Bad Request
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { createdOn, updatedOn, createdBy, updatedBy, version, ...payload } = fullPayload as any;
+
+        // Use PUT on the base URL for the update (typical GraviBase pattern for some entities)
+        await apiClient.put(`/application/api/Company`, payload);
     }
 };
 

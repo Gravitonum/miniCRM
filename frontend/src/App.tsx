@@ -21,6 +21,7 @@ function ProtectedRoute({ children }: { children: ReactElement }): ReactElement 
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [hasOrg, setHasOrg] = useState(false);
+  const [onboardingDone, setOnboardingDone] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ function ProtectedRoute({ children }: { children: ReactElement }): ReactElement 
           const result = await getAppUser(username);
           if (result.success && result.user) {
             setHasOrg(Boolean(result.user.orgCode));
+            setOnboardingDone(Boolean(result.user.onboardingDone));
           } else {
             console.warn('App user record missing for:', username);
             setHasOrg(false);
@@ -104,9 +106,10 @@ function ProtectedRoute({ children }: { children: ReactElement }): ReactElement 
   }
 
   // ── Onboarding guard: redirect if wizard not completed ────────────────────
-  const onboardingDone = localStorage.getItem('gravisales_onboarding_done');
+  const localOnboardingDone = localStorage.getItem('gravisales_onboarding_done');
+  const isDone = onboardingDone || localOnboardingDone;
   const exemptFromOnboarding = ['/onboarding', '/join-organization'].includes(location.pathname);
-  if (hasOrg && !onboardingDone && !exemptFromOnboarding) {
+  if (hasOrg && !isDone && !exemptFromOnboarding) {
     return <Navigate to="/onboarding" replace />;
   }
 

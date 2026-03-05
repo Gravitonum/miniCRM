@@ -442,12 +442,14 @@
         }
     },
     "onboarding": {
+        "exit": "Реттеу шеберінен шығу",
         "title": "GraviSales-ке қош келдіңіз!",
         "subtitle": "Жұмыс кеңістігіңізді баптайық",
         "step": "{{current}}/{{total}} қадам",
         "next": "Келесі",
         "back": "Артқа",
         "skip": "Өткізіп жіберу",
+        "doNotShowAgain": "Енді ұсынбау",
         "finish": "Баптауды аяқтау",
         "finishing": "Сақталуда...",
         "steps": {
@@ -553,6 +555,8 @@
             "timezone": "Сағаттық белдеу",
             "currency": "Валюта",
             "defaultLanguage": "Әдепкі тіл",
+            "launchWizard": "Баптау шеберін іске қосу",
+            "launchWizardHint": "Бастапқы баптауды қайтадан өту",
             "integrations": "Интеграциялар",
             "konturKey": "Kontur.Focus API кілті",
             "konturHint": "Деректемелерді автоматты толтыру үшін қажет"

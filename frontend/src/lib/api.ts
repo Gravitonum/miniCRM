@@ -203,6 +203,7 @@ export interface AppUser {
     username: string;
     orgCode?: string;
     isActive: boolean;
+    onboardingDone?: boolean;
 }
 
 /** Result of App user fetch/save */
@@ -295,6 +296,44 @@ export async function updateAppUserOrg(usernameOrId: string, orgCode: string): P
         return { success: true };
     } catch (error) {
         console.error('Failed to update app user org:', error);
+        return { success: false, error: 'updateFailed' };
+    }
+}
+/**
+ * Updates the onboarding fulfillment status for a user.
+ */
+export async function updateOnboardingStatus(usernameOrId: string, status: boolean): Promise<{ success: boolean; error?: string }> {
+    try {
+        let user: AppUser | undefined;
+
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(usernameOrId)) {
+            const getResult = await getAppUser(usernameOrId);
+            if (!getResult.success || !getResult.user) {
+                return { success: false, error: 'userNotFound' };
+            }
+            user = getResult.user;
+        } else {
+            const response = await apiClient.get<AppUser>(`/application/api/Users/${usernameOrId}`);
+            user = response.data;
+        }
+
+        if (!user) return { success: false, error: 'userNotFound' };
+
+        // Strip read-only system fields to avoid 400 Bad Request
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { createdOn, updatedOn, createdBy, updatedBy, version, ...payload } = user as any;
+
+        await apiClient.put(
+            `/application/api/Users`,
+            {
+                ...payload,
+                onboardingDone: status
+            }
+        );
+
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to update onboarding status:', error);
         return { success: false, error: 'updateFailed' };
     }
 }
