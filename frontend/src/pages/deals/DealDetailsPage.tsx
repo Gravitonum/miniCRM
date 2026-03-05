@@ -9,8 +9,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
-import { dealsApi, type Deal } from '../../api/deals';
-import { clientsApi, interactionsApi, type ClientCompany, type Interaction } from '../../api/clients';
+import { dealsApi, type Deal, type DealProduct } from '../../api/deals';
+import { clientsApi, interactionsApi, type ClientCompany, type Interaction, directoriesApi, type Directory } from '../../api/clients';
 
 const INTERACTION_ICONS = {
     call: PhoneIcon,
@@ -71,25 +71,45 @@ export function DealDetailsPage(): ReactElement {
     const [deal, setDeal] = useState<Deal | null>(null);
     const [company, setCompany] = useState<ClientCompany | null>(null);
     const [interactions, setInteractions] = useState<Interaction[]>([]);
+    const [products, setProducts] = useState<DealProduct[]>([]);
+    const [directories, setDirectories] = useState<Directory[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Form states
+    const [showAddProduct, setShowAddProduct] = useState(false);
+    const [productForm, setProductForm] = useState({ categoryId: '', quantity: 1, price: 0 });
+    const [addingProduct, setAddingProduct] = useState(false);
+
+    const [showAddInteraction, setShowAddInteraction] = useState(false);
+    const [interactionForm, setInteractionForm] = useState({
+        type: 'note' as Interaction['type'],
+        description: '',
+        interactionDate: new Date().toISOString().slice(0, 16),
+    });
+    const [addingInteraction, setAddingInteraction] = useState(false);
 
     const loadData = useCallback(async () => {
         if (!id) return;
         setIsLoading(true);
         setError(null);
         try {
-            const dealData = await dealsApi.getDealById(id);
+            const [dealData, historyData, productsData, dirs] = await Promise.all([
+                dealsApi.getDealById(id),
+                interactionsApi.get({ dealId: id }),
+                dealsApi.getProducts(id),
+                directoriesApi.getAll()
+            ]);
             setDeal(dealData);
+            setProducts(productsData);
+            setDirectories(dirs);
+            setInteractions(historyData.sort((a, b) => new Date(b.interactionDate).getTime() - new Date(a.interactionDate).getTime()));
 
             if (dealData.clientCompanyId) {
                 const compData = await clientsApi.getById(dealData.clientCompanyId);
                 setCompany(compData);
             }
-
-            const historyData = await interactionsApi.get({ dealId: id });
-            setInteractions(historyData.sort((a, b) => new Date(b.interactionDate).getTime() - new Date(a.interactionDate).getTime()));
         } catch (err) {
             console.error('Failed to load deal details', err);
             setError(t('deals.details.loadError', 'Не удалось загрузить данные сделки'));
@@ -99,6 +119,54 @@ export function DealDetailsPage(): ReactElement {
     }, [id, t]);
 
     useEffect(() => { void loadData(); }, [loadData]);
+
+    async function handleAddProduct(e: React.FormEvent) {
+        e.preventDefault();
+        if (!id || !productForm.categoryId) return;
+        setAddingProduct(true);
+        try {
+            await dealsApi.addProduct(id, productForm.categoryId, productForm.quantity, productForm.price);
+            setShowAddProduct(false);
+            setProductForm({ categoryId: '', quantity: 1, price: 0 });
+            void loadData();
+        } catch (err) {
+            console.error('Failed to add product', err);
+        } finally {
+            setAddingProduct(false);
+        }
+    }
+
+    async function handleRemoveProduct(productId: string) {
+        if (!confirm('Удалить продукт?')) return;
+        try {
+            await dealsApi.removeProduct(productId);
+            void loadData();
+        } catch (err) {
+            console.error('Failed to remove product', err);
+        }
+    }
+
+    async function handleAddInteraction(e: React.FormEvent) {
+        e.preventDefault();
+        if (!id || !interactionForm.description.trim()) return;
+        setAddingInteraction(true);
+        try {
+            await interactionsApi.create({
+                type: interactionForm.type,
+                dealId: id,
+                clientCompanyId: deal?.clientCompanyId,
+                interactionDate: new Date(interactionForm.interactionDate).toISOString(),
+                description: interactionForm.description.trim(),
+            });
+            setShowAddInteraction(false);
+            setInteractionForm({ type: 'note', description: '', interactionDate: new Date().toISOString().slice(0, 16) });
+            void loadData();
+        } catch (err) {
+            console.error('Failed to add interaction', err);
+        } finally {
+            setAddingInteraction(false);
+        }
+    }
 
     if (isLoading) {
         return (
@@ -321,37 +389,93 @@ export function DealDetailsPage(): ReactElement {
                     </div>
                 )}
 
-                {/* Вкладка Продукты (Моки) */}
+                {/* Вкладка Продукты (Реальные) */}
                 {activeTab === 'products' && (
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-base">{t('deals.details.tabs.products', 'Продукты')}</CardTitle>
-                            <Button size="sm">
+                            <Button size="sm" onClick={() => setShowAddProduct(!showAddProduct)}>
                                 <Plus className="w-4 h-4 mr-1 lg:hidden" />
-                                <span className="hidden lg:inline">{t('deals.products.add', '+ Добавить продукт')}</span>
+                                <span className="hidden lg:inline">{showAddProduct ? t('clients.form.cancel', 'Отмена') : t('deals.products.add', '+ Добавить продукт')}</span>
                             </Button>
                         </CardHeader>
                         <CardContent>
-                            <div className="border border-border rounded-xl overflow-hidden">
-                                <table className="w-full text-left">
-                                    <thead className="bg-muted/50 border-b border-border text-xs font-semibold text-muted-foreground">
-                                        <tr>
-                                            <th className="px-4 py-3 pb-2">{t('deals.products.table.name', 'Наименование')}</th>
-                                            <th className="px-4 py-3 pb-2">{t('deals.products.table.price', 'Цена')}</th>
-                                            <th className="px-4 py-3 pb-2">{t('deals.products.table.quantity', 'Кол-во')}</th>
-                                            <th className="px-4 py-3 pb-2">{t('deals.products.table.total', 'Сумма')}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border">
-                                        <tr className="hover:bg-accent/30 transition-colors">
-                                            <td className="px-4 py-3 text-sm font-medium text-foreground">Основной тариф</td>
-                                            <td className="px-4 py-3 text-sm text-foreground">{deal.amount.toLocaleString()} ₽</td>
-                                            <td className="px-4 py-3 text-sm text-foreground">1 шт.</td>
-                                            <td className="px-4 py-3 text-sm font-bold text-primary">{deal.amount.toLocaleString()} ₽</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            {showAddProduct && (
+                                <form onSubmit={handleAddProduct} className="mb-6 p-4 border border-border rounded-xl bg-card space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-medium text-foreground mb-1">Категория / Название</label>
+                                            <select
+                                                required
+                                                value={productForm.categoryId}
+                                                onChange={e => setProductForm(p => ({ ...p, categoryId: e.target.value }))}
+                                                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm"
+                                            >
+                                                <option value="">Выберите продукт</option>
+                                                {directories.filter(d => d.type === 'product_category').map(d => (
+                                                    <option key={d.id} value={d.id}>{d.value}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-foreground mb-1">Количество</label>
+                                            <input
+                                                type="number" min="1" required
+                                                value={productForm.quantity}
+                                                onChange={e => setProductForm(p => ({ ...p, quantity: Number(e.target.value) }))}
+                                                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-foreground mb-1">Цена (₽)</label>
+                                            <input
+                                                type="number" min="0" required
+                                                value={productForm.price}
+                                                onChange={e => setProductForm(p => ({ ...p, price: Number(e.target.value) }))}
+                                                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                    <Button type="submit" disabled={addingProduct} className="w-full sm:w-auto">
+                                        {addingProduct ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Добавить'}
+                                    </Button>
+                                </form>
+                            )}
+
+                            {products.length === 0 ? (
+                                <div className="text-center text-muted-foreground py-10 text-sm">Нет добавленных продуктов</div>
+                            ) : (
+                                <div className="border border-border rounded-xl overflow-hidden">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-muted/50 border-b border-border text-xs font-semibold text-muted-foreground">
+                                            <tr>
+                                                <th className="px-4 py-3 pb-2">{t('deals.products.table.name', 'Наименование')}</th>
+                                                <th className="px-4 py-3 pb-2">{t('deals.products.table.price', 'Цена')}</th>
+                                                <th className="px-4 py-3 pb-2">{t('deals.products.table.quantity', 'Кол-во')}</th>
+                                                <th className="px-4 py-3 pb-2">{t('deals.products.table.total', 'Сумма')}</th>
+                                                <th className="px-4 py-3 pb-2"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border">
+                                            {products.map(p => (
+                                                <tr key={p.id} className="hover:bg-accent/30 transition-colors">
+                                                    <td className="px-4 py-3 text-sm font-medium text-foreground">{p.productCategoryName || '—'}</td>
+                                                    <td className="px-4 py-3 text-sm text-foreground">{p.unitPrice.toLocaleString()} ₽</td>
+                                                    <td className="px-4 py-3 text-sm text-foreground">{p.quantityAmount} шт.</td>
+                                                    <td className="px-4 py-3 text-sm font-bold text-primary">{(p.quantityAmount * p.unitPrice).toLocaleString()} ₽</td>
+                                                    <td className="px-4 py-3 text-sm text-right">
+                                                        <button onClick={() => handleRemoveProduct(p.id)} className="text-destructive text-xs hover:underline">Удалить</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            <tr className="bg-muted/20">
+                                                <td colSpan={3} className="px-4 py-3 text-sm font-bold text-right text-foreground">Итого:</td>
+                                                <td colSpan={2} className="px-4 py-3 text-sm font-bold text-primary">{products.reduce((acc, p) => acc + (p.quantityAmount * p.unitPrice), 0).toLocaleString()} ₽</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 )}
@@ -361,12 +485,49 @@ export function DealDetailsPage(): ReactElement {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="text-base">{t('deals.details.tabs.history')}</CardTitle>
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" onClick={() => setShowAddInteraction(!showAddInteraction)}>
                                 <Plus className="w-4 h-4 mr-1" />
-                                Оставить заметку
+                                {showAddInteraction ? t('clients.form.cancel', 'Отмена') : 'Оставить заметку'}
                             </Button>
                         </CardHeader>
                         <CardContent>
+                            {showAddInteraction && (
+                                <form onSubmit={handleAddInteraction} className="mb-6 space-y-3 p-4 border border-border bg-card rounded-xl">
+                                    <div className="flex gap-2">
+                                        {(['call', 'meeting', 'email', 'note'] as Interaction['type'][]).map(type => {
+                                            const Icon = INTERACTION_ICONS[type] || FileText;
+                                            return (
+                                                <button
+                                                    key={type} type="button" onClick={() => setInteractionForm(prev => ({ ...prev, type }))}
+                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${interactionForm.type === type ? 'border-primary bg-primary/10 text-primary' : 'border-input bg-background hover:bg-accent'}`}
+                                                >
+                                                    <Icon className="w-3.5 h-3.5" />
+                                                    {t(`clients.history.types.${type}`)}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="datetime-local" value={interactionForm.interactionDate}
+                                            onChange={e => setInteractionForm(p => ({ ...p, interactionDate: e.target.value }))}
+                                            className="px-3 py-2 rounded-lg border border-input bg-background text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <textarea
+                                            value={interactionForm.description}
+                                            onChange={e => setInteractionForm(p => ({ ...p, description: e.target.value }))}
+                                            placeholder="Что произошло..." rows={3}
+                                            className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm resize-none"
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <Button type="submit" disabled={addingInteraction}>
+                                        {addingInteraction ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Добавить'}
+                                    </Button>
+                                </form>
+                            )}
                             {interactions.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-10">
                                     <History className="w-8 h-8 text-muted-foreground/40 mb-2" />

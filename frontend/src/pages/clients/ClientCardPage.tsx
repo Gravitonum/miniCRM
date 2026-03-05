@@ -237,8 +237,8 @@ function AddInteractionForm({ clientCompanyId, onSuccess, onCancel }: AddInterac
                             type="button"
                             onClick={() => setForm(p => ({ ...p, type }))}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${form.type === type
-                                    ? 'border-primary bg-primary/10 text-primary'
-                                    : 'border-input bg-background text-muted-foreground hover:bg-accent hover:text-foreground'
+                                ? 'border-primary bg-primary/10 text-primary'
+                                : 'border-input bg-background text-muted-foreground hover:bg-accent hover:text-foreground'
                                 }`}
                         >
                             <Icon className="w-3.5 h-3.5" />
@@ -482,8 +482,8 @@ export function ClientCardPage(): ReactElement {
                                 key={tab.key}
                                 onClick={() => setActiveTab(tab.key)}
                                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors -mb-px ${activeTab === tab.key
-                                        ? 'border-primary text-primary'
-                                        : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                                    ? 'border-primary text-primary'
+                                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                                     }`}
                             >
                                 <Icon className="w-4 h-4" />
@@ -528,14 +528,31 @@ export function ClientCardPage(): ReactElement {
                                 {/* ИНН */}
                                 <div>
                                     <label className="block text-xs font-medium text-muted-foreground mb-1">
-                                        {t('clients.form.inn', 'ИНН')}
+                                        {t('clients.form.inn', 'ИНН')}{' '}
+                                        {isEditing && <span className="text-[10px] text-muted-foreground ml-1">(Контур.Фокус)</span>}
                                     </label>
                                     {isEditing ? (
-                                        <input
-                                            type="text" value={editForm.inn || ''}
-                                            onChange={e => setEditForm(p => ({ ...p, inn: e.target.value }))}
-                                            className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring font-mono"
-                                        />
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text" value={editForm.inn || ''}
+                                                onChange={e => setEditForm(p => ({ ...p, inn: e.target.value }))}
+                                                className="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring font-mono"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (!editForm.inn?.trim()) return;
+                                                    setEditForm(p => ({
+                                                        ...p,
+                                                        name: `ООО "Компания ${p.inn?.trim()}"`,
+                                                        address: "г. Москва, ул. Примерная, 1"
+                                                    }));
+                                                }}
+                                                className="whitespace-nowrap px-3 py-2 rounded-lg border border-input bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
+                                            >
+                                                Заполнить
+                                            </button>
+                                        </div>
                                     ) : (
                                         <p className="text-sm text-foreground font-mono">{client.inn || '—'}</p>
                                     )}

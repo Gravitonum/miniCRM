@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { dealsApi, type Deal } from '../../api/deals';
-import { clientsApi, type ClientCompany } from '../../api/clients';
+import { clientsApi, contactsApi, type ClientCompany, type ContactPerson } from '../../api/clients';
 import { funnelsApi, type Funnel, type FunnelStage } from '../../api/settings';
 import { getAppUser } from '../../lib/api';
 import { cn } from '../../lib/utils';
@@ -85,6 +85,8 @@ function NewDealForm({
     const [responsible, setResponsible] = useState('');
     const [deadline, setDeadline] = useState('');
     const [clientId, setClientId] = useState('');
+    const [contactId, setContactId] = useState('');
+    const [clientContacts, setClientContacts] = useState<ContactPerson[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
     const firstInputRef = useRef<HTMLInputElement>(null);
@@ -100,6 +102,18 @@ function NewDealForm({
         setStageId(firstOpen?.id || funnelStages[0]?.id || '');
     }, [selectedFunnelId, stages]);
 
+    // Load contacts when client changes
+    useEffect(() => {
+        setContactId('');
+        if (!clientId) {
+            setClientContacts([]);
+            return;
+        }
+        contactsApi.getByClientCompany(clientId)
+            .then(setClientContacts)
+            .catch(err => console.error('Failed to load contacts for client', err));
+    }, [clientId]);
+
     useEffect(() => {
         if (open && defaultFunnelId) setSelectedFunnelId(defaultFunnelId);
     }, [open, defaultFunnelId]);
@@ -112,7 +126,7 @@ function NewDealForm({
 
     function handleClose() {
         setName(''); setAmount(''); setStageId(''); setResponsible('');
-        setDeadline(''); setClientId(''); setErrors({});
+        setDeadline(''); setClientId(''); setContactId(''); setClientContacts([]); setErrors({});
         onClose();
     }
 
@@ -137,6 +151,7 @@ function NewDealForm({
                 responsible: responsible || 'Не назначен',
                 deadline: deadline || undefined,
                 clientCompanyId: clientId || undefined,
+                contactPersonId: contactId || undefined,
             });
             onCreated();
             handleClose();
@@ -261,6 +276,26 @@ function NewDealForm({
                             {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                     </div>
+
+                    {/* Contact Person */}
+                    {clientId && clientContacts.length > 0 && (
+                        <div>
+                            <label className="block text-sm font-medium text-foreground mb-1.5">
+                                Контактное лицо
+                            </label>
+                            <select
+                                id="deal-contact"
+                                value={contactId}
+                                onChange={e => setContactId(e.target.value)}
+                                className="w-full px-3 py-2.5 rounded-xl border-2 border-border bg-background text-foreground focus:outline-none focus:border-primary transition-colors"
+                            >
+                                <option value="">Не выбрано</option>
+                                {clientContacts.map(c => (
+                                    <option key={c.id} value={c.id}>{c.firstName} {c.lastName}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
                     {/* Deadline */}
                     <div>

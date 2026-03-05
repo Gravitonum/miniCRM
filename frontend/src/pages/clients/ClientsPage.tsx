@@ -99,16 +99,33 @@ function ClientForm({ onSuccess, onCancel, directories }: ClientFormProps): Reac
             {/* ИНН */}
             <div>
                 <label className="block text-sm font-medium text-foreground mb-1.5">
-                    {t('clients.form.inn', 'ИНН')}
+                    {t('clients.form.inn', 'ИНН')}{' '}
+                    <span className="text-xs text-muted-foreground ml-1">(Контур.Фокус)</span>
                 </label>
-                <input
-                    id="client-inn"
-                    type="text"
-                    value={form.inn}
-                    onChange={e => setForm(p => ({ ...p, inn: e.target.value }))}
-                    placeholder="7712345678"
-                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
-                />
+                <div className="flex gap-2">
+                    <input
+                        id="client-inn"
+                        type="text"
+                        value={form.inn}
+                        onChange={e => setForm(p => ({ ...p, inn: e.target.value }))}
+                        placeholder="7712345678"
+                        className="flex-1 px-3 py-2 rounded-lg border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
+                    />
+                    <button
+                        type="button"
+                        onClick={() => {
+                            if (!form.inn.trim()) return;
+                            setForm(p => ({
+                                ...p,
+                                name: `ООО "Компания ${p.inn.trim()}"`,
+                                address: "г. Москва, ул. Примерная, 1"
+                            }));
+                        }}
+                        className="whitespace-nowrap px-3 py-2 rounded-lg border border-input bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
+                    >
+                        Заполнить
+                    </button>
+                </div>
             </div>
 
             {/* ОПФ + Тип отношений */}

@@ -15,7 +15,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { cn } from '../lib/utils';
 import { dealsApi, type Deal } from '../api/deals';
 import { clientsApi } from '../api/clients';
-import { getAppUser } from '../lib/api';
 
 // ─────────────────────────────────────────
 // Types
@@ -131,11 +130,6 @@ export function DashboardPage(): ReactElement {
     const [recentDeals, setRecentDeals] = useState<RecentDeal[]>([]);
     const [pipelineStages, setPipelineStages] = useState<{ name: string; count: number; color: string }[]>([]);
 
-    const STAGE_COLORS: Record<string, string> = {
-        won: 'bg-emerald-500',
-        lost: 'bg-red-400',
-        open: 'bg-blue-500',
-    };
     const STAGE_BG_COLORS: string[] = [
         'bg-slate-400', 'bg-blue-500', 'bg-violet-500',
         'bg-amber-500', 'bg-orange-500', 'bg-emerald-500',

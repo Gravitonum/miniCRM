@@ -9,6 +9,17 @@ export interface Deal {
     deadline?: string;
     clientCompanyId?: string;
     clientCompanyName?: string;
+    contactPersonId?: string;
+    contactPersonName?: string;
+}
+
+export interface DealProduct {
+    id: string;
+    dealId: string;
+    productCategoryId?: string;
+    productCategoryName?: string;
+    quantityAmount: number;
+    unitPrice: number;
 }
 
 interface DealBackendModel {
@@ -19,6 +30,7 @@ interface DealBackendModel {
     responsible: string;
     deadlineDate?: string | null;
     clientCompany?: { id: string; name?: string } | null;
+    contactPerson?: { id: string; firstName?: string; lastName?: string } | null;
 }
 
 export const dealsApi = {
@@ -34,7 +46,9 @@ export const dealsApi = {
             responsible: d.responsible || 'Не назначен',
             deadline: d.deadlineDate ? String(d.deadlineDate).split('T')[0] : undefined,
             clientCompanyId: d.clientCompany?.id,
-            clientCompanyName: d.clientCompany?.name
+            clientCompanyName: d.clientCompany?.name,
+            contactPersonId: d.contactPerson?.id,
+            contactPersonName: d.contactPerson ? `${d.contactPerson.firstName || ''} ${d.contactPerson.lastName || ''}`.trim() : undefined,
         }));
     },
 
@@ -49,11 +63,13 @@ export const dealsApi = {
             responsible: d.responsible || 'Не назначен',
             deadline: d.deadlineDate ? String(d.deadlineDate).split('T')[0] : undefined,
             clientCompanyId: d.clientCompany?.id,
-            clientCompanyName: d.clientCompany?.name
+            clientCompanyName: d.clientCompany?.name,
+            contactPersonId: d.contactPerson?.id,
+            contactPersonName: d.contactPerson ? `${d.contactPerson.firstName || ''} ${d.contactPerson.lastName || ''}`.trim() : undefined,
         };
     },
 
-    async createDeal(deal: Omit<Deal, 'id' | 'clientCompanyName'>): Promise<Deal> {
+    async createDeal(deal: Omit<Deal, 'id' | 'clientCompanyName' | 'contactPersonName'>): Promise<Deal> {
         const payload = {
             name: deal.name,
             amountValue: deal.amount,
@@ -61,6 +77,7 @@ export const dealsApi = {
             responsible: deal.responsible,
             deadlineDate: deal.deadline ? new Date(deal.deadline).toISOString() : null,
             clientCompany: deal.clientCompanyId ? { id: deal.clientCompanyId } : null,
+            contactPerson: deal.contactPersonId ? { id: deal.contactPersonId } : null,
         };
         const response = await apiClient.post<DealBackendModel>('/application/api/Deal', payload);
         const d = response.data;
@@ -72,7 +89,9 @@ export const dealsApi = {
             responsible: d.responsible || 'Не назначен',
             deadline: d.deadlineDate ? String(d.deadlineDate).split('T')[0] : undefined,
             clientCompanyId: d.clientCompany?.id,
-            clientCompanyName: d.clientCompany?.name
+            clientCompanyName: d.clientCompany?.name,
+            contactPersonId: d.contactPerson?.id,
+            contactPersonName: d.contactPerson ? `${d.contactPerson.firstName || ''} ${d.contactPerson.lastName || ''}`.trim() : undefined,
         };
     },
 
@@ -84,6 +103,7 @@ export const dealsApi = {
         if (updates.responsible !== undefined) payload.responsible = updates.responsible;
         if (updates.deadline !== undefined) payload.deadlineDate = updates.deadline ? new Date(updates.deadline).toISOString() : null;
         if (updates.clientCompanyId !== undefined) payload.clientCompany = updates.clientCompanyId ? { id: updates.clientCompanyId } : null;
+        if (updates.contactPersonId !== undefined) payload.contactPerson = updates.contactPersonId ? { id: updates.contactPersonId } : null;
 
         await apiClient.put(`/application/api/Deal/${id}`, payload);
     },
@@ -121,6 +141,43 @@ export const dealsApi = {
             changedBy,
             changedAt: new Date().toISOString(),
         });
+    },
+
+    async getProducts(dealId: string): Promise<DealProduct[]> {
+        const response = await apiClient.get<any[] | { data: any[] }>('/application/api/DealProduct', {
+            params: { filter: `deal.id=="${dealId}"` }
+        });
+        const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+        return data.map(p => ({
+            id: p.id,
+            dealId,
+            productCategoryId: p.productCategory?.id,
+            productCategoryName: p.productCategory?.value,
+            quantityAmount: p.quantityAmount || 1,
+            unitPrice: p.unitPrice || 0,
+        }));
+    },
+
+    async addProduct(dealId: string, productCategoryId: string, quantityAmount: number, unitPrice: number): Promise<DealProduct> {
+        const response = await apiClient.post<any>('/application/api/DealProduct', {
+            deal: { id: dealId },
+            productCategory: { id: productCategoryId },
+            quantityAmount,
+            unitPrice,
+        });
+        const p = response.data;
+        return {
+            id: p.id,
+            dealId,
+            productCategoryId: p.productCategory?.id,
+            productCategoryName: p.productCategory?.value,
+            quantityAmount: p.quantityAmount || 1,
+            unitPrice: p.unitPrice || 0,
+        };
+    },
+
+    async removeProduct(productId: string): Promise<void> {
+        await apiClient.delete(`/application/api/DealProduct/${productId}`);
     },
 };
 

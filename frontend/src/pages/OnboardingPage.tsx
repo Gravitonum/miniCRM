@@ -564,8 +564,6 @@ export function OnboardingPage(): ReactElement {
     }
 
     // Step labels for progress indicator
-    const stepIcons = [Globe, Building2, Filter, Users];
-    const StepIcon = stepIcons[step - 1];
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted/30 to-background p-4">
