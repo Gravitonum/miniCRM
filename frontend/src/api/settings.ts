@@ -96,14 +96,14 @@ export const funnelsApi = {
     /** Получить этапы конкретной воронки */
     async getStages(funnelId: string): Promise<FunnelStage[]> {
         const resp = await apiClient.get('/application/api/FunnelStage', {
-            params: { filter: `funnelId=="${funnelId}"` }
+            params: { filter: `funnel.id=="${funnelId}"` }
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const stages = unwrap(resp.data as any[]).map((s: any) => ({
             id: s.id,
             name: s.name || '',
             statusType: s.statusType || 'open',
-            funnelId: s.funnelId,
+            funnelId: s.funnel?.id || s.funnelId || funnelId,
             orderIdx: s.orderIdx || 0,
         }));
         return stages.sort((a, b) => a.orderIdx - b.orderIdx);

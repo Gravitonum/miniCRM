@@ -29,21 +29,7 @@ const INTERACTION_COLORS = {
 /** Тип этапа сделки */
 type StageStatus = 'completed' | 'current' | 'pending';
 
-/** Описание этапа */
-interface Stage {
-    key: string;
-    labelKey: string;
-    status: StageStatus;
-}
 
-const MOCK_STAGES: Stage[] = [
-    { key: 'prospecting', labelKey: 'deals.stages.prospecting', status: 'completed' },
-    { key: 'qualified', labelKey: 'deals.stages.qualified', status: 'completed' },
-    { key: 'discovery', labelKey: 'deals.stages.discovery', status: 'completed' },
-    { key: 'proposalSent', labelKey: 'deals.stages.proposalSent', status: 'current' },
-    { key: 'negotiation', labelKey: 'deals.stages.negotiation', status: 'pending' },
-    { key: 'closed', labelKey: 'deals.stages.closed', status: 'pending' },
-];
 
 /**
  * Блок поля с меткой и значением.
@@ -73,6 +59,8 @@ export function DealDetailsPage(): ReactElement {
     const [interactions, setInteractions] = useState<Interaction[]>([]);
     const [products, setProducts] = useState<DealProduct[]>([]);
     const [directories, setDirectories] = useState<Directory[]>([]);
+    const [funnels, setFunnels] = useState<import('../../api/settings').Funnel[]>([]);
+    const [stages, setStages] = useState<import('../../api/settings').FunnelStage[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -95,12 +83,21 @@ export function DealDetailsPage(): ReactElement {
         setIsLoading(true);
         setError(null);
         try {
-            const [dealData, historyData, productsData, dirs] = await Promise.all([
+            const [dealData, historyData, productsData, dirs, allFunnels] = await Promise.all([
                 dealsApi.getDealById(id),
                 interactionsApi.get({ dealId: id }),
                 dealsApi.getProducts(id),
-                directoriesApi.getAll()
+                directoriesApi.getAll(),
+                import('../../api/settings').then(m => m.funnelsApi.getAll())
             ]);
+
+            const reqStages = await Promise.all(
+                allFunnels.map(f => import('../../api/settings').then(m => m.funnelsApi.getStages(f.id)))
+            );
+
+            setFunnels(allFunnels);
+            setStages(reqStages.flat());
+
             setDeal(dealData);
             setProducts(productsData);
             setDirectories(dirs);
@@ -190,6 +187,51 @@ export function DealDetailsPage(): ReactElement {
         );
     }
 
+    const [changingFunnel, setChangingFunnel] = useState(false);
+    const [changingStage, setChangingStage] = useState(false);
+
+    const dealStageItem = stages.find(s => s.id === deal?.stage);
+    const currentFunnelId = deal?.funnelId || dealStageItem?.funnelId || funnels[0]?.id;
+    const currentFunnelStages = stages.filter(s => s.funnelId === currentFunnelId).sort((a, b) => a.orderIdx - b.orderIdx);
+    const currentStageIndex = currentFunnelStages.findIndex(s => s.id === deal?.stage);
+
+    async function handleChangeFunnel(newFunnelId: string) {
+        if (!deal || newFunnelId === currentFunnelId) return;
+        setChangingFunnel(true);
+        try {
+            const newFunnelStages = stages.filter(s => s.funnelId === newFunnelId).sort((a, b) => a.orderIdx - b.orderIdx);
+            const firstStage = newFunnelStages[0];
+            await dealsApi.updateDeal(deal.id, {
+                funnelId: newFunnelId,
+                stage: firstStage?.id || ''
+            });
+            void loadData();
+        } catch (err) {
+            console.error('Failed to change funnel', err);
+        } finally {
+            setChangingFunnel(false);
+        }
+    }
+
+    async function handleSetStage(stageId: string) {
+        if (!deal || deal.stage === stageId) return;
+        setChangingStage(true);
+        try {
+            await dealsApi.updateDeal(deal.id, { stage: stageId });
+            void loadData();
+        } catch (err) {
+            console.error('Failed to change stage', err);
+        } finally {
+            setChangingStage(false);
+        }
+    }
+
+    async function handleNextStage() {
+        if (!deal || currentStageIndex === -1 || currentStageIndex >= currentFunnelStages.length - 1) return;
+        const nextStage = currentFunnelStages[currentStageIndex + 1];
+        await handleSetStage(nextStage.id);
+    }
+
     const tabs: { key: typeof activeTab; label: string }[] = [
         { key: 'overview', label: t('deals.details.tabs.overview') },
         { key: 'products', label: t('deals.details.tabs.products', 'Продукты') },
@@ -240,42 +282,55 @@ export function DealDetailsPage(): ReactElement {
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                                     <CardTitle className="text-base">{t('deals.details.stages')}</CardTitle>
-                                    <Button variant="outline" size="sm">
-                                        {t('deals.details.moveToNextStage')}
-                                    </Button>
+                                    {currentStageIndex < currentFunnelStages.length - 1 && (
+                                        <Button variant="outline" size="sm" onClick={() => void handleNextStage()} disabled={changingStage}>
+                                            {changingStage ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                                            {t('deals.details.moveToNextStage', 'Следующий этап')}
+                                        </Button>
+                                    )}
                                 </CardHeader>
                                 <CardContent>
                                     <div className="relative">
                                         <div className="absolute left-5 right-5 top-4 h-0.5 bg-border -z-10" />
-                                        <div className="flex items-start justify-between gap-2">
-                                            {MOCK_STAGES.map((stage) => (
-                                                <div key={stage.key} className="flex flex-col items-center gap-2 flex-1">
-                                                    <div className="bg-card px-1">
-                                                        {stage.status === 'completed' && (
-                                                            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm">
-                                                                <CheckCircle2 className="w-5 h-5 text-primary-foreground" />
-                                                            </div>
-                                                        )}
-                                                        {stage.status === 'current' && (
-                                                            <div className="w-8 h-8 rounded-full border-2 border-primary border-dashed bg-card flex items-center justify-center">
-                                                                <div className="w-3 h-3 rounded-full bg-primary" />
-                                                            </div>
-                                                        )}
-                                                        {stage.status === 'pending' && (
-                                                            <div className="w-8 h-8 rounded-full border-2 border-border bg-muted/50 flex items-center justify-center">
-                                                                <div className="w-2.5 h-2.5 rounded-full bg-border" />
-                                                            </div>
-                                                        )}
+                                        <div className="flex items-start justify-between gap-2 overflow-x-auto pb-2">
+                                            {currentFunnelStages.map((stage, idx) => {
+                                                let status: StageStatus = 'pending';
+                                                if (idx < currentStageIndex) status = 'completed';
+                                                if (idx === currentStageIndex) status = 'current';
+                                                if (currentStageIndex === -1 && deal?.stage === stage.id) status = 'current';
+
+                                                return (
+                                                    <div key={stage.id} className="flex flex-col items-center gap-2 flex-1 min-w-[80px]">
+                                                        <div
+                                                            className="bg-card px-1 cursor-pointer hover:scale-110 transition-transform"
+                                                            onClick={() => void handleSetStage(stage.id)}
+                                                        >
+                                                            {status === 'completed' && (
+                                                                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-sm">
+                                                                    <CheckCircle2 className="w-5 h-5 text-primary-foreground" />
+                                                                </div>
+                                                            )}
+                                                            {status === 'current' && (
+                                                                <div className="w-8 h-8 rounded-full border-2 border-primary border-dashed bg-card flex items-center justify-center">
+                                                                    <div className="w-3 h-3 rounded-full bg-primary" />
+                                                                </div>
+                                                            )}
+                                                            {status === 'pending' && (
+                                                                <div className="w-8 h-8 rounded-full border-2 border-border bg-muted/50 flex items-center justify-center">
+                                                                    <div className="w-2.5 h-2.5 rounded-full bg-border" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <span className={cn(
+                                                            'text-xs font-medium text-center leading-tight cursor-pointer hover:underline',
+                                                            status === 'pending' ? 'text-muted-foreground/40' :
+                                                                status === 'current' ? 'text-primary' : 'text-foreground'
+                                                        )} onClick={() => void handleSetStage(stage.id)}>
+                                                            {stage.name}
+                                                        </span>
                                                     </div>
-                                                    <span className={cn(
-                                                        'text-xs font-medium text-center leading-tight',
-                                                        stage.status === 'pending' ? 'text-muted-foreground/40' :
-                                                            stage.status === 'current' ? 'text-primary' : 'text-foreground'
-                                                    )}>
-                                                        {t(stage.labelKey)}
-                                                    </span>
-                                                </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                     </div>
                                 </CardContent>
@@ -291,6 +346,22 @@ export function DealDetailsPage(): ReactElement {
                                         <FieldBlock label={t('deals.details.fields.opportunityId')} value={deal.id.split('-')[0].toUpperCase()} />
                                         <FieldBlock label={t('deals.details.fields.industry')} value={company?.name || '—'} />
                                         <FieldBlock label={t('deals.details.fields.closeDate')} value={deal.deadline ? new Date(deal.deadline).toLocaleDateString('ru-RU') : '—'} />
+                                        <div>
+                                            <p className="text-xs text-muted-foreground mb-1">Воронка продаж</p>
+                                            <div className="relative">
+                                                <select
+                                                    value={currentFunnelId || ''}
+                                                    onChange={(e) => void handleChangeFunnel(e.target.value)}
+                                                    disabled={changingFunnel || funnels.length === 0}
+                                                    className="w-full appearance-none bg-transparent text-sm font-semibold text-foreground focus:outline-none focus:ring-1 focus:ring-primary rounded disabled:opacity-50 pr-6"
+                                                >
+                                                    {funnels.length === 0 && <option value="">Ожидание...</option>}
+                                                    {funnels.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+                                                </select>
+                                                {changingFunnel && <Loader2 className="absolute right-0 top-0.5 w-4 h-4 animate-spin text-muted-foreground" />}
+                                                {!changingFunnel && <div className="absolute right-0 top-2 w-2 h-2 border-b-2 border-r-2 border-muted-foreground rotate-45 pointer-events-none" />}
+                                            </div>
+                                        </div>
                                     </div>
                                     <div>
                                         <h3 className="text-sm font-semibold text-foreground mb-4">{t('deals.details.financials')}</h3>

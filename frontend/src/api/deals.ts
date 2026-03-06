@@ -5,6 +5,7 @@ export interface Deal {
     name: string;
     amount: number;
     stage: string;
+    funnelId?: string;
     responsible: string;
     deadline?: string;
     clientCompanyId?: string;
@@ -31,6 +32,7 @@ interface DealBackendModel {
     deadlineDate?: string | null;
     clientCompany?: { id: string; name?: string } | null;
     contactPerson?: { id: string; firstName?: string; lastName?: string } | null;
+    funnel?: { id: string } | null;
 }
 
 export const dealsApi = {
@@ -43,6 +45,7 @@ export const dealsApi = {
             name: d.name || 'Без названия',
             amount: d.amountValue || 0,
             stage: d.stage || 'prospecting',
+            funnelId: d.funnel?.id,
             responsible: d.responsible || 'Не назначен',
             deadline: d.deadlineDate ? String(d.deadlineDate).split('T')[0] : undefined,
             clientCompanyId: d.clientCompany?.id,
@@ -60,6 +63,7 @@ export const dealsApi = {
             name: d.name || 'Без названия',
             amount: d.amountValue || 0,
             stage: d.stage || 'prospecting',
+            funnelId: d.funnel?.id,
             responsible: d.responsible || 'Не назначен',
             deadline: d.deadlineDate ? String(d.deadlineDate).split('T')[0] : undefined,
             clientCompanyId: d.clientCompany?.id,
@@ -74,6 +78,7 @@ export const dealsApi = {
             name: deal.name,
             amountValue: deal.amount,
             stage: deal.stage,
+            funnel: deal.funnelId ? { id: deal.funnelId } : null,
             responsible: deal.responsible,
             deadlineDate: deal.deadline ? new Date(deal.deadline).toISOString() : null,
             clientCompany: deal.clientCompanyId ? { id: deal.clientCompanyId } : null,
@@ -86,6 +91,7 @@ export const dealsApi = {
             name: d.name || 'Без названия',
             amount: d.amountValue || 0,
             stage: d.stage || 'prospecting',
+            funnelId: d.funnel?.id,
             responsible: d.responsible || 'Не назначен',
             deadline: d.deadlineDate ? String(d.deadlineDate).split('T')[0] : undefined,
             clientCompanyId: d.clientCompany?.id,
@@ -100,6 +106,7 @@ export const dealsApi = {
         if (updates.name !== undefined) payload.name = updates.name;
         if (updates.amount !== undefined) payload.amountValue = updates.amount;
         if (updates.stage !== undefined) payload.stage = updates.stage;
+        if (updates.funnelId !== undefined) payload.funnel = updates.funnelId ? { id: updates.funnelId } : null;
         if (updates.responsible !== undefined) payload.responsible = updates.responsible;
         if (updates.deadline !== undefined) payload.deadlineDate = updates.deadline ? new Date(updates.deadline).toISOString() : null;
         if (updates.clientCompanyId !== undefined) payload.clientCompany = updates.clientCompanyId ? { id: updates.clientCompanyId } : null;
