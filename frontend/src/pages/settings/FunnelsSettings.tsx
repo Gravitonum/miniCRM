@@ -7,9 +7,10 @@ import { useEffect, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Loader2, Plus, Trash2, ChevronUp, ChevronDown,
-    Pencil, Check, X
+    Pencil, Check, X, Archive, ArchiveRestore
 } from 'lucide-react';
 import { funnelsApi, type Funnel, type FunnelStage } from '../../api/settings';
+import { dealsApi } from '../../api/deals';
 import { getAppUser, type AppUser } from '../../lib/api';
 
 export function FunnelsSettings(): ReactElement {
@@ -20,6 +21,12 @@ export function FunnelsSettings(): ReactElement {
     const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
     const [loading, setLoading] = useState(true);
     const [stagesLoading, setStagesLoading] = useState(false);
+
+    // Custom Modal States to bypass native browser alert/confirm suppression
+    const [deleteBlockedItem, setDeleteBlockedItem] = useState<{ type: 'stage' | 'funnel', count: number } | null>(null);
+    const [confirmDeleteStage, setConfirmDeleteStage] = useState<string | null>(null);
+    const [confirmDeleteFunnel, setConfirmDeleteFunnel] = useState<Funnel | null>(null);
+    const [confirmArchiveFunnel, setConfirmArchiveFunnel] = useState<Funnel | null>(null);
 
     // Inline edit state
     const [editingStageId, setEditingStageId] = useState<string | null>(null);
@@ -100,12 +107,79 @@ export function FunnelsSettings(): ReactElement {
     }
 
     async function handleDeleteStage(id: string) {
-        if (!confirm(t('common.confirmDelete', 'Удалить?'))) return;
+        try {
+            const count = await dealsApi.countDealsByStage(id);
+            if (count > 0) {
+                setDeleteBlockedItem({ type: 'stage', count });
+                return;
+            }
+            setConfirmDeleteStage(id);
+        } catch (err: any) {
+            console.error('delete stage failed', err);
+            alert(t('settings.funnels.deleteStageError', 'Ошибка при удалении этапа: ') + (err?.message || ''));
+        }
+    }
+
+    async function executeDeleteStage() {
+        if (!confirmDeleteStage) return;
+        const id = confirmDeleteStage;
+        setConfirmDeleteStage(null);
+        setStagesLoading(true);
         try {
             await funnelsApi.deleteStage(id);
             setStages(prev => prev.filter(s => s.id !== id));
-        } catch (err) {
+        } catch (err: any) {
             console.error('delete stage failed', err);
+            alert(t('settings.funnels.deleteStageError', 'Ошибка при удалении этапа: ') + (err?.response?.data?.error || err.message));
+        } finally {
+            setStagesLoading(false);
+        }
+    }
+
+    function handleToggleArchiveFunnel(funnel: Funnel) {
+        setConfirmArchiveFunnel(funnel);
+    }
+
+    async function executeToggleArchiveFunnel() {
+        if (!confirmArchiveFunnel) return;
+        const funnel = confirmArchiveFunnel;
+        setConfirmArchiveFunnel(null);
+        const isArchiving = funnel.isActive;
+        try {
+            await funnelsApi.updateFunnel(funnel.id, { isActive: !isArchiving });
+            setFunnels(prev => prev.map(f => f.id === funnel.id ? { ...f, isActive: !isArchiving } : f));
+            if (selectedFunnel?.id === funnel.id) setSelectedFunnel({ ...funnel, isActive: !isArchiving });
+        } catch (err) {
+            console.error('Failed to update funnel archive status', err);
+        }
+    }
+
+    async function handleDeleteFunnel(funnel: Funnel) {
+        try {
+            const count = await dealsApi.countDealsByFunnel(funnel.id);
+            if (count > 0) {
+                setDeleteBlockedItem({ type: 'funnel', count });
+                setConfirmDeleteFunnel(funnel);
+                return;
+            }
+            setConfirmDeleteFunnel(funnel);
+        } catch (err: any) {
+            console.error('Failed to check funnel', err);
+            alert(t('settings.funnels.deleteFunnelError', 'Ошибка: ') + err?.message);
+        }
+    }
+
+    async function executeDeleteFunnel() {
+        if (!confirmDeleteFunnel) return;
+        const funnel = confirmDeleteFunnel;
+        setConfirmDeleteFunnel(null);
+        try {
+            await funnelsApi.deleteFunnel(funnel.id);
+            setFunnels(prev => prev.filter(f => f.id !== funnel.id));
+            if (selectedFunnel?.id === funnel.id) setSelectedFunnel(null);
+        } catch (err: any) {
+            console.error('Failed to delete funnel', err);
+            alert(t('settings.funnels.deleteFunnelError', 'Ошибка при удалении воронки: ') + (err?.response?.data?.error || err.message));
         }
     }
 
@@ -199,12 +273,13 @@ export function FunnelsSettings(): ReactElement {
                             <button
                                 key={f.id}
                                 onClick={() => setSelectedFunnel(f)}
-                                className={`w-full text-left px-5 py-3 text-sm transition-colors ${selectedFunnel?.id === f.id
+                                className={`w-full text-left px-5 py-3 text-sm transition-colors flex items-center justify-between ${selectedFunnel?.id === f.id
                                     ? 'bg-primary/5 border-l-2 border-l-primary text-primary font-medium'
                                     : 'hover:bg-accent text-foreground'
                                     }`}
                             >
-                                {f.name}
+                                <span className={f.isActive ? '' : 'text-muted-foreground line-through'}>{f.name}</span>
+                                {!f.isActive && <Archive className="w-3.5 h-3.5 text-muted-foreground" />}
                             </button>
                         ))}
                         {funnels.length === 0 && (
@@ -220,16 +295,40 @@ export function FunnelsSettings(): ReactElement {
                     {selectedFunnel ? (
                         <>
                             <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-muted/20">
-                                <h3 className="text-sm font-semibold text-foreground">
+                                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                                     {t('settings.funnels.stagesFor', 'Этапы воронки:')} {selectedFunnel.name}
+                                    {!selectedFunnel.isActive && (
+                                        <span className="text-xs bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded font-medium border border-amber-500/20">
+                                            Архив
+                                        </span>
+                                    )}
                                 </h3>
-                                <button
-                                    onClick={handleAddStage}
-                                    className="px-3 py-1.5 bg-background border border-border rounded-md text-xs font-medium hover:bg-accent transition-colors flex items-center gap-1.5"
-                                >
-                                    <Plus className="w-3.5 h-3.5" />
-                                    {t('settings.funnels.addStage', 'Добавить этап')}
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => handleToggleArchiveFunnel(selectedFunnel)}
+                                        className="px-3 py-1.5 bg-background border border-border rounded-md text-xs font-medium hover:bg-accent transition-colors flex items-center gap-1.5"
+                                        title={selectedFunnel.isActive ? 'В архив' : 'Восстановить'}
+                                    >
+                                        {selectedFunnel.isActive ? <Archive className="w-3.5 h-3.5" /> : <ArchiveRestore className="w-3.5 h-3.5" />}
+                                        <span className="hidden sm:inline">{selectedFunnel.isActive ? 'В архив' : 'Восстановить'}</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteFunnel(selectedFunnel)}
+                                        className="px-3 py-1.5 bg-background border border-border rounded-md text-xs font-medium hover:bg-destructive/10 text-destructive transition-colors flex items-center gap-1.5"
+                                        title="Удалить воронку"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        <span className="hidden sm:inline">Удалить</span>
+                                    </button>
+                                    <div className="w-px h-4 bg-border mx-1" />
+                                    <button
+                                        onClick={handleAddStage}
+                                        className="px-3 py-1.5 bg-primary text-primary-foreground border border-primary rounded-md text-xs font-medium hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" />
+                                        {t('settings.funnels.addStage', 'Добавить этап')}
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="p-6">
@@ -288,9 +387,9 @@ export function FunnelsSettings(): ReactElement {
                                                             <span className="text-sm font-medium text-foreground truncate">{stage.name}</span>
                                                             <button
                                                                 onClick={() => { setEditingStageId(stage.id); setEditingName(stage.name); }}
-                                                                className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-foreground rounded transition-all"
+                                                                className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                                                             >
-                                                                <Pencil className="w-3 h-3" />
+                                                                <Pencil className="w-3.5 h-3.5" />
                                                             </button>
                                                         </div>
                                                     )}
@@ -317,7 +416,7 @@ export function FunnelsSettings(): ReactElement {
                                                 {/* Delete */}
                                                 <button
                                                     onClick={() => handleDeleteStage(stage.id)}
-                                                    className="opacity-0 group-hover:opacity-100 p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-all shrink-0"
+                                                    className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors shrink-0"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -339,6 +438,94 @@ export function FunnelsSettings(): ReactElement {
                     )}
                 </div>
             </div>
+
+            {/* Modals */}
+            {deleteBlockedItem && (
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-card w-full max-w-md rounded-xl shadow-lg border border-border p-6 flex flex-col gap-4">
+                        <div className="flex justify-between items-center">
+                            <h3 className="font-semibold text-lg">{t('settings.funnels.deleteBlockedTitle', 'Удаление невозможно')}</h3>
+                            <button onClick={() => setDeleteBlockedItem(null)} className="p-1 hover:bg-muted rounded text-muted-foreground"><X className="w-4 h-4" /></button>
+                        </div>
+                        <p className="text-sm text-foreground">
+                            {deleteBlockedItem.type === 'stage'
+                                ? t('settings.funnels.deleteStageBlocked', `Нельзя удалить этап: в нём есть сделки (${deleteBlockedItem.count} шт.). Сначала переместите или удалите эти сделки.`)
+                                : t('settings.funnels.deleteFunnelBlocked', `Нельзя удалить воронку: в ней есть сделки (${deleteBlockedItem.count} шт.). Сначала переместите или удалите эти сделки.`)
+                            }
+                        </p>
+                        <div className="flex justify-end gap-3 mt-2">
+                            <button onClick={() => setDeleteBlockedItem(null)} className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90">
+                                {t('common.ok', 'Понятно')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {confirmDeleteStage && (
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-card w-full max-w-md rounded-xl shadow-lg border border-border p-6 flex flex-col gap-4">
+                        <h3 className="font-semibold text-lg text-destructive">{t('settings.funnels.confirmDeleteStageTitle', 'Подтвердите удаление')}</h3>
+                        <p className="text-sm text-foreground">
+                            {t('settings.funnels.confirmDeleteStage', 'Удалить этап? Будет потеряна история переходов через этот этап.')}
+                        </p>
+                        <div className="flex justify-end gap-3 mt-2">
+                            <button onClick={() => setConfirmDeleteStage(null)} className="px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md text-sm font-medium">
+                                {t('common.cancel', 'Отмена')}
+                            </button>
+                            <button onClick={executeDeleteStage} className="px-4 py-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-md text-sm font-medium">
+                                {t('common.delete', 'Удалить')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {confirmDeleteFunnel && (
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-card w-full max-w-md rounded-xl shadow-lg border border-border p-6 flex flex-col gap-4">
+                        <h3 className="font-semibold text-lg text-destructive">{t('settings.funnels.confirmDeleteFunnelTitle', 'Удалить воронку?')}</h3>
+                        <p className="text-sm text-foreground">
+                            {t('settings.funnels.confirmDeleteFunnel', 'Удалить воронку безвозвратно? Будет удалена вся история этапов.')}
+                        </p>
+                        <div className="flex justify-end gap-3 mt-2">
+                            <button onClick={() => setConfirmDeleteFunnel(null)} className="px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md text-sm font-medium">
+                                {t('common.cancel', 'Отмена')}
+                            </button>
+                            {confirmDeleteFunnel.isActive && (
+                                <button onClick={() => { setConfirmDeleteFunnel(null); handleToggleArchiveFunnel(confirmDeleteFunnel); }} className="px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-md text-sm font-medium">
+                                    {t('settings.funnels.archiveInstead', 'Поместить в архив')}
+                                </button>
+                            )}
+                            <button onClick={executeDeleteFunnel} className="px-4 py-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-md text-sm font-medium">
+                                {t('common.delete', 'Удалить')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {confirmArchiveFunnel && (
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-card w-full max-w-md rounded-xl shadow-lg border border-border p-6 flex flex-col gap-4">
+                        <h3 className="font-semibold text-lg">{confirmArchiveFunnel.isActive ? t('settings.funnels.confirmArchiveTitle', 'Отправить в архив?') : t('settings.funnels.confirmUnarchiveTitle', 'Восстановить из архива?')}</h3>
+                        <p className="text-sm text-foreground">
+                            {confirmArchiveFunnel.isActive
+                                ? t('settings.funnels.confirmArchive', 'Поместить воронку в архив? Она перестанет отображаться при работе со сделками.')
+                                : t('settings.funnels.confirmUnarchive', 'Восстановить воронку из архива?')
+                            }
+                        </p>
+                        <div className="flex justify-end gap-3 mt-2">
+                            <button onClick={() => setConfirmArchiveFunnel(null)} className="px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md text-sm font-medium">
+                                {t('common.cancel', 'Отмена')}
+                            </button>
+                            <button onClick={executeToggleArchiveFunnel} className="px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 rounded-md text-sm font-medium">
+                                {t('common.confirm', 'Подтвердить')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

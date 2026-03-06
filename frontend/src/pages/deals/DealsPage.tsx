@@ -646,11 +646,18 @@ export function DealsPage(): ReactElement {
             );
             const stages = stagesByFunnel.flat();
             setAllStages(stages);
-            setFunnels(allFunnels);
+
+            const activeFunnels = allFunnels.filter(f => f.isActive);
+            setFunnels(activeFunnels);
 
             // Set default active funnel
-            if (allFunnels.length > 0) {
-                setActiveFunnelId(prev => prev || allFunnels[0].id);
+            if (activeFunnels.length > 0) {
+                setActiveFunnelId(prev => {
+                    if (prev && activeFunnels.find(f => f.id === prev)) return prev;
+                    return activeFunnels[0].id;
+                });
+            } else {
+                setActiveFunnelId('');
             }
 
             // Load managers

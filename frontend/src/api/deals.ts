@@ -186,5 +186,15 @@ export const dealsApi = {
     async removeProduct(productId: string): Promise<void> {
         await apiClient.delete(`/application/api/DealProduct/${productId}`);
     },
+
+    async countDealsByFunnel(funnelId: string): Promise<number> {
+        const allDeals = await this.getDeals();
+        return allDeals.filter(d => d.funnelId === funnelId).length;
+    },
+
+    async countDealsByStage(stageId: string): Promise<number> {
+        const allDeals = await this.getDeals();
+        return allDeals.filter(d => d.stage === stageId).length;
+    },
 };
 

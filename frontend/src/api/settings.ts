@@ -119,7 +119,21 @@ export const funnelsApi = {
     },
 
     async updateFunnel(id: string, data: Partial<Omit<Funnel, 'id'>>): Promise<void> {
-        await apiClient.put(`/application/api/CrmFunnel/${id}`, data);
+        const currentResp = await apiClient.get<any>(`/application/api/CrmFunnel/${id}`);
+        const payload = { ...currentResp.data };
+
+        if (data.name !== undefined) payload.name = data.name;
+        if (data.isActive !== undefined) payload.isActive = data.isActive;
+        if (data.companyId !== undefined) payload.company = data.companyId ? { id: data.companyId } : null;
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { createdOn, updatedOn, createdBy, updatedBy, version, ...finalPayload } = payload;
+
+        await apiClient.put(`/application/api/CrmFunnel`, finalPayload);
+    },
+
+    async deleteFunnel(id: string): Promise<void> {
+        await apiClient.delete(`/application/api/CrmFunnel/${id}`);
     },
 
     async createStage(data: Omit<FunnelStage, 'id'>): Promise<FunnelStage> {
@@ -138,7 +152,18 @@ export const funnelsApi = {
     },
 
     async updateStage(id: string, data: Partial<Omit<FunnelStage, 'id'>>): Promise<void> {
-        await apiClient.put(`/application/api/FunnelStage/${id}`, data);
+        const currentResp = await apiClient.get<any>(`/application/api/FunnelStage/${id}`);
+        const payload = { ...currentResp.data };
+
+        if (data.name !== undefined) payload.name = data.name;
+        if (data.statusType !== undefined) payload.statusType = data.statusType;
+        if (data.funnelId !== undefined) payload.funnel = data.funnelId ? { id: data.funnelId } : null;
+        if (data.orderIdx !== undefined) payload.orderIdx = data.orderIdx;
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { createdOn, updatedOn, createdBy, updatedBy, version, ...finalPayload } = payload;
+
+        await apiClient.put(`/application/api/FunnelStage`, finalPayload);
     },
 
     async deleteStage(id: string): Promise<void> {
