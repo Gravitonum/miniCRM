@@ -15,6 +15,9 @@ import { ContactCardPage } from './pages/contacts/ContactCardPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { ReportsPage } from './pages/reports/ReportsPage';
 import { ImportPage } from './pages/import/ImportPage';
+import { PlatformAdminLoginPage } from './pages/platform-admin/PlatformAdminLoginPage';
+import { PlatformAdminDashboard } from './pages/platform-admin/PlatformAdminDashboard';
+import { getPlatformAdminSession } from './api/platformAdmin';
 import { getAppUser } from './lib/api';
 
 /** Protected route wrapper: checks auth token, org association, and onboarding completion */
@@ -118,6 +121,18 @@ function ProtectedRoute({ children }: { children: ReactElement }): ReactElement 
   return children;
 }
 
+/**
+ * Route guard for Platform Admin panel.
+ * Checks sessionStorage for platform_admin_session.
+ */
+function PlatformAdminRoute({ children }: { children: ReactElement }): ReactElement {
+    const session = getPlatformAdminSession();
+    if (!session) {
+        return <Navigate to="/platform-admin/login" replace />;
+    }
+    return children;
+}
+
 /** Main application with routing */
 export default function App(): ReactElement {
   return (
@@ -203,6 +218,15 @@ export default function App(): ReactElement {
             <ImportPage />
           </ProtectedRoute>
         } />
+
+        {/* ── Platform Admin (separate auth) ──────────────────────── */}
+        <Route path="/platform-admin/login" element={<PlatformAdminLoginPage />} />
+        <Route path="/platform-admin/dashboard" element={
+          <PlatformAdminRoute>
+            <PlatformAdminDashboard />
+          </PlatformAdminRoute>
+        } />
+        <Route path="/platform-admin" element={<Navigate to="/platform-admin/login" replace />} />
 
         {/* ── Catch-all ─────────────────────────────────────────────────── */}
         <Route path="*" element={<Navigate to="/" replace />} />
