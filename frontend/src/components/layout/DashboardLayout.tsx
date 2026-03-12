@@ -26,6 +26,7 @@ import {
     Building2,
     Users,
     BarChart2,
+    FileUp,
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import {
@@ -75,6 +76,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
         { name: t('nav.clients', 'Клиенты'), href: '/clients', icon: Building2 },
         { name: t('nav.contacts', 'Контакты'), href: '/contacts', icon: Users },
         { name: t('nav.reports', 'Отчёты'), href: '/reports', icon: BarChart2 },
+        { name: t('nav.import', 'Импорт / Экспорт'), href: '/import', icon: FileUp },
         { name: t('nav.settings', 'Настройки'), href: '/settings', icon: Settings },
     ];
 

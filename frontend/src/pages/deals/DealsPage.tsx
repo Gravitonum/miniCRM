@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import {
     Plus, LayoutGrid, List, ChevronRight,
     Calendar, Banknote, User, Loader2,
-    AlertCircle, RefreshCw, Trophy, X, Check
+    AlertCircle, RefreshCw, Trophy, X, Check, FileDown
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { dealsApi, type Deal } from '../../api/deals';
@@ -21,6 +21,7 @@ import { clientsApi, contactsApi, type ClientCompany, type ContactPerson } from 
 import { funnelsApi, type Funnel, type FunnelStage } from '../../api/settings';
 import { getAppUser } from '../../lib/api';
 import { cn } from '../../lib/utils';
+import { exportToExcel } from '../../lib/exportUtils';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -765,6 +766,15 @@ export function DealsPage(): ReactElement {
                         <p className="text-sm text-muted-foreground mt-0.5">{t('deals.subtitle')}</p>
                     </div>
                     <div className="flex items-center gap-2">
+                        {/* Export */}
+                        <button
+                            onClick={() => exportToExcel(filteredDeals, 'deals_export')}
+                            title="Экспорт"
+                            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl border border-border text-foreground font-medium hover:bg-accent transition-colors shadow-sm"
+                        >
+                            <FileDown className="w-4 h-4" />
+                            <span className="hidden sm:inline">Экспорт</span>
+                        </button>
                         {/* Refresh */}
                         <button
                             onClick={() => void loadAll()}

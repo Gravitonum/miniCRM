@@ -9,10 +9,11 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
     Plus, Search, Building2, Globe, Filter, X,
-    ChevronRight, AlertCircle, Loader2, RefreshCw
+    ChevronRight, AlertCircle, Loader2, RefreshCw, FileDown
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { clientsApi, directoriesApi, type ClientCompany, type Directory } from '../../api/clients';
+import { exportToExcel } from '../../lib/exportUtils';
 
 // ─── Sub-components ──────────────────────────────────────────
 
@@ -330,14 +331,23 @@ export function ClientsPage(): ReactElement {
                             {t('clients.subtitle', 'Управление базой компаний-клиентов')}
                         </p>
                     </div>
-                    <button
-                        id="add-client-btn"
-                        onClick={() => setShowAddModal(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm self-start sm:self-auto"
-                    >
-                        <Plus className="w-4 h-4" />
-                        {t('clients.add', '+ Добавить клиента')}
-                    </button>
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                        <button
+                            onClick={() => exportToExcel(filtered, 'clients_export')}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm font-medium hover:bg-accent transition-colors shadow-sm"
+                        >
+                            <FileDown className="w-4 h-4" />
+                            Экспорт
+                        </button>
+                        <button
+                            id="add-client-btn"
+                            onClick={() => setShowAddModal(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm"
+                        >
+                            <Plus className="w-4 h-4" />
+                            {t('clients.add', '+ Добавить клиента')}
+                        </button>
+                    </div>
                 </div>
 
                 {/* ── Search & Filters ── */}

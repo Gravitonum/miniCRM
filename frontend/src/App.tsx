@@ -14,6 +14,7 @@ import { ContactsPage } from './pages/contacts/ContactsPage';
 import { ContactCardPage } from './pages/contacts/ContactCardPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { ReportsPage } from './pages/reports/ReportsPage';
+import { ImportPage } from './pages/import/ImportPage';
 import { getAppUser } from './lib/api';
 
 /** Protected route wrapper: checks auth token, org association, and onboarding completion */
@@ -194,6 +195,12 @@ export default function App(): ReactElement {
         <Route path="/reports" element={
           <ProtectedRoute>
             <ReportsPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/import" element={
+          <ProtectedRoute>
+            <ImportPage />
           </ProtectedRoute>
         } />
 
