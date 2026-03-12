@@ -13,6 +13,7 @@ import { ClientCardPage } from './pages/clients/ClientCardPage';
 import { ContactsPage } from './pages/contacts/ContactsPage';
 import { ContactCardPage } from './pages/contacts/ContactCardPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
+import { ReportsPage } from './pages/reports/ReportsPage';
 import { getAppUser } from './lib/api';
 
 /** Protected route wrapper: checks auth token, org association, and onboarding completion */
@@ -187,6 +188,12 @@ export default function App(): ReactElement {
         <Route path="/settings" element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/reports" element={
+          <ProtectedRoute>
+            <ReportsPage />
           </ProtectedRoute>
         } />
 
