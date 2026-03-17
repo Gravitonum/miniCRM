@@ -69,6 +69,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      '/api3': {
+        target: 'https://focus-api.kontur.ru',
+        changeOrigin: true,
+      },
       '/auth': {
         target: 'https://minicrm.apps.gravibase.ru',
         changeOrigin: true,

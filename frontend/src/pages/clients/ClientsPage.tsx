@@ -14,6 +14,7 @@ import {
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { clientsApi, directoriesApi, type ClientCompany, type Directory } from '../../api/clients';
 import { exportToExcel } from '../../lib/exportUtils';
+import { konturFocusApi } from '../../api/konturFocus';
 
 // ─── Sub-components ──────────────────────────────────────────
 
@@ -40,6 +41,7 @@ function ClientForm({ onSuccess, onCancel, directories }: ClientFormProps): Reac
         website: '',
     });
     const [saving, setSaving] = useState(false);
+    const [loadingFocus, setLoadingFocus] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     /**
@@ -69,6 +71,45 @@ function ClientForm({ onSuccess, onCancel, directories }: ClientFormProps): Reac
             setError(t('clients.form.errors.createFailed', 'Ошибка при создании клиента'));
         } finally {
             setSaving(false);
+        }
+    }
+
+    /**
+     * Заполнить данные по ИНН через API Контур-Фокуса
+     */
+    async function handleAutofillInn() {
+        const inn = form.inn.trim();
+        if (!inn) {
+            setError(t('clients.form.errors.innRequired', 'Для автозаполнения введите ИНН'));
+            return;
+        }
+
+        setLoadingFocus(true);
+        setError(null);
+
+        try {
+            const company = await konturFocusApi.fetchCompanyByInn(inn);
+            if (!company) {
+                setError(t('clients.form.errors.companyNotFound', 'Компания с таким ИНН не найдена'));
+                return;
+            }
+
+            setForm(prev => ({
+                ...prev,
+                name: company.name || prev.name,
+                address: company.address || prev.address,
+            }));
+            
+            // Если есть неактивный статус, предупреждаем
+            if (company.status && company.status.includes('Ликвидирован')) {
+                 setError(`Внимание: статус компании - ${company.status}`);
+            }
+
+        } catch (err: any) {
+            console.error('Failed to generic fetch kontur.focus:', err);
+            setError(t('clients.form.errors.focusFailed', 'Не удалось получить данные из Контур-Фокус. Проверьте ключ API или ИНН.'));
+        } finally {
+            setLoadingFocus(false);
         }
     }
 
@@ -114,16 +155,11 @@ function ClientForm({ onSuccess, onCancel, directories }: ClientFormProps): Reac
                     />
                     <button
                         type="button"
-                        onClick={() => {
-                            if (!form.inn.trim()) return;
-                            setForm(p => ({
-                                ...p,
-                                name: `ООО "Компания ${p.inn.trim()}"`,
-                                address: "г. Москва, ул. Примерная, 1"
-                            }));
-                        }}
-                        className="whitespace-nowrap px-3 py-2 rounded-lg border border-input bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors"
+                        onClick={handleAutofillInn}
+                        disabled={loadingFocus || !form.inn.trim()}
+                        className="whitespace-nowrap px-3 py-2 rounded-lg border border-input bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 disabled:opacity-50 transition-colors flex items-center gap-2"
                     >
+                        {loadingFocus && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                         Заполнить
                     </button>
                 </div>
