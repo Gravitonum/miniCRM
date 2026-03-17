@@ -5,6 +5,7 @@
  */
 import { useEffect, useState, type ReactElement } from 'react';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
+import { DashboardTour } from '../components/onboarding/DashboardTour';
 import { useTranslation } from 'react-i18next';
 import {
     TrendingUp, Users, Briefcase, DollarSign,
@@ -219,6 +220,7 @@ export function DashboardPage(): ReactElement {
 
     return (
         <DashboardLayout>
+            <DashboardTour />
             <div className="flex flex-col gap-8">
                 {/* Header */}
                 <div>
@@ -275,7 +277,7 @@ export function DashboardPage(): ReactElement {
                 </div>
 
                 {/* Charts row */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div id="tour-funnel-widget" className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                     {/* Pipeline breakdown */}
                     <Card className="lg:col-span-2">
                         <CardHeader>
@@ -311,7 +313,7 @@ export function DashboardPage(): ReactElement {
                     </Card>
 
                     {/* Deadlines this week */}
-                    <Card>
+                    <Card id="tour-recent-deals">
                         <CardHeader>
                             <CardTitle className="text-base flex items-center gap-2">
                                 <Calendar className="w-4 h-4 text-muted-foreground" />

@@ -93,6 +93,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
 
                 {/* ── Sidebar ── */}
                 <aside
+                    id="tour-sidebar"
                     className={cn(
                         'fixed top-0 left-0 z-50 h-screen flex flex-col',
                         'bg-[var(--sidebar)] text-[var(--sidebar-foreground)] border-r border-border',
@@ -122,6 +123,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                         {!isCollapsed && (
                             <button
                                 onClick={() => setIsCollapsed(true)}
+                                aria-label={t('nav.collapse_sidebar', 'Свернуть сайдбар')}
                                 className="hidden lg:flex p-2 rounded-lg text-[var(--sidebar-foreground)]/40 hover:text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-hover)] transition-colors ml-2"
                             >
                                 <PanelLeftClose className="w-5 h-5" />
@@ -130,6 +132,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
 
                         <button
                             onClick={() => setSidebarOpen(false)}
+                            aria-label={t('nav.close_sidebar', 'Закрыть сайдбар')}
                             className="lg:hidden p-2 rounded-lg text-[var(--sidebar-foreground)]/40 hover:text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-hover)] transition-colors"
                         >
                             <X className="w-5 h-5" />
@@ -140,6 +143,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                         <div className="hidden lg:flex justify-center py-4 border-b border-border">
                             <button
                                 onClick={() => setIsCollapsed(false)}
+                                aria-label={t('nav.expand_sidebar', 'Развернуть сайдбар')}
                                 className="p-2 rounded-lg text-[var(--sidebar-foreground)]/40 hover:text-[var(--sidebar-foreground)] hover:bg-[var(--sidebar-hover)] transition-colors"
                             >
                                 <PanelLeftOpen className="w-5 h-5" />
@@ -227,6 +231,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setSidebarOpen(true)}
+                                aria-label={t('nav.open_menu', 'Открыть меню')}
                                 className="p-2 -ml-1 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground lg:hidden transition-colors"
                             >
                                 <Menu className="w-5 h-5" />
@@ -243,7 +248,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                             <div className="w-px h-6 bg-border mx-1" />
 
                             {/* Notifications */}
-                            <button className="relative p-2.5 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
+                            <button 
+                                aria-label={t('nav.notifications', 'Уведомления')}
+                                className="relative p-2.5 rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground transition-all"
+                            >
                                 <Bell className="w-4.5 h-4.5" />
                                 <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-background" />
                             </button>
@@ -253,7 +261,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                             {/* User Dropdown */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <button className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-accent transition-all cursor-pointer border border-transparent hover:border-border">
+                                    <button 
+                                        id="tour-user-menu" 
+                                        aria-label={t('nav.user_menu', 'Меню пользователя')}
+                                        className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-accent transition-all cursor-pointer border border-transparent hover:border-border"
+                                    >
                                         <Avatar className="w-8 h-8">
                                             <AvatarImage src={undefined} />
                                             <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">

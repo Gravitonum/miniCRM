@@ -262,9 +262,9 @@
 ### 🌊 Волна 3 — SuperAdmin и polish
 14. ✅ **Платформенная панель SuperAdmin** (п. 12)
 15. ✅ **Контур-Фокус интеграция** (п. 6.6)
-16. ⬜ **Onboarding tour**
-17. ⬜ Lighthouse / SEO / Accessibility аудит
-18. ⬜ Обновление документации
+16. ✅ **Onboarding tour**
+17. ✅ Lighthouse / SEO / Accessibility аудит
+18. ✅ Обновление документации
 
 ---
 

@@ -589,5 +589,35 @@
             "emptyStages": "No stages in this funnel",
             "selectHint": "Select a funnel from the list"
         }
+    },
+    "tour": {
+        "step": "Step {{current}} of {{total}}",
+        "btn": {
+            "next": "Next",
+            "back": "Back",
+            "skip": "Skip tour",
+            "last": "Finish",
+            "close": "Close"
+        },
+        "welcome": {
+            "title": "Welcome to GraviSales!",
+            "desc": "Let's take a quick tour of your new workspace."
+        },
+        "sidebar": {
+            "title": "Main Menu",
+            "desc": "Access all core modules here: Deals, Clients, Reports, and Settings. You can collapse this panel to save space."
+        },
+        "funnel": {
+            "title": "Your Sales Funnel",
+            "desc": "The activity chart shows the number of won deals over the last 30 days."
+        },
+        "deals": {
+            "title": "My Deals",
+            "desc": "Your recent open deals are displayed here for quick access."
+        },
+        "profile": {
+            "title": "Your Profile",
+            "desc": "Change language, toggle theme, or sign out from here."
+        }
     }
 }

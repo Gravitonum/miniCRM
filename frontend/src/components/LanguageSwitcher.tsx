@@ -34,7 +34,7 @@ const LANGUAGES: LanguageOption[] = [
  * @param code - Код языка
  */
 export function LanguageSwitcher(): ReactElement {
-    const { i18n } = useTranslation();
+    const { t, i18n } = useTranslation();
     const currentLang = LANGUAGES.find((l) => l.code === i18n.language) || LANGUAGES[0];
 
     return (
@@ -43,7 +43,7 @@ export function LanguageSwitcher(): ReactElement {
                 <button
                     type="button"
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent"
-                    aria-label="Switch language"
+                    aria-label={t('lang.switch', 'Переключить язык')}
                 >
                     <Globe className="w-4 h-4" />
                     <span className="hidden sm:inline">{currentLang.label}</span>
