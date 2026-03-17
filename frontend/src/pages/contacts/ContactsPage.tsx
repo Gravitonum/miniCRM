@@ -305,7 +305,7 @@ export function ContactsPage(): ReactElement {
                         className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm self-start sm:self-auto"
                     >
                         <Plus className="w-4 h-4" />
-                        {t('contacts.add', '+ Добавить контакт')}
+                        {t('contacts.add', 'Добавить контакт')}
                     </button>
                 </div>
 

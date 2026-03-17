@@ -381,7 +381,7 @@ export function ClientsPage(): ReactElement {
                             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm"
                         >
                             <Plus className="w-4 h-4" />
-                            {t('clients.add', '+ Добавить клиента')}
+                            {t('clients.add', 'Добавить клиента')}
                         </button>
                     </div>
                 </div>

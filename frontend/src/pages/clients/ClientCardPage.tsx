@@ -702,7 +702,7 @@ export function ClientCardPage(): ReactElement {
                                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
                             >
                                 <Plus className="w-3.5 h-3.5" />
-                                {t('clients.contacts.add', '+ Добавить контакт')}
+                                {t('clients.contacts.add', 'Добавить контакт')}
                             </button>
                         </div>
 
@@ -765,7 +765,7 @@ export function ClientCardPage(): ReactElement {
                                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
                             >
                                 <Plus className="w-3.5 h-3.5" />
-                                {t('clients.deals.create', '+ Создать сделку')}
+                                {t('clients.deals.create', 'Создать сделку')}
                             </button>
                         </div>
 
