@@ -13,13 +13,14 @@ import {
     Edit3, Save, X, Plus, Loader2, AlertCircle,
     MessageSquare, Users, Briefcase, History,
     Phone as PhoneIcon, Video, FileText, StickyNote,
-    ChevronRight,
+    ChevronRight, Trash2,
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import {
     clientsApi, contactsApi, interactionsApi, directoriesApi,
     type ClientCompany, type ContactPerson, type Interaction, type Directory,
 } from '../../api/clients';
+import { DeleteClientDialog } from './DeleteClientDialog';
 
 type Tab = 'main' | 'contacts' | 'deals' | 'history';
 
@@ -316,6 +317,7 @@ export function ClientCardPage(): ReactElement {
     // Add contact / interaction modal
     const [showAddContact, setShowAddContact] = useState(false);
     const [showAddInteraction, setShowAddInteraction] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     /**
      * Загружает данные карточки клиента
@@ -442,6 +444,15 @@ export function ClientCardPage(): ReactElement {
                             </div>
                         </div>
                         <div className="flex gap-2 shrink-0">
+                            {!isEditing && (
+                                <button
+                                    onClick={() => setIsDeleteDialogOpen(true)}
+                                    className="p-2 rounded-lg border border-destructive/20 bg-card text-destructive hover:bg-destructive/5 transition-colors flex items-center gap-1.5 shadow-sm"
+                                    title={t('clients.delete', 'Удалить')}
+                                >
+                                    <Trash2 className="w-4.5 h-4.5" />
+                                </button>
+                            )}
                             {isEditing ? (
                                 <>
                                     <button
@@ -861,6 +872,17 @@ export function ClientCardPage(): ReactElement {
                     </div>
                 )}
             </div>
+
+            {/* ── Delete Client Modal ── */}
+            {client && (
+                <DeleteClientDialog
+                    isOpen={isDeleteDialogOpen}
+                    onClose={() => setIsDeleteDialogOpen(false)}
+                    clientId={client.id}
+                    clientName={client.name}
+                    onSuccess={() => navigate('/clients')}
+                />
+            )}
         </DashboardLayout>
     );
 }

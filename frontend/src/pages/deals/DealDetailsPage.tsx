@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import { cn } from '../../lib/utils';
 import { dealsApi, type Deal, type DealProduct } from '../../api/deals';
 import { clientsApi, interactionsApi, type ClientCompany, type Interaction, directoriesApi, type Directory } from '../../api/clients';
@@ -77,18 +78,29 @@ export function DealDetailsPage(): ReactElement {
         interactionDate: new Date().toISOString().slice(0, 16),
     });
     const [addingInteraction, setAddingInteraction] = useState(false);
+    const [changingFunnel, setChangingFunnel] = useState(false);
+    const [changingStage, setChangingStage] = useState(false);
+
+    // Company linking states
+    const [allCompanies, setAllCompanies] = useState<ClientCompany[]>([]);
+    const [isLinkingCompany, setIsLinkingCompany] = useState(false);
+    const [isCreatingCompany, setIsCreatingCompany] = useState(false);
+    const [companySearch, setCompanySearch] = useState('');
+    const [newCompanyForm, setNewCompanyForm] = useState({ name: '', inn: '' });
+    const [isSavingCompany, setIsSavingCompany] = useState(false);
 
     const loadData = useCallback(async () => {
         if (!id) return;
         setIsLoading(true);
         setError(null);
         try {
-            const [dealData, historyData, productsData, dirs, allFunnels] = await Promise.all([
+            const [dealData, historyData, productsData, dirs, allFunnels, companiesData] = await Promise.all([
                 dealsApi.getDealById(id),
                 interactionsApi.get({ dealId: id }),
                 dealsApi.getProducts(id),
                 directoriesApi.getAll(),
-                import('../../api/settings').then(m => m.funnelsApi.getAll())
+                import('../../api/settings').then(m => m.funnelsApi.getAll()),
+                clientsApi.getAll()
             ]);
 
             const reqStages = await Promise.all(
@@ -97,6 +109,7 @@ export function DealDetailsPage(): ReactElement {
 
             setFunnels(allFunnels);
             setStages(reqStages.flat());
+            setAllCompanies(companiesData);
 
             setDeal(dealData);
             setProducts(productsData);
@@ -187,8 +200,6 @@ export function DealDetailsPage(): ReactElement {
         );
     }
 
-    const [changingFunnel, setChangingFunnel] = useState(false);
-    const [changingStage, setChangingStage] = useState(false);
 
     const dealStageItem = stages.find(s => s.id === deal?.stage);
     const currentFunnelId = deal?.funnelId || dealStageItem?.funnelId || funnels[0]?.id;
@@ -213,11 +224,72 @@ export function DealDetailsPage(): ReactElement {
         }
     }
 
+    async function handleLinkCompany(companyId: string) {
+        if (!deal) return;
+        setIsSavingCompany(true);
+        try {
+            await dealsApi.updateDeal(deal.id, {
+                name: deal.name,
+                amount: deal.amount,
+                stage: deal.stage,
+                funnelId: deal.funnelId,
+                responsible: deal.responsible,
+                clientCompanyId: companyId
+            });
+            setIsLinkingCompany(false);
+            setCompanySearch('');
+            void loadData();
+        } catch (err) {
+            console.error('Failed to link company', err);
+        } finally {
+            setIsSavingCompany(false);
+        }
+    }
+
+    async function handleFastCreateCompany(e: React.FormEvent) {
+        e.preventDefault();
+        if (!deal || !newCompanyForm.name.trim()) return;
+        setIsSavingCompany(true);
+        try {
+            const newComp = await clientsApi.create({
+                name: newCompanyForm.name.trim(),
+                inn: newCompanyForm.inn.trim() || undefined,
+            });
+            await dealsApi.updateDeal(deal.id, {
+                name: deal.name,
+                amount: deal.amount,
+                stage: deal.stage,
+                funnelId: deal.funnelId,
+                responsible: deal.responsible,
+                clientCompanyId: newComp.id
+            });
+            setIsCreatingCompany(false);
+            setNewCompanyForm({ name: '', inn: '' });
+            void loadData();
+        } catch (err) {
+            console.error('Failed to create and link company', err);
+        } finally {
+            setIsSavingCompany(false);
+        }
+    }
+
+    const filteredCompanies = allCompanies.filter(c =>
+        c.name.toLowerCase().includes(companySearch.toLowerCase()) ||
+        (c.inn && c.inn.includes(companySearch))
+    ).slice(0, 5);
+
     async function handleSetStage(stageId: string) {
         if (!deal || deal.stage === stageId) return;
         setChangingStage(true);
         try {
-            await dealsApi.updateDeal(deal.id, { stage: stageId });
+            await dealsApi.updateDeal(deal.id, {
+                name: deal.name,
+                amount: deal.amount,
+                responsible: deal.responsible,
+                funnelId: deal.funnelId,
+                clientCompanyId: deal.clientCompanyId,
+                stage: stageId
+            });
             void loadData();
         } catch (err) {
             console.error('Failed to change stage', err);
@@ -380,7 +452,7 @@ export function DealDetailsPage(): ReactElement {
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                                     <CardTitle className="text-base flex items-center gap-1.5">
-                                        {t('deals.details.contacts')}
+                                        {t('deals.details.primaryContact', 'Основной контакт')}
                                         <button className="text-muted-foreground hover:text-primary transition-colors">
                                             <Plus className="w-4 h-4" />
                                         </button>
@@ -426,32 +498,172 @@ export function DealDetailsPage(): ReactElement {
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                                     <CardTitle className="text-base">{t('deals.details.company')}</CardTitle>
+                                    {!company && !isLinkingCompany && !isCreatingCompany && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 px-2 text-primary hover:text-primary hover:bg-primary/10"
+                                            onClick={() => setIsLinkingCompany(true)}
+                                        >
+                                            <Plus className="w-4 h-4 mr-1" />
+                                            {t('deals.details.linkCompany')}
+                                        </Button>
+                                    )}
                                 </CardHeader>
                                 <CardContent>
-                                    {company ? (
+                                    {isLinkingCompany ? (
+                                        <div className="space-y-4">
+                                            <div className="relative">
+                                                <Input
+                                                    type="text"
+                                                    placeholder={t('deals.details.searchCompany')}
+                                                    className="w-full"
+                                                    value={companySearch}
+                                                    onChange={(e) => setCompanySearch(e.target.value)}
+                                                    autoFocus
+                                                />
+                                            </div>
+                                            <div className="space-y-0.5">
+                                                {filteredCompanies.map(c => (
+                                                    <button
+                                                        key={c.id}
+                                                        className="w-full text-left px-3 py-2 rounded-lg hover:bg-muted transition-colors flex items-center justify-between group"
+                                                        onClick={() => void handleLinkCompany(c.id)}
+                                                        disabled={isSavingCompany}
+                                                    >
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-medium text-foreground truncate">{c.name}</p>
+                                                            {c.inn && <p className="text-[10px] text-muted-foreground">ИНН: {c.inn}</p>}
+                                                        </div>
+                                                        <Plus className="w-4 h-4 text-muted-foreground group-hover:text-primary opacity-0 group-hover:opacity-100 transition-all" />
+                                                    </button>
+                                                ))}
+                                                {companySearch && filteredCompanies.length === 0 && (
+                                                    <p className="text-xs text-muted-foreground text-center py-2 italic">{t('common.nothingFound', 'Ничего не найдено')}</p>
+                                                )}
+                                            </div>
+                                            <div className="pt-2 border-t border-border flex flex-col gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="w-full text-xs"
+                                                    onClick={() => {
+                                                        setIsLinkingCompany(false);
+                                                        setIsCreatingCompany(true);
+                                                    }}
+                                                >
+                                                    {t('deals.details.createNewCompany')}
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="w-full text-xs text-muted-foreground"
+                                                    onClick={() => {
+                                                        setIsLinkingCompany(false);
+                                                        setCompanySearch('');
+                                                    }}
+                                                >
+                                                    {t('common.cancel', 'Отмена')}
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : isCreatingCompany ? (
+                                        <form onSubmit={(e) => void handleFastCreateCompany(e)} className="space-y-4">
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">
+                                                        {t('deals.details.fastCreate.name')}
+                                                    </label>
+                                                    <Input
+                                                        type="text"
+                                                        required
+                                                        placeholder={t('deals.details.fastCreate.namePlaceholder')}
+                                                        className="w-full"
+                                                        value={newCompanyForm.name}
+                                                        onChange={(e) => setNewCompanyForm(prev => ({ ...prev, name: e.target.value }))}
+                                                        autoFocus
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1 block">
+                                                        {t('deals.details.fastCreate.inn')}
+                                                    </label>
+                                                    <Input
+                                                        type="text"
+                                                        placeholder={t('deals.details.fastCreate.innPlaceholder')}
+                                                        className="w-full"
+                                                        value={newCompanyForm.inn}
+                                                        onChange={(e) => setNewCompanyForm(prev => ({ ...prev, inn: e.target.value }))}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <Button type="submit" size="sm" className="w-full" disabled={isSavingCompany}>
+                                                    {isSavingCompany ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                                                    {t('deals.details.fastCreate.submit')}
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="w-full text-muted-foreground"
+                                                    onClick={() => {
+                                                        setIsCreatingCompany(false);
+                                                        setNewCompanyForm({ name: '', inn: '' });
+                                                    }}
+                                                    disabled={isSavingCompany}
+                                                >
+                                                    {t('deals.details.fastCreate.cancel')}
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    ) : company || deal?.clientCompanyId ? (
                                         <>
-                                            <div className="flex items-center gap-3 mb-5 cursor-pointer group" onClick={() => navigate(`/clients/${company.id}`)}>
+                                            <div className="flex items-center gap-3 mb-5 cursor-pointer group" onClick={() => navigate(`/clients/${company?.id || deal?.clientCompanyId}`)}>
                                                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500 to-primary flex items-center justify-center text-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
                                                     <Building2 className="w-5 h-5" />
                                                 </div>
-                                                <div>
-                                                    <p className="font-bold text-foreground text-sm group-hover:text-primary transition-colors">{company.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{company.inn ? `ИНН: ${company.inn}` : 'Отрасль не указана'}</p>
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="font-bold text-foreground text-sm group-hover:text-primary transition-colors truncate">
+                                                        {company?.name || deal?.clientCompanyName || '—'}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">{company?.inn || deal?.clientCompanyId ? `ID: ${String(deal?.clientCompanyId).slice(0, 8)}...` : '—'}</p>
                                                 </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setIsLinkingCompany(true);
+                                                    }}
+                                                >
+                                                    <Plus className="w-4 h-4" />
+                                                </Button>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 gap-4">
                                                 <div>
                                                     <p className="text-xs text-muted-foreground mb-1">{t('deals.details.location')}</p>
                                                     <div className="flex items-center gap-1">
                                                         <MapPin className="w-3 h-3 text-muted-foreground/60" />
-                                                        <p className="text-sm font-semibold text-foreground">{company.address || '—'}</p>
+                                                        <p className="text-sm font-semibold text-foreground truncate">{company?.address || '—'}</p>
                                                     </div>
                                                 </div>
                                             </div>
                                         </>
                                     ) : (
-                                        <div className="text-sm text-muted-foreground flex items-center justify-center py-6">
-                                            Компания не привязана
+                                        <div className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-border rounded-xl">
+                                            <Building2 className="w-8 h-8 text-muted-foreground/20 mb-2" />
+                                            <p className="text-xs text-muted-foreground mb-4 text-center">Компания не привязана к этой сделке</p>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="text-xs"
+                                                onClick={() => setIsLinkingCompany(true)}
+                                            >
+                                                <Plus className="w-3 h-3 mr-1" />
+                                                Привязать компанию
+                                            </Button>
                                         </div>
                                     )}
                                 </CardContent>

@@ -9,12 +9,13 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
     Plus, Search, Building2, Globe, Filter, X,
-    ChevronRight, AlertCircle, Loader2, RefreshCw, FileDown
+    ChevronRight, AlertCircle, Loader2, RefreshCw, FileDown, Trash2
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { clientsApi, directoriesApi, type ClientCompany, type Directory } from '../../api/clients';
 import { exportToExcel } from '../../lib/exportUtils';
 import { konturFocusApi } from '../../api/konturFocus';
+import { DeleteClientDialog } from './DeleteClientDialog';
 
 // ─── Sub-components ──────────────────────────────────────────
 
@@ -297,6 +298,7 @@ export function ClientsPage(): ReactElement {
 
     // Modal state
     const [showAddModal, setShowAddModal] = useState(false);
+    const [clientToDelete, setClientToDelete] = useState<ClientCompany | null>(null);
 
     /**
      * Загрузить клиентов и справочники
@@ -596,8 +598,18 @@ export function ClientsPage(): ReactElement {
                                         {dirValue(directories.relationTypes, client.relationTypeId)}
                                     </span>
 
-                                    {/* Arrow */}
-                                    <div className="hidden sm:flex items-center justify-end">
+                                    {/* Actions */}
+                                    <div className="hidden sm:flex items-center justify-end gap-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setClientToDelete(client);
+                                            }}
+                                            className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100"
+                                            title={t('clients.delete', 'Удалить')}
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                         <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                                     </div>
                                 </div>
@@ -648,6 +660,16 @@ export function ClientsPage(): ReactElement {
                         </div>
                     </div>
                 </div>
+            )}
+            {/* ── Delete Client Modal ── */}
+            {clientToDelete && (
+                <DeleteClientDialog
+                    isOpen={!!clientToDelete}
+                    onClose={() => setClientToDelete(null)}
+                    clientId={clientToDelete.id}
+                    clientName={clientToDelete.name}
+                    onSuccess={loadData}
+                />
             )}
         </DashboardLayout>
     );

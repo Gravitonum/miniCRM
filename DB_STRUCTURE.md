@@ -22,7 +22,7 @@ The application relies on 18 core tables (entities) configured in GraviBase:
 - `funnel_stages`: Defines the steps (stages) ordered inside a specific funnel.
 
 ### Core CRM Data
-- `Deals`: Main sales opportunities (name, amount, current_stage_id, responsible_user_id, deadline, client_id).
+- `Deals`: Основные сделки (name, amountValue/DECIMAL, stage/STRING, currentStage/REFERENCE, funnel/REFERENCE, responsible/STRING, deadlineDate/DATETIME, clientCompany/REFERENCE, contactPerson/REFERENCE, closedAt/DATETIME).
 - `Clients`: Company records, B2B customers (name, inn, kpp, address, industry).
 - `Contacts`: Individual people linked to clients or deals (firstName, lastName, phone, email, position).
 - `Tasks`: Activities linked to deals or clients (title, dueDate, assignTo, status).

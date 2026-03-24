@@ -106,13 +106,16 @@ export const dealsApi = {
         if (updates.name !== undefined) payload.name = updates.name;
         if (updates.amount !== undefined) payload.amountValue = updates.amount;
         if (updates.stage !== undefined) payload.stage = updates.stage;
-        if (updates.funnelId !== undefined) payload.funnel = updates.funnelId ? { id: updates.funnelId } : null;
+        
+        // Используем плоские поля Id, чтобы избежать "глубокого обновления" (затирания полей связанных сущностей)
+        if (updates.funnelId !== undefined) payload.funnelId = updates.funnelId || null;
         if (updates.responsible !== undefined) payload.responsible = updates.responsible;
         if (updates.deadline !== undefined) payload.deadlineDate = updates.deadline ? new Date(updates.deadline).toISOString() : null;
-        if (updates.clientCompanyId !== undefined) payload.clientCompany = updates.clientCompanyId ? { id: updates.clientCompanyId } : null;
-        if (updates.contactPersonId !== undefined) payload.contactPerson = updates.contactPersonId ? { id: updates.contactPersonId } : null;
+        if (updates.clientCompanyId !== undefined) payload.clientCompanyId = updates.clientCompanyId || null;
+        if (updates.contactPersonId !== undefined) payload.contactPersonId = updates.contactPersonId || null;
 
-        await apiClient.put(`/application/api/Deal/${id}`, payload);
+        payload.id = id;
+        await apiClient.put('/application/api/Deal', payload);
     },
 
     async getOrgUsers(orgCode: string): Promise<{ username: string; id: string; email?: string }[]> {

@@ -107,6 +107,12 @@
         "dark": "Dark",
         "toggle": "Toggle theme"
     },
+    "common": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "delete": "Delete",
+        "nothingFound": "Nothing found"
+    },
     "joinOrg": {
         "title": "Join Organization",
         "subtitle": "Please enter your organization code to continue.",
@@ -286,6 +292,14 @@
                 "nameRequired": "Enter company name",
                 "createFailed": "Failed to create client"
             }
+        },
+        "delete": "Delete Client",
+        "deleteConfirm": {
+            "title": "Delete Client",
+            "description": "Are you sure you want to delete client «{{name}}»? This action is irreversible and may affect related deals and interaction history.",
+            "warning": "Warning: this action will delete all client data!",
+            "confirm": "Delete",
+            "cancel": "Cancel"
         },
         "card": {
             "backToList": "Clients",

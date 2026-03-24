@@ -214,7 +214,7 @@ export const clientsApi = {
      * @param data - изменяемые поля
      */
     async update(id: string, data: Partial<Omit<ClientCompany, 'id'>>): Promise<void> {
-        await apiClient.put(`/application/api/ClientCompany/${id}`, data);
+        await apiClient.put('/application/api/ClientCompany', { ...data, id });
     },
 
     /**
@@ -326,7 +326,7 @@ export const contactsApi = {
      * Обновить контакт
      */
     async update(id: string, data: Partial<Omit<ContactPerson, 'id'>>): Promise<void> {
-        await apiClient.put(`/application/api/ContactPerson/${id}`, data);
+        await apiClient.put('/application/api/ContactPerson', { ...data, id });
     },
 
     /**
