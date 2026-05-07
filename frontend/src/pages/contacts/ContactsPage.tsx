@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
     Plus, Search, User, Mail, Phone, Building2,
-    ChevronRight, AlertCircle, Loader2, RefreshCw, X,
+    AlertCircle, Loader2, RefreshCw, X,
     Edit2, Trash2
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
