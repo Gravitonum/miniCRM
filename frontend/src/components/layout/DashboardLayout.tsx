@@ -46,6 +46,7 @@ import {
 import { cn } from '../../lib/utils';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeSwitcher } from '../ThemeSwitcher';
+import { getUserRolesFromToken } from '../../lib/api';
 
 /** Хук выхода из системы */
 function useLogout() {
@@ -77,8 +78,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
         { name: t('nav.contacts', 'Контакты'), href: '/contacts', icon: Users },
         { name: t('nav.reports', 'Отчёты'), href: '/reports', icon: BarChart2 },
         { name: t('nav.import', 'Импорт / Экспорт'), href: '/import', icon: FileUp },
-        { name: t('nav.settings', 'Настройки'), href: '/settings', icon: Settings },
     ];
+
+    const roles = getUserRolesFromToken();
+    const isAdmin = roles.includes('company_admin') || roles.includes('administrator') || roles.includes('CompanyAdmin');
+
+    if (isAdmin) {
+        navigation.push({ name: t('nav.settings', 'Настройки'), href: '/settings', icon: Settings });
+    }
 
     return (
         <TooltipProvider>
@@ -290,10 +297,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }): Re
                                         <User className="w-4 h-4" />
                                         {t('nav.profile', 'Профиль')}
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem className="!px-4 cursor-pointer">
-                                        <Settings className="w-4 h-4" />
-                                        {t('nav.settings', 'Настройки')}
-                                    </DropdownMenuItem>
+                                    {isAdmin && (
+                                        <DropdownMenuItem className="!px-4 cursor-pointer" onClick={() => navigate('/settings')}>
+                                            <Settings className="w-4 h-4" />
+                                            {t('nav.settings', 'Настройки')}
+                                        </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                         className="text-destructive focus:bg-destructive/10 focus:text-destructive !px-4 cursor-pointer"

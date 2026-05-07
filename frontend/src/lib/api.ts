@@ -197,16 +197,27 @@ export async function assignRole(username: string, role: string): Promise<{ succ
 }
 
 /**
- * Fetches roles assigned to a user from GraviBase security API.
+ * Extracts user roles from the JWT token stored in localStorage.
+ * GraviBase embeds roles directly in the token payload.
  */
-export async function getUserRoles(username: string): Promise<string[]> {
+export function getUserRolesFromToken(): string[] {
     try {
-        const response = await apiClient.get<string[]>(
-            `/security/projects/${PROJECT_CODE}/users/${username}/roles`
-        );
-        return response.data;
+        const token = localStorage.getItem('gravisales_token');
+        if (!token) return [];
+
+        const payloadBase64 = token.split('.')[1];
+        if (!payloadBase64) return [];
+
+        // Handle base64url format
+        const base64 = payloadBase64.replace(/-/g, '+').replace(/_/g, '/');
+        const decodedJson = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        const payload = JSON.parse(decodedJson);
+        return payload.roles?.[PROJECT_CODE] || [];
     } catch (error) {
-        console.error('Failed to get user roles:', error);
+        console.error('Failed to get user roles from token:', error);
         return [];
     }
 }

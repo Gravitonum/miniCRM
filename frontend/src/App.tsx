@@ -18,7 +18,7 @@ import { ImportPage } from './pages/import/ImportPage';
 import { PlatformAdminLoginPage } from './pages/platform-admin/PlatformAdminLoginPage';
 import { PlatformAdminDashboard } from './pages/platform-admin/PlatformAdminDashboard';
 import { getPlatformAdminSession } from './api/platformAdmin';
-import { getAppUser } from './lib/api';
+import { getAppUser, getUserRolesFromToken } from './lib/api';
 
 /** Protected route wrapper: checks auth token, org association, and onboarding completion */
 function ProtectedRoute({ children }: { children: ReactElement }): ReactElement {
@@ -133,6 +133,17 @@ function PlatformAdminRoute({ children }: { children: ReactElement }): ReactElem
     return children;
 }
 
+/** Route guard for Admin pages (Settings) */
+function AdminRoute({ children }: { children: ReactElement }): ReactElement {
+    const roles = getUserRolesFromToken();
+    const isAdmin = roles.includes('company_admin') || roles.includes('administrator') || roles.includes('CompanyAdmin');
+    
+    if (!isAdmin) {
+        return <Navigate to="/" replace />;
+    }
+    return children;
+}
+
 /** Main application with routing */
 export default function App(): ReactElement {
   return (
@@ -203,7 +214,9 @@ export default function App(): ReactElement {
 
         <Route path="/settings" element={
           <ProtectedRoute>
-            <SettingsPage />
+            <AdminRoute>
+              <SettingsPage />
+            </AdminRoute>
           </ProtectedRoute>
         } />
 

@@ -1,5 +1,23 @@
 # Project Change Log
 
+## [2026-05-07T12:37:00Z] Settings access control based on roles
+- Type: feature | security
+- Affected: `frontend/src/App.tsx`, `frontend/src/components/layout/DashboardLayout.tsx`
+- Summary: Restricted access to the Settings page. The menu item is now hidden for non-admin users, and direct navigation to `/settings` redirects unauthorized users to the dashboard.
+- Context: Regular users (e.g., Viewers, Managers) should not be able to modify application configurations or directories.
+- Risk: Low. Uses the synchronous JWT token decoder to verify roles.
+- Lesson learned: Always enforce role-based access control (RBAC) both in the UI (hiding elements) and at the routing layer.
+- Next steps: Verify that all settings APIs on the backend also correctly enforce admin roles.
+
+## [2026-05-07T12:33:00Z] Decode user roles from JWT token
+- Type: feature | refactor
+- Affected: `frontend/src/lib/api.ts`, `frontend/src/pages/deals/DealsPage.tsx`
+- Summary: Refactored role retrieval to decode the JWT token directly on the client instead of making a separate API request to the backend. GraviBase now embeds user roles directly into the token.
+- Context: Reduces redundant network requests and allows synchronous access to user roles across the application.
+- Risk: Low. Assumes the JWT structure includes the `roles.minicrm` array as per GraviBase updates.
+- Lesson learned: Always leverage token claims when available to minimize backend calls and improve frontend responsiveness.
+- Next steps: Consider migrating this into a global AuthContext if other components begin requiring synchronous access to user roles.
+
 ## [2026-05-07T12:30:00Z] CRM Transition Rules UI Polish & Security Bypass
 - Type: feature | refactor | docs
 

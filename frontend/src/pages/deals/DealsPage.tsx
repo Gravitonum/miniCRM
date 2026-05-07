@@ -19,7 +19,7 @@ import { useNavigate } from 'react-router-dom';
 import { dealsApi, type Deal } from '../../api/deals';
 import { clientsApi, contactsApi, type ClientCompany, type ContactPerson } from '../../api/clients';
 import { funnelsApi, transitionRulesApi, type Funnel, type FunnelStage, type StageTransitionRule } from '../../api/settings';
-import { getAppUser, getUserRoles } from '../../lib/api';
+import { getAppUser, getUserRolesFromToken } from '../../lib/api';
 import { cn } from '../../lib/utils';
 import { exportToExcel } from '../../lib/exportUtils';
 import { toast } from 'react-hot-toast';
@@ -632,7 +632,7 @@ export function DealsPage(): ReactElement {
                     orgCode = userResult.user.orgCode || '';
                     setCurrentUserId(userResult.user.id);
                     // Load user roles
-                    const roles = await getUserRoles(username);
+                    const roles = getUserRolesFromToken();
                     setUserRoles(roles);
                 }
             }
@@ -675,7 +675,7 @@ export function DealsPage(): ReactElement {
 
             // Load user roles
             if (username) {
-                const roles = await getUserRoles(username);
+                const roles = getUserRolesFromToken();
                 setUserRoles(roles);
             }
         } catch (err) {
