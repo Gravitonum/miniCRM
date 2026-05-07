@@ -3,13 +3,15 @@
  */
 import { useEffect, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Plus, Trash2, Tag, Briefcase, Info } from 'lucide-react';
+import { Loader2, Plus, Trash2, Tag, Briefcase, Info, Pencil, Check, X } from 'lucide-react';
 import { directoriesApi, type Directory } from '../../api/clients';
 
 export function DirectoriesSettings(): ReactElement {
     const { t } = useTranslation();
     const [directories, setDirectories] = useState<Directory[]>([]);
     const [loading, setLoading] = useState(true);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editValue, setEditValue] = useState('');
 
     // Новое значение по типам
     const [newVal, setNewVal] = useState<Record<string, string>>({});
@@ -47,12 +49,30 @@ export function DirectoriesSettings(): ReactElement {
     }
 
     async function handleDelete(id: string) {
+        if (!window.confirm(t('common.deleteConfirm', 'Вы уверены, что хотите удалить этот элемент?'))) return;
         try {
             await directoriesApi.delete(id);
             setDirectories(prev => prev.filter(d => d.id !== id));
         } catch (err) {
             console.error('Failed to delete directory item', err);
         }
+    }
+
+    async function handleUpdate(id: string) {
+        const val = editValue.trim();
+        if (!val) return;
+        try {
+            await directoriesApi.update(id, val);
+            setDirectories(prev => prev.map(d => d.id === id ? { ...d, value: val } : d));
+            setEditingId(null);
+        } catch (err) {
+            console.error('Failed to update directory item', err);
+        }
+    }
+
+    function startEditing(item: Directory) {
+        setEditingId(item.id);
+        setEditValue(item.value);
     }
 
     if (loading) {
@@ -91,14 +111,58 @@ export function DirectoriesSettings(): ReactElement {
                                 ) : (
                                     <ul className="space-y-2">
                                         {items.map(item => (
-                                            <li key={item.id} className="flex justify-between items-center group text-sm bg-background border border-border rounded-md px-3 py-2">
-                                                <span className="truncate text-foreground">{item.value}</span>
-                                                <button
-                                                    onClick={() => handleDelete(item.id)}
-                                                    className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-all"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
+                                            <li key={item.id} className="flex justify-between items-center group text-sm bg-background border border-border rounded-md px-3 py-2 min-h-[40px]">
+                                                {editingId === item.id ? (
+                                                    <div className="flex items-center gap-2 w-full">
+                                                        <input
+                                                            autoFocus
+                                                            type="text"
+                                                            value={editValue}
+                                                            onChange={e => setEditValue(e.target.value)}
+                                                            className="flex-1 min-w-0 px-2 py-1 bg-muted/30 border border-input rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') handleUpdate(item.id);
+                                                                if (e.key === 'Escape') setEditingId(null);
+                                                            }}
+                                                        />
+                                                        <div className="flex items-center gap-1 shrink-0">
+                                                            <button
+                                                                onClick={() => handleUpdate(item.id)}
+                                                                className="p-1 text-primary hover:bg-primary/10 rounded transition-all"
+                                                                title={t('common.save', 'Сохранить')}
+                                                            >
+                                                                <Check className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setEditingId(null)}
+                                                                className="p-1 text-muted-foreground hover:bg-muted rounded transition-all"
+                                                                title={t('common.cancel', 'Отмена')}
+                                                            >
+                                                                <X className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <span className="truncate text-foreground pr-2" title={item.value}>{item.value}</span>
+                                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all shrink-0">
+                                                            <button
+                                                                onClick={() => startEditing(item)}
+                                                                className="p-1 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded transition-all"
+                                                                title={t('common.edit', 'Редактировать')}
+                                                            >
+                                                                <Pencil className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(item.id)}
+                                                                className="p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-all"
+                                                                title={t('common.delete', 'Удалить')}
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    </>
+                                                )}
                                             </li>
                                         ))}
                                     </ul>
@@ -110,13 +174,15 @@ export function DirectoriesSettings(): ReactElement {
                                     onSubmit={(e) => { e.preventDefault(); handleAdd(group.id); }}
                                     className="flex gap-2"
                                 >
-                                    <input
-                                        type="text"
-                                        placeholder={t('settings.dir.addPlaceholder', 'Новое значение')}
-                                        value={newVal[group.id] || ''}
-                                        onChange={e => setNewVal(p => ({ ...p, [group.id]: e.target.value }))}
-                                        className="flex-1 px-3 py-1.5 rounded-lg border border-input text-sm focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
-                                    />
+                                    <div className="flex-1 min-w-0">
+                                        <input
+                                            type="text"
+                                            placeholder={t('settings.dir.addPlaceholder', 'Новое значение')}
+                                            value={newVal[group.id] || ''}
+                                            onChange={e => setNewVal(p => ({ ...p, [group.id]: e.target.value }))}
+                                            className="w-full px-3 py-1.5 rounded-lg border border-input text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 ring-offset-background bg-background text-foreground transition-all"
+                                        />
+                                    </div>
                                     <button
                                         type="submit"
                                         disabled={!newVal[group.id]?.trim()}

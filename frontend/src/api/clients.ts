@@ -143,6 +143,13 @@ export const directoriesApi = {
     async delete(id: string): Promise<void> {
         await apiClient.delete(`/application/api/Directory/${id}`);
     },
+
+    /**
+     * Обновить элемент справочника
+     */
+    async update(id: string, value: string): Promise<void> {
+        await apiClient.put('/application/api/Directory', { id, value });
+    },
 };
 
 // ─────────────────────────────────────────

@@ -111,6 +111,8 @@
         "cancel": "Cancel",
         "save": "Save",
         "delete": "Delete",
+        "edit": "Edit",
+        "deleteConfirm": "Are you sure you want to delete this item?",
         "nothingFound": "Nothing found"
     },
     "joinOrg": {
