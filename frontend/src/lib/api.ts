@@ -196,6 +196,21 @@ export async function assignRole(username: string, role: string): Promise<{ succ
     }
 }
 
+/**
+ * Fetches roles assigned to a user from GraviBase security API.
+ */
+export async function getUserRoles(username: string): Promise<string[]> {
+    try {
+        const response = await apiClient.get<string[]>(
+            `/security/projects/${PROJECT_CODE}/users/${username}/roles`
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Failed to get user roles:', error);
+        return [];
+    }
+}
+
 /** App user record in the custom 'Users' table */
 export interface AppUser {
     id: string;

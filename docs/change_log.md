@@ -1,5 +1,51 @@
 # Project Change Log
 
+## [2026-05-07T12:30:00Z] CRM Transition Rules UI Polish & Security Bypass
+- Type: feature | refactor | docs
+
+- Affected: `frontend/src/pages/settings/FunnelsSettings.tsx`, `frontend/src/pages/deals/DealsPage.tsx`, `frontend/src/pages/settings/SettingsPage.tsx`, `USER_MANUAL.md`
+
+- Summary: Improved the settings layout to use full-width containers and optimized the funnel grid ratio (3/12 and 9/12). Implemented role-based filtering in the rules UI to hide Admins (bypass) and Viewers (no move). Added Admin bypass logic in the deals kanban board to allow CompanyAdmin and SuperAdmin to ignore transition restrictions.
+
+- Context: The UI was previously cramped and difficult to use on large screens. Admins were being restricted by rules, which is against standard CRM practices where higher-privilege roles have absolute control.
+
+- Risk: Low. Changes mostly affect UI layout and local permission checks.
+
+- Lesson learned: Double-check HTML nesting (avoid button-in-button). Use flexible max-widths for settings pages to accommodate complex tables and grids.
+
+- Next steps: Verify that SuperAdmin role is correctly identified across all application contexts.
+
+## [2026-05-07T11:30:00Z] CRM Stage Transition Rules & Build Fixes
+- Type: feature | bugfix | docs
+
+- Affected: `frontend/src/pages/settings/FunnelsSettings.tsx`, `frontend/src/pages/deals/DealsPage.tsx`, `frontend/src/api/settings.ts`, `frontend/src/locales/ru.json`, `frontend/src/components/ui/tabs.tsx`, `frontend/src/components/ui/checkbox.tsx`, `USER_MANUAL.md`, `DB_STRUCTURE.md`
+
+- Summary: Finalized the implementation of Stage Transition Rules and resolved critical build errors. Added missing UI components (Tabs, Checkbox), fixed property naming inconsistencies (type -> statusType, order -> orderIdx), and corrected role-based access logic (removed redundant JSON.parse).
+
+- Context: The previous implementation had syntax errors and missing dependencies. Users needed role-based and flow-based restrictions for deal movements.
+
+- Risk: High risk of locking users out of transitions if rules are misconfigured; mitigated by 'Any' mode by default and 'Seed Default Rules' helper.
+
+- Lesson learned: Always verify Shadcn UI component existence before importing. Ensure property names in frontend types exactly match backend models to avoid runtime/compile-time confusion. Use `import type` for type-only imports in strict TS projects.
+
+- Next steps: Monitor user feedback on transition restrictions. Implement backend-side enforcement for rules in the future (currently client-side only).
+
+## [2026-05-07 14:20] Stage Transition Rules & Role-Based Flow Control
+- Type: feature
+
+- Affected: `frontend/src/api/settings.ts`, `frontend/src/pages/settings/FunnelsSettings.tsx`, `frontend/src/pages/deals/DealsPage.tsx`, `frontend/src/locales/*.json`
+
+- Summary: Implemented a comprehensive stage transition system for CRM funnels. Added "Free" vs "Restricted" transition modes. Restricted mode enforces rules defined in the database, including role-based access control (e.g., only Managers can move to "Won").
+
+- Context: Small/Medium businesses often need to prevent accidental or unauthorized stage changes (e.g., skipping qualification). 
+
+- Risk: Setting a funnel to "Restricted" without defining rules will block all transitions. Mitigated by adding a "Seed Default Rules" (linear scheme) button.
+
+- Lesson learned: Always provide a "reset to defaults" or "seed" option for complex rule-based configurations to avoid user frustration.
+
+- Next steps: Update USER_MANUAL.md with screenshots of the new interface.
+
+
 All notable changes to this project will be documented in this file.
 
 ## [2026-05-07 13:47] Fixed Directories Settings UI and functionality

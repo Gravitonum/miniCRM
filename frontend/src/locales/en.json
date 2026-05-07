@@ -112,6 +112,9 @@
         "save": "Save",
         "delete": "Delete",
         "edit": "Edit",
+        "ok": "Got it",
+        "confirm": "Confirm",
+        "add": "Add",
         "deleteConfirm": "Are you sure you want to delete this item?",
         "nothingFound": "Nothing found"
     },
@@ -245,6 +248,9 @@
             "industry": "Industry",
             "location": "Location",
             "employeeRange": "Employee Range"
+        },
+        "errors": {
+            "transitionNotAllowed": "Transition to this stage is restricted by funnel rules or your access rights"
         }
     },
     "clients": {
@@ -605,14 +611,54 @@
             "newFunnelPrompt": "New funnel name",
             "listTitle": "Funnels List",
             "emptyFunnels": "No funnels yet",
-            "stagesFor": "Stages for",
-            "addStage": "Add stage",
+            "stagesFor": "Stages:",
+            "addStage": "Add Stage",
             "newStagePrompt": "Stage name",
             "typeOpen": "Open",
             "typeWon": "Won",
             "typeLost": "Lost",
             "emptyStages": "No stages in this funnel",
-            "selectHint": "Select a funnel from the list"
+            "selectHint": "Select a funnel from the list",
+            "deleteBlockedTitle": "Cannot Delete",
+            "deleteStageBlocked": "Cannot delete stage — it has active deals. Move or delete them first.",
+            "deleteFunnelBlocked": "Cannot delete funnel — it has active deals. Move or delete them first.",
+            "confirmDeleteStageTitle": "Delete Stage?",
+            "confirmDeleteStage": "Stage transition history will be lost.",
+            "confirmDeleteFunnelTitle": "Delete Funnel?",
+            "confirmDeleteFunnel": "All stage history will be permanently deleted.",
+            "archiveInstead": "Archive Instead",
+            "confirmArchiveTitle": "Archive Funnel?",
+            "confirmArchive": "The funnel will no longer appear when working with deals.",
+            "confirmUnarchiveTitle": "Restore Funnel?",
+            "confirmUnarchive": "The funnel will be available for use with deals again.",
+            "deleteStageError": "Error deleting stage",
+            "deleteFunnelError": "Error deleting funnel",
+            "tabStages": "Stages",
+            "tabTransitions": "Transition Rules",
+            "transitionModeLabel": "Transition Mode",
+            "modeAny": "Free — any transition is allowed",
+            "modeRestricted": "Restricted — only by defined rules",
+            "noRules": "No rules yet. Add your first rule.",
+            "addRule": "Add Rule",
+            "ruleFromStage": "From Stage",
+            "ruleToStage": "To Stage",
+            "ruleRoles": "Roles",
+            "fromAny": "Any Stage",
+            "allRoles": "All Roles",
+            "addRuleTitle": "Add Transition Rule",
+            "seedDefaultRules": "Load Linear Scheme",
+            "seedDefaultRulesHint": "Creates forward/backward rules between adjacent stages and from any stage to terminal stages",
+            "seedSuccess": "Rules created!",
+            "deleteRule": "Delete Rule",
+            "confirmDeleteRule": "Delete this transition rule?",
+            "restrictedModeNote": "In restricted mode, managers can only move deals along allowed routes.",
+            "roles": {
+                "company_admin": "Administrator",
+                "manager": "Sales Manager",
+                "senior_manager": "Senior Manager",
+                "director": "Director",
+                "viewer": "Viewer"
+            }
         }
     },
     "tour": {

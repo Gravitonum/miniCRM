@@ -18,10 +18,11 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { dealsApi, type Deal } from '../../api/deals';
 import { clientsApi, contactsApi, type ClientCompany, type ContactPerson } from '../../api/clients';
-import { funnelsApi, type Funnel, type FunnelStage } from '../../api/settings';
-import { getAppUser } from '../../lib/api';
+import { funnelsApi, transitionRulesApi, type Funnel, type FunnelStage, type StageTransitionRule } from '../../api/settings';
+import { getAppUser, getUserRoles } from '../../lib/api';
 import { cn } from '../../lib/utils';
 import { exportToExcel } from '../../lib/exportUtils';
+import { toast } from 'react-hot-toast';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -590,6 +591,8 @@ export function DealsPage(): ReactElement {
     const [error, setError] = useState<string | null>(null);
     const [showNewDeal, setShowNewDeal] = useState(false);
     const [currentUserId, setCurrentUserId] = useState('');
+    const [userRoles, setUserRoles] = useState<string[]>([]);
+    const [transitionRules, setTransitionRules] = useState<StageTransitionRule[]>([]);
 
     // Confirmation modal state
     const [pendingMove, setPendingMove] = useState<{ deal: Deal; stage: FunnelStage } | null>(null);
@@ -628,6 +631,9 @@ export function DealsPage(): ReactElement {
                 if (userResult.success && userResult.user) {
                     orgCode = userResult.user.orgCode || '';
                     setCurrentUserId(userResult.user.id);
+                    // Load user roles
+                    const roles = await getUserRoles(username);
+                    setUserRoles(roles);
                 }
             }
 
@@ -666,6 +672,12 @@ export function DealsPage(): ReactElement {
                 const orgManagers = await dealsApi.getOrgUsers(orgCode);
                 setManagers(orgManagers);
             }
+
+            // Load user roles
+            if (username) {
+                const roles = await getUserRoles(username);
+                setUserRoles(roles);
+            }
         } catch (err) {
             console.error('Failed to load deals data:', err);
             setError(t('deals.noDeals') || 'Ошибка загрузки');
@@ -676,6 +688,15 @@ export function DealsPage(): ReactElement {
 
     useEffect(() => { void loadAll(); }, [loadAll]);
 
+    // Load transition rules when active funnel changes
+    useEffect(() => {
+        if (activeFunnelId) {
+            transitionRulesApi.getByFunnel(activeFunnelId)
+                .then(setTransitionRules)
+                .catch(err => console.error('Failed to load transition rules:', err));
+        }
+    }, [activeFunnelId]);
+
     // ── Drag-and-Drop Handler ─────────────────────────────────────────────
 
     /**
@@ -684,6 +705,33 @@ export function DealsPage(): ReactElement {
      */
     function handleDropToStage(deal: Deal, newStage: FunnelStage) {
         if (deal.stage === newStage.id) return; // Same stage, no action
+
+        // ── Check Transition Rules ──────────────────────────────────────────
+        const activeFunnel = funnels.find(f => f.id === activeFunnelId);
+        if (activeFunnel?.transitionMode === 'restricted') {
+            const isAdmin = userRoles.includes('company_admin') || userRoles.includes('superadmin');
+            if (!isAdmin) {
+                const allowedRule = transitionRules.find(rule => {
+                const matchesTo = rule.toStageId === newStage.id;
+                const matchesFrom = !rule.fromStageId || rule.fromStageId === deal.stage;
+                
+                if (matchesTo && matchesFrom) {
+                    // Check roles
+                    const roles = rule.allowedRoles || [];
+                    if (roles.length === 0) return true;
+                    return roles.some(role => userRoles.includes(role));
+                }
+                return false;
+            });
+
+            if (!allowedRule) {
+                toast.error(t('deals.errors.transitionNotAllowed') || 'Переход запрещен правилами воронки');
+                return;
+            }
+          }
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         if (newStage.statusType === 'won' || newStage.statusType === 'lost') {
             setPendingMove({ deal, stage: newStage });
         } else {

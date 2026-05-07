@@ -18,8 +18,9 @@ The application relies on 18 core tables (entities) configured in GraviBase:
 - `Companies`: Stores tenant info (id, name, orgCode, isBlocked). `isBlocked` is used by SuperAdmin.
 
 ### Sales Pipeline
-- `crm_funnels`: Defines different pipelines/funnels.
-- `funnel_stages`: Defines the steps (stages) ordered inside a specific funnel.
+- `CrmFunnel`: Defines pipelines (name, isActive, transitionMode: "any" | "restricted").
+- `FunnelStage`: Defines steps (name, statusType: "open"|"won"|"lost", orderIdx, color).
+- `StageTransitionRule`: Defines allowed movements between stages (funnel, fromStage, toStage, allowedRoles/JSON-STRING).
 
 ### Core CRM Data
 - `Deals`: Основные сделки (name, amountValue/DECIMAL, stage/STRING, currentStage/REFERENCE, funnel/REFERENCE, responsible/STRING, deadlineDate/DATETIME, clientCompany/REFERENCE, contactPerson/REFERENCE, closedAt/DATETIME).

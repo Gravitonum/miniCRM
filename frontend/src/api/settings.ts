@@ -1,6 +1,6 @@
 /**
  * API-модуль для страницы Настроек:
- * Управление пользователями, воронками продаж и компанией.
+ * Управление пользователями, воронками продаж, правилами переходов и компанией.
  */
 import apiClient from './client';
 
@@ -26,11 +26,16 @@ export interface Company {
     konturApiKey?: string;
 }
 
+/** Режим переходов воронки: any — свободный, restricted — только по правилам */
+export type TransitionMode = 'any' | 'restricted';
+
 export interface Funnel {
     id: string;
     name: string;
     isActive: boolean;
     companyId?: string;
+    /** Режим переходов между этапами (по умолчанию 'any') */
+    transitionMode?: TransitionMode;
 }
 
 export interface FunnelStage {
@@ -39,6 +44,27 @@ export interface FunnelStage {
     statusType: 'open' | 'won' | 'lost';
     funnelId: string;
     orderIdx: number;
+    color?: string;
+}
+
+/**
+ * Правило перехода между этапами воронки.
+ * Если fromStageId = null — переход разрешён из любого этапа.
+ * Если allowedRoles = [] — переход разрешён всем ролям.
+ *
+ * @example
+ * // Из любого этапа в "Выиграно" для всех:
+ * { funnelId: '...', fromStageId: null, toStageId: 'won-stage-id', allowedRoles: [] }
+ */
+export interface StageTransitionRule {
+    id: string;
+    funnelId: string;
+    /** null означает "из любого этапа" */
+    fromStageId: string | null;
+    toStageId: string;
+    /** Список ролей, которым разрешён переход. Пустой массив = все роли */
+    allowedRoles: string[];
+    isDefault: boolean;
 }
 
 // ─────────────────────────────────────────
@@ -81,7 +107,7 @@ export const usersApi = {
 };
 
 export const funnelsApi = {
-    /** Получить все воронки компании (могут фильтроваться по companyId если нужно, но пока просто все) */
+    /** Получить все воронки компании */
     async getAll(): Promise<Funnel[]> {
         const resp = await apiClient.get('/application/api/CrmFunnel');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -89,7 +115,8 @@ export const funnelsApi = {
             id: f.id,
             name: f.name || '—',
             isActive: f.isActive !== false,
-            companyId: f.companyId,
+            companyId: f.company?.id || f.companyId,
+            transitionMode: (f.transitionMode as TransitionMode) || 'any',
         }));
     },
 
@@ -105,6 +132,7 @@ export const funnelsApi = {
             statusType: s.statusType || 'open',
             funnelId: s.funnel?.id || s.funnelId || funnelId,
             orderIdx: s.orderIdx || 0,
+            color: s.color || (s.statusType === 'won' ? '#10b981' : s.statusType === 'lost' ? '#ef4444' : '#3b82f6')
         }));
         return stages.sort((a, b) => a.orderIdx - b.orderIdx);
     },
@@ -125,6 +153,7 @@ export const funnelsApi = {
         if (data.name !== undefined) payload.name = data.name;
         if (data.isActive !== undefined) payload.isActive = data.isActive;
         if (data.companyId !== undefined) payload.company = data.companyId ? { id: data.companyId } : null;
+        if (data.transitionMode !== undefined) payload.transitionMode = data.transitionMode;
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { createdOn, updatedOn, createdBy, updatedBy, version, ...finalPayload } = payload;
@@ -142,12 +171,13 @@ export const funnelsApi = {
             statusType: data.statusType,
             funnelId: data.funnelId,
             orderIdx: data.orderIdx,
+            color: data.color || (data.statusType === 'won' ? '#10b981' : data.statusType === 'lost' ? '#ef4444' : '#3b82f6'),
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const s = resp.data as any;
         return {
             id: s.id, name: s.name, statusType: s.statusType,
-            funnelId: s.funnelId, orderIdx: s.orderIdx
+            funnelId: s.funnelId, orderIdx: s.orderIdx, color: s.color
         };
     },
 
@@ -159,6 +189,7 @@ export const funnelsApi = {
         if (data.statusType !== undefined) payload.statusType = data.statusType;
         if (data.funnelId !== undefined) payload.funnel = data.funnelId ? { id: data.funnelId } : null;
         if (data.orderIdx !== undefined) payload.orderIdx = data.orderIdx;
+        if (data.color !== undefined) payload.color = data.color;
 
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { createdOn, updatedOn, createdBy, updatedBy, version, ...finalPayload } = payload;
@@ -169,6 +200,111 @@ export const funnelsApi = {
     async deleteStage(id: string): Promise<void> {
         await apiClient.delete(`/application/api/FunnelStage/${id}`);
     }
+};
+
+/**
+ * API для управления правилами переходов между этапами воронки.
+ *
+ * @example
+ * // Получить все правила воронки:
+ * const rules = await transitionRulesApi.getByFunnel(funnelId);
+ */
+export const transitionRulesApi = {
+    /**
+     * Получить все правила переходов для конкретной воронки.
+     * @param funnelId — ID воронки
+     */
+    async getByFunnel(funnelId: string): Promise<StageTransitionRule[]> {
+        const resp = await apiClient.get('/application/api/StageTransitionRule', {
+            params: { filter: `funnel.id=="${funnelId}"` }
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return unwrap(resp.data as any[]).map((r: any): StageTransitionRule => ({
+            id: r.id,
+            funnelId: r.funnel?.id || funnelId,
+            fromStageId: r.fromStage?.id ?? null,
+            toStageId: r.toStage?.id || '',
+            allowedRoles: r.allowedRoles ? JSON.parse(r.allowedRoles) : [],
+            isDefault: r.isDefault || false,
+        }));
+    },
+
+    /**
+     * Создать новое правило перехода.
+     * @param funnelId — ID воронки
+     * @param fromStageId — ID исходного этапа (null = из любого)
+     * @param toStageId — ID целевого этапа
+     * @param allowedRoles — массив ролей (пустой = все роли)
+     * @param isDefault — флаг дефолтного правила
+     */
+    async create(
+        funnelId: string,
+        fromStageId: string | null,
+        toStageId: string,
+        allowedRoles: string[] = [],
+        isDefault = false
+    ): Promise<StageTransitionRule> {
+        const body: Record<string, unknown> = {
+            funnel: { id: funnelId },
+            toStage: { id: toStageId },
+            allowedRoles: JSON.stringify(allowedRoles),
+            isDefault,
+        };
+        if (fromStageId) body.fromStage = { id: fromStageId };
+
+        const resp = await apiClient.post('/application/api/StageTransitionRule', body);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const r = resp.data as any;
+        return {
+            id: r.id,
+            funnelId: r.funnel?.id || funnelId,
+            fromStageId: r.fromStage?.id ?? null,
+            toStageId: r.toStage?.id || toStageId,
+            allowedRoles: r.allowedRoles ? JSON.parse(r.allowedRoles) : [],
+            isDefault: r.isDefault || false,
+        };
+    },
+
+    /**
+     * Удалить правило перехода.
+     * @param id — ID правила
+     */
+    async delete(id: string): Promise<void> {
+        await apiClient.delete(`/application/api/StageTransitionRule/${id}`);
+    },
+
+    /**
+     * Создать набор линейных правил для воронки (дефолтная схема).
+     * Правила: вперёд/назад между соседними этапами, из любого в won/lost.
+     * @param funnelId — ID воронки
+     * @param stages — отсортированные этапы воронки
+     */
+    async seedDefaultRules(funnelId: string, stages: FunnelStage[]): Promise<void> {
+        const openStages = stages.filter(s => s.statusType === 'open');
+        const wonLostStages = stages.filter(s => s.statusType === 'won' || s.statusType === 'lost');
+
+        const createPromises: Promise<StageTransitionRule>[] = [];
+
+        // Линейные переходы вперёд и назад между соседними open-этапами
+        for (let i = 0; i < openStages.length; i++) {
+            const curr = openStages[i];
+            if (i + 1 < openStages.length) {
+                // вперёд
+                createPromises.push(transitionRulesApi.create(funnelId, curr.id, openStages[i + 1].id));
+            }
+            if (i - 1 >= 0) {
+                // назад
+                createPromises.push(transitionRulesApi.create(funnelId, curr.id, openStages[i - 1].id));
+            }
+        }
+
+        // Из любого open-этапа в won/lost
+        for (const terminal of wonLostStages) {
+            createPromises.push(transitionRulesApi.create(funnelId, null, terminal.id));
+        }
+
+        await Promise.allSettled(createPromises);
+    },
 };
 
 export const companyApi = {

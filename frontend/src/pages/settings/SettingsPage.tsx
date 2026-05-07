@@ -26,7 +26,7 @@ export function SettingsPage(): ReactElement {
 
     return (
         <DashboardLayout>
-            <div className="space-y-6 max-w-5xl">
+            <div className="space-y-6 w-full px-2">
                 <div>
                     <h1 className="text-2xl font-bold text-foreground tracking-tight">
                         {t('settings.title', 'Настройки')}
