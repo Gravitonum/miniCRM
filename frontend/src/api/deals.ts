@@ -23,6 +23,15 @@ export interface DealProduct {
     unitPrice: number;
 }
 
+export interface DealStageHistoryDef {
+    id: string;
+    dealId: string;
+    fromStageId?: string;
+    toStageId: string;
+    changedByUserId?: string;
+    changedAtTime: string;
+}
+
 interface DealBackendModel {
     id: string;
     name: string;
@@ -74,16 +83,17 @@ export const dealsApi = {
     },
 
     async createDeal(deal: Omit<Deal, 'id' | 'clientCompanyName' | 'contactPersonName'>): Promise<Deal> {
-        const payload = {
+        const payload: Record<string, any> = {
             name: deal.name,
             amountValue: deal.amount,
             stage: deal.stage,
-            funnel: deal.funnelId ? { id: deal.funnelId } : null,
+            funnelId: deal.funnelId ? deal.funnelId : null,
             responsible: deal.responsible,
-            deadlineDate: deal.deadline ? new Date(deal.deadline).toISOString() : null,
-            clientCompany: deal.clientCompanyId ? { id: deal.clientCompanyId } : null,
-            contactPerson: deal.contactPersonId ? { id: deal.contactPersonId } : null,
         };
+        if (deal.deadline) payload.deadlineDate = new Date(deal.deadline).toISOString();
+        if (deal.clientCompanyId) payload.clientCompanyId = deal.clientCompanyId;
+        if (deal.contactPersonId) payload.contactPersonId = deal.contactPersonId;
+
         const response = await apiClient.post<DealBackendModel>('/application/api/Deal', payload);
         const d = response.data;
         return {
@@ -145,12 +155,27 @@ export const dealsApi = {
         changedBy: string
     ): Promise<void> {
         await apiClient.post('/application/api/DealStageHistory', {
-            dealId,
+            dealId: dealId,
             fromStageId: fromStageId || null,
-            toStageId,
-            changedBy,
-            changedAt: new Date().toISOString(),
+            toStageId: toStageId,
+            changedByUserId: changedBy,
+            changedAtTime: new Date().toISOString(),
         });
+    },
+
+    async getStageHistory(dealId: string): Promise<DealStageHistoryDef[]> {
+        const response = await apiClient.get<any>('/application/api/DealStageHistory', {
+            params: { filter: `deal.id=="${dealId}"` }
+        });
+        const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+        return data.map((h: any) => ({
+            id: h.id,
+            dealId,
+            fromStageId: h.fromStage?.id,
+            toStageId: h.toStage?.id,
+            changedByUserId: h.changedByUserId,
+            changedAtTime: h.changedAtTime || h.changedAt || h.createdAt || new Date().toISOString(),
+        }));
     },
 
     async getProducts(dealId: string): Promise<DealProduct[]> {
@@ -170,8 +195,8 @@ export const dealsApi = {
 
     async addProduct(dealId: string, productCategoryId: string, quantityAmount: number, unitPrice: number): Promise<DealProduct> {
         const response = await apiClient.post<any>('/application/api/DealProduct', {
-            deal: { id: dealId },
-            productCategory: { id: productCategoryId },
+            dealId: dealId,
+            productCategoryId: productCategoryId,
             quantityAmount,
             unitPrice,
         });

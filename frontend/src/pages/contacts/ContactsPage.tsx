@@ -10,32 +10,34 @@ import { useNavigate } from 'react-router-dom';
 import {
     Plus, Search, User, Mail, Phone, Building2,
     ChevronRight, AlertCircle, Loader2, RefreshCw, X,
+    Edit2, Trash2
 } from 'lucide-react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { contactsApi, clientsApi, type ContactPerson, type ClientCompany } from '../../api/clients';
 
 // ─── Add Contact Modal ────────────────────────────────────────
 
-interface AddContactFormProps {
+interface ContactFormProps {
     companies: ClientCompany[];
+    initialData?: ContactPerson;
     onSuccess: () => void;
     onCancel: () => void;
 }
 
 /**
- * Форма создания контактного лица с привязкой к компании
+ * Форма создания/редактирования контактного лица
  */
-function AddContactForm({ companies, onSuccess, onCancel }: AddContactFormProps): ReactElement {
+function ContactForm({ companies, initialData, onSuccess, onCancel }: ContactFormProps): ReactElement {
     const { t } = useTranslation();
     const [form, setForm] = useState({
-        firstName: '',
-        lastName: '',
-        position: '',
-        phoneWork: '',
-        phoneMobile: '',
-        email: '',
-        linkedCompanyId: '',
-        comment: '',
+        firstName: initialData?.firstName || '',
+        lastName: initialData?.lastName || '',
+        position: initialData?.position || '',
+        phoneWork: initialData?.phoneWork || '',
+        phoneMobile: initialData?.phoneMobile || '',
+        email: initialData?.email || '',
+        linkedCompanyId: initialData?.clientCompanyId || '',
+        comment: initialData?.comment || '',
     });
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -49,7 +51,7 @@ function AddContactForm({ companies, onSuccess, onCancel }: AddContactFormProps)
         setSaving(true);
         setError(null);
         try {
-            const contact = await contactsApi.create({
+            const data = {
                 firstName: form.firstName.trim() || undefined,
                 lastName: form.lastName.trim() || undefined,
                 position: form.position.trim() || undefined,
@@ -57,14 +59,21 @@ function AddContactForm({ companies, onSuccess, onCancel }: AddContactFormProps)
                 phoneMobile: form.phoneMobile.trim() || undefined,
                 email: form.email.trim() || undefined,
                 comment: form.comment.trim() || undefined,
-            });
-            if (form.linkedCompanyId) {
-                await contactsApi.linkToCompany(contact.id, form.linkedCompanyId, true);
+                clientCompanyId: form.linkedCompanyId || undefined,
+            };
+
+            if (initialData) {
+                await contactsApi.update(initialData.id, data);
+            } else {
+                const contact = await contactsApi.create(data);
+                if (form.linkedCompanyId) {
+                    await contactsApi.linkToCompany(contact.id, form.linkedCompanyId, true);
+                }
             }
             onSuccess();
         } catch (err) {
-            console.error('Failed to create contact:', err);
-            setError(t('contacts.form.errors.createFailed', 'Ошибка при создании контакта'));
+            console.error('Failed to save contact:', err);
+            setError(t('contacts.form.errors.saveFailed', 'Ошибка при сохранении контакта'));
         } finally {
             setSaving(false);
         }
@@ -212,7 +221,7 @@ function AddContactForm({ companies, onSuccess, onCancel }: AddContactFormProps)
                     className="flex-1 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                     {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                    {saving ? t('contacts.form.saving', 'Сохранение...') : t('contacts.form.submit', 'Создать контакт')}
+                    {saving ? t('contacts.form.saving', 'Сохранение...') : (initialData ? t('common.save', 'Сохранить') : t('contacts.form.submit', 'Создать контакт'))}
                 </button>
             </div>
         </form>
@@ -233,6 +242,9 @@ export function ContactsPage(): ReactElement {
 
     const [search, setSearch] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
+    const [editingContact, setEditingContact] = useState<ContactPerson | null>(null);
+    const [deletingContact, setDeletingContact] = useState<ContactPerson | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     /**
      * Загрузить контакты и компании для привязки
@@ -372,7 +384,7 @@ export function ContactsPage(): ReactElement {
                     /* Таблица контактов */
                     <div className="rounded-xl border border-border overflow-hidden bg-card">
                         {/* Table Header */}
-                        <div className="hidden md:grid grid-cols-[auto_1fr_180px_180px_140px_40px] gap-4 px-6 py-3 bg-muted/40 border-b border-border">
+                        <div className="hidden md:grid grid-cols-[auto_1fr_180px_180px_140px_100px] gap-4 px-6 py-3 bg-muted/40 border-b border-border">
                             <span className="w-10" />
                             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 {t('contacts.table.name', 'Контакт')}
@@ -386,7 +398,9 @@ export function ContactsPage(): ReactElement {
                             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                 {t('contacts.table.phone', 'Телефон')}
                             </span>
-                            <span />
+                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">
+                                {t('contacts.table.actions', 'Действия')}
+                            </span>
                         </div>
 
                         {/* Rows */}
@@ -399,7 +413,7 @@ export function ContactsPage(): ReactElement {
                                     <div
                                         key={contact.id}
                                         onClick={() => navigate(`/contacts/${contact.id}`)}
-                                        className="grid grid-cols-1 md:grid-cols-[auto_1fr_180px_180px_140px_40px] gap-2 md:gap-4 px-6 py-4 hover:bg-accent/40 transition-colors cursor-pointer group"
+                                        className="grid grid-cols-1 md:grid-cols-[auto_1fr_180px_180px_140px_100px] gap-2 md:gap-4 px-6 py-4 hover:bg-accent/40 transition-colors cursor-pointer group"
                                     >
                                         {/* Avatar */}
                                         <div className="w-10 h-10 shrink-0 rounded-full bg-primary/10 flex items-center justify-center">
@@ -454,9 +468,28 @@ export function ContactsPage(): ReactElement {
                                             )}
                                         </div>
 
-                                        {/* Arrow */}
-                                        <div className="hidden md:flex items-center justify-end">
-                                            <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                                        {/* Actions */}
+                                        <div className="flex items-center justify-end gap-1">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setEditingContact(contact);
+                                                }}
+                                                title={t('contacts.actions.edit', 'Редактировать')}
+                                                className="p-1.5 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setDeletingContact(contact);
+                                                }}
+                                                title={t('contacts.actions.delete', 'Удалить')}
+                                                className="p-1.5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
                                         </div>
                                     </div>
                                 );
@@ -492,11 +525,90 @@ export function ContactsPage(): ReactElement {
                             </button>
                         </div>
                         <div className="!p-4 max-h-[80vh] overflow-y-auto">
-                            <AddContactForm
+                            <ContactForm
                                 companies={companies}
                                 onSuccess={() => { setShowAddModal(false); loadData(); }}
                                 onCancel={() => setShowAddModal(false)}
                             />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Edit Contact Modal ── */}
+            {editingContact && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="w-full max-w-lg bg-card rounded-2xl shadow-2xl border border-border overflow-hidden">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+                            <h2 className="text-lg font-bold text-foreground">
+                                {t('contacts.form.editTitle', 'Редактировать контакт')}
+                            </h2>
+                            <button
+                                onClick={() => setEditingContact(null)}
+                                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="!p-4 max-h-[80vh] overflow-y-auto">
+                            <ContactForm
+                                companies={companies}
+                                initialData={editingContact}
+                                onSuccess={() => { setEditingContact(null); loadData(); }}
+                                onCancel={() => setEditingContact(null)}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Delete Confirmation Dialog ── */}
+            {deletingContact && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="w-full max-w-md bg-card rounded-2xl shadow-2xl border border-border p-6 space-y-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center shrink-0">
+                                <Trash2 className="w-6 h-6 text-destructive" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-foreground">
+                                    {t('contacts.delete.confirmTitle', 'Удаление контакта')}
+                                </h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    {t('contacts.delete.confirmMessage', { name: [deletingContact.firstName, deletingContact.lastName].filter(Boolean).join(' ') })}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setDeletingContact(null)}
+                                disabled={isDeleting}
+                                className="flex-1 px-4 py-2.5 rounded-lg border border-input bg-background text-foreground text-sm font-medium hover:bg-accent transition-colors"
+                            >
+                                {t('common.cancel', 'Отмена')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={async () => {
+                                    setIsDeleting(true);
+                                    try {
+                                        await contactsApi.delete(deletingContact.id);
+                                        setDeletingContact(null);
+                                        loadData();
+                                    } catch (err) {
+                                        console.error('Failed to delete contact:', err);
+                                    } finally {
+                                        setIsDeleting(false);
+                                    }
+                                }}
+                                disabled={isDeleting}
+                                className="flex-1 px-4 py-2.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-medium hover:bg-destructive/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                            >
+                                {isDeleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                                {t('contacts.delete.confirmButton', 'Удалить')}
+                            </button>
                         </div>
                     </div>
                 </div>

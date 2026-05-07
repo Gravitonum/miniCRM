@@ -66,14 +66,14 @@ interface RawClient {
     address?: string; website?: string;
 }
 interface RawContact {
-    id: string; firstName?: string; lastName?: string; position?: string;
+    id: string; firstName?: string; lastName?: string; positionTitle?: string;
     phoneWork?: string; phoneMobile?: string; phonePersonal?: string;
-    email?: string; comment?: string; clientCompanyId?: string;
+    emailAddr?: string; commentaryText?: string; clientCompany?: { id: string };
 }
 interface RawInteraction {
-    id: string; type: string;
-    clientCompanyId?: string; dealId?: string; contactId?: string; contactPersonId?: string;
-    interactionDate?: string; description?: string; authorUserId?: string;
+    id: string; interactionType: string;
+    clientCompany?: { id: string }; deal?: { id: string }; contactPerson?: { id: string };
+    interactionDate?: string; descriptionText?: string; authorUserId?: string;
 }
 
 // ─────────────────────────────────────────
@@ -231,7 +231,7 @@ export const clientsApi = {
      */
     async getDeals(clientCompanyId: string): Promise<{ id: string; name: string; amount: number; stage: string }[]> {
         const resp = await apiClient.get('/application/api/Deal', {
-            params: { filter: `clientCompanyId=="${clientCompanyId}"` }
+            params: { filter: `clientCompany.id=="${clientCompanyId}"` }
         });
         const data = unwrap(resp.data as unknown[]);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -254,18 +254,22 @@ export const contactsApi = {
      */
     async getAll(): Promise<ContactPerson[]> {
         const resp = await apiClient.get<RawContact[] | { data: RawContact[] }>('/application/api/ContactPerson');
-        return unwrap(resp.data).map(c => ({
-            id: c.id,
-            firstName: c.firstName,
-            lastName: c.lastName,
-            position: c.position,
-            phoneWork: c.phoneWork,
-            phoneMobile: c.phoneMobile,
-            phonePersonal: c.phonePersonal,
-            email: c.email,
-            comment: c.comment,
-            clientCompanyId: c.clientCompanyId,
-        }));
+        return unwrap(resp.data).map(c => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const anyC = c as any;
+            return {
+                id: c.id,
+                firstName: c.firstName,
+                lastName: c.lastName,
+                position: c.positionTitle || anyC.position || anyC.position_title,
+                phoneWork: c.phoneWork || anyC.phone_work,
+                phoneMobile: c.phoneMobile || anyC.phone_mobile,
+                phonePersonal: c.phonePersonal || anyC.phone_personal,
+                email: c.emailAddr || anyC.email || anyC.email_addr,
+                comment: c.commentaryText || anyC.comment || anyC.commentary_text,
+                clientCompanyId: c.clientCompany?.id || anyC.clientCompanyId || anyC.client_company_id || (typeof c.clientCompany === 'string' ? c.clientCompany : null),
+            };
+        });
     },
 
     /**
@@ -274,11 +278,13 @@ export const contactsApi = {
     async getById(id: string): Promise<ContactPerson> {
         const resp = await apiClient.get<RawContact>(`/application/api/ContactPerson/${id}`);
         const c = resp.data;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const anyC = c as any;
         return {
             id: c.id, firstName: c.firstName, lastName: c.lastName,
-            position: c.position, phoneWork: c.phoneWork, phoneMobile: c.phoneMobile,
-            phonePersonal: c.phonePersonal, email: c.email, comment: c.comment,
-            clientCompanyId: c.clientCompanyId,
+            position: c.positionTitle || anyC.position || anyC.position_title, phoneWork: c.phoneWork || anyC.phone_work, phoneMobile: c.phoneMobile || anyC.phone_mobile,
+            phonePersonal: c.phonePersonal || anyC.phone_personal, email: c.emailAddr || anyC.email || anyC.email_addr, comment: c.commentaryText || anyC.comment || anyC.commentary_text,
+            clientCompanyId: c.clientCompany?.id || anyC.clientCompanyId || anyC.client_company_id || (typeof c.clientCompany === 'string' ? c.clientCompany : null),
         };
     },
 
@@ -288,14 +294,20 @@ export const contactsApi = {
     async getByClientCompany(clientCompanyId: string): Promise<ContactPerson[]> {
         // Gets links, then fetches each contact
         const linksResp = await apiClient.get('/application/api/ContactCompanyLink', {
-            params: { filter: `clientCompanyId=="${clientCompanyId}"` }
+            params: { filter: `clientCompany.id=="${clientCompanyId}"` }
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const links = unwrap(linksResp.data as any[]) as Array<{ contactId: string }>;
+        const links = unwrap(linksResp.data as any[]) as Array<{ contactPerson: { id: string } }>;
         if (!links.length) return [];
 
         const contacts = await Promise.all(
-            links.map(l => this.getById(l.contactId).catch(() => null))
+            links.map(l => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const anyL = l as any;
+                const contactId = anyL.contactPerson?.id || anyL.contactPersonId || anyL.contactPerson_id || (typeof anyL.contactPerson === 'string' ? anyL.contactPerson : null) || anyL.contact_person_id;
+                if (!contactId) return Promise.resolve(null);
+                return this.getById(contactId).catch(() => null);
+            })
         );
         return contacts.filter(Boolean) as ContactPerson[];
     },
@@ -307,18 +319,21 @@ export const contactsApi = {
         const resp = await apiClient.post<RawContact>('/application/api/ContactPerson', {
             firstName: data.firstName,
             lastName: data.lastName,
-            position: data.position || null,
+            positionTitle: data.position || null,
             phoneWork: data.phoneWork || null,
             phoneMobile: data.phoneMobile || null,
             phonePersonal: data.phonePersonal || null,
-            email: data.email || null,
-            comment: data.comment || null,
+            emailAddr: data.email || null,
+            commentaryText: data.comment || null,
+            company: data.clientCompanyId ? { id: data.clientCompanyId } : null,
         });
         const c = resp.data;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const anyC = c as any;
         return {
             id: c.id, firstName: c.firstName, lastName: c.lastName,
-            position: c.position, phoneWork: c.phoneWork, phoneMobile: c.phoneMobile,
-            phonePersonal: c.phonePersonal, email: c.email, comment: c.comment
+            position: c.positionTitle || anyC.position || anyC.position_title, phoneWork: c.phoneWork || anyC.phone_work, phoneMobile: c.phoneMobile || anyC.phone_mobile,
+            phonePersonal: c.phonePersonal || anyC.phone_personal, email: c.emailAddr || anyC.email || anyC.email_addr, comment: c.commentaryText || anyC.comment || anyC.commentary_text
         };
     },
 
@@ -332,8 +347,12 @@ export const contactsApi = {
     /**
      * Привязать контакт к компании
      */
-    async linkToCompany(contactId: string, clientCompanyId: string, isPrimary = false): Promise<void> {
-        await apiClient.post('/application/api/ContactCompanyLink', { contactId, clientCompanyId, isPrimary });
+    async linkToCompany(contactPersonId: string, clientCompanyId: string, isPrimaryJob = false): Promise<void> {
+        await apiClient.post('/application/api/ContactCompanyLink', { 
+            contactPerson: { id: contactPersonId }, 
+            clientCompany: { id: clientCompanyId }, 
+            isPrimaryJob 
+        });
     },
 
     /**
@@ -355,25 +374,28 @@ export const interactionsApi = {
      */
     async get(params: { clientCompanyId?: string; dealId?: string; contactId?: string }): Promise<Interaction[]> {
         const filters: string[] = [];
-        if (params.clientCompanyId) filters.push(`clientCompanyId=="${params.clientCompanyId}"`);
-        if (params.dealId) filters.push(`dealId=="${params.dealId}"`);
-        if (params.contactId) filters.push(`contactId=="${params.contactId}"`);
+        if (params.clientCompanyId) filters.push(`clientCompany.id=="${params.clientCompanyId}"`);
+        if (params.dealId) filters.push(`deal.id=="${params.dealId}"`);
+        if (params.contactId) filters.push(`contactPerson.id=="${params.contactId}"`);
 
         const resp = await apiClient.get<RawInteraction[] | { data: RawInteraction[] }>('/application/api/Interaction', {
             params: filters.length ? { filter: filters.join(' and ') } : {}
         });
 
-        return unwrap(resp.data).map(i => ({
-            id: i.id,
-            type: (i.type as Interaction['type']) || 'note',
-            clientCompanyId: i.clientCompanyId,
-            dealId: i.dealId,
-            contactId: i.contactId,
-            contactPersonId: i.contactPersonId,
-            interactionDate: i.interactionDate || new Date().toISOString(),
-            description: i.description || '',
-            authorUserId: i.authorUserId,
-        }));
+        return unwrap(resp.data).map(i => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const anyI = i as any;
+            return {
+                id: i.id,
+                type: (i.interactionType as Interaction['type']) || anyI.type || anyI.interaction_type || 'note',
+                clientCompanyId: i.clientCompany?.id || anyI.clientCompanyId || anyI.clientCompany_id || (typeof i.clientCompany === 'string' ? i.clientCompany : null),
+                dealId: i.deal?.id || anyI.dealId || anyI.deal_id || (typeof i.deal === 'string' ? i.deal : null),
+                contactId: i.contactPerson?.id || anyI.contactPersonId || anyI.contactPerson_id || (typeof i.contactPerson === 'string' ? i.contactPerson : null),
+                interactionDate: i.interactionDate || new Date().toISOString(),
+                description: i.descriptionText || anyI.description || anyI.description_text || '',
+                authorUserId: i.authorUserId,
+            };
+        });
     },
 
     /**
@@ -381,23 +403,24 @@ export const interactionsApi = {
      */
     async create(data: Omit<Interaction, 'id'>): Promise<Interaction> {
         const resp = await apiClient.post<RawInteraction>('/application/api/Interaction', {
-            type: data.type,
-            clientCompanyId: data.clientCompanyId || null,
-            dealId: data.dealId || null,
-            contactId: data.contactId || null,
-            contactPersonId: data.contactPersonId || null,
+            interactionType: data.type,
+            clientCompany: data.clientCompanyId ? { id: data.clientCompanyId } : null,
+            deal: data.dealId ? { id: data.dealId } : null,
+            contactPerson: data.contactId ? { id: data.contactId } : null,
             interactionDate: data.interactionDate,
-            description: data.description,
+            descriptionText: data.description,
         });
         const i = resp.data;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const anyI = i as any;
         return {
             id: i.id,
-            type: (i.type as Interaction['type']) || 'note',
-            clientCompanyId: i.clientCompanyId,
-            dealId: i.dealId,
-            contactId: i.contactId,
+            type: (i.interactionType as Interaction['type']) || anyI.type || anyI.interaction_type || 'note',
+            clientCompanyId: i.clientCompany?.id || anyI.clientCompanyId || anyI.clientCompany_id || (typeof i.clientCompany === 'string' ? i.clientCompany : null),
+            dealId: i.deal?.id || anyI.dealId || anyI.deal_id || (typeof i.deal === 'string' ? i.deal : null),
+            contactId: i.contactPerson?.id || anyI.contactPersonId || anyI.contactPerson_id || (typeof i.contactPerson === 'string' ? i.contactPerson : null),
             interactionDate: i.interactionDate || data.interactionDate,
-            description: i.description || '',
+            description: i.descriptionText || anyI.description || anyI.description_text || '',
         };
     },
 };

@@ -74,6 +74,7 @@ function AddContactForm({ clientCompanyId, onSuccess, onCancel }: AddContactForm
                 phoneWork: form.phoneWork.trim() || undefined,
                 email: form.email.trim() || undefined,
                 comment: form.comment.trim() || undefined,
+                clientCompanyId: clientCompanyId,
             });
             await contactsApi.linkToCompany(contact.id, clientCompanyId, true);
             onSuccess();
@@ -499,7 +500,7 @@ export function ClientCardPage(): ReactElement {
                             >
                                 <Icon className="w-4 h-4" />
                                 {tab.label}
-                                {tab.count !== undefined && tab.count > 0 && (
+                                {tab.count !== undefined && (
                                     <span className="px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-semibold">
                                         {tab.count}
                                     </span>

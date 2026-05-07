@@ -414,6 +414,15 @@
                 "createFailed": "Failed to create contact"
             }
         },
+        "delete": {
+            "confirmTitle": "Delete Contact",
+            "confirmMessage": "Are you sure you want to delete contact «{{name}}»? This action is irreversible.",
+            "confirmButton": "Delete"
+        },
+        "actions": {
+            "edit": "Edit",
+            "delete": "Delete"
+        },
         "card": {
             "backToList": "Contacts",
             "edit": "Edit",

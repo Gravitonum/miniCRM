@@ -10,8 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/ca
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { cn } from '../../lib/utils';
-import { dealsApi, type Deal, type DealProduct } from '../../api/deals';
-import { clientsApi, interactionsApi, type ClientCompany, type Interaction, directoriesApi, type Directory } from '../../api/clients';
+import { dealsApi, type Deal, type DealProduct, type DealStageHistoryDef } from '../../api/deals';
+import { clientsApi, contactsApi, interactionsApi, type ClientCompany, type Interaction, directoriesApi, type Directory, type ContactPerson } from '../../api/clients';
 
 const INTERACTION_ICONS = {
     call: PhoneIcon,
@@ -57,7 +57,9 @@ export function DealDetailsPage(): ReactElement {
 
     const [deal, setDeal] = useState<Deal | null>(null);
     const [company, setCompany] = useState<ClientCompany | null>(null);
+    const [contact, setContact] = useState<ContactPerson | null>(null);
     const [interactions, setInteractions] = useState<Interaction[]>([]);
+    const [dealStageHistory, setDealStageHistory] = useState<DealStageHistoryDef[]>([]);
     const [products, setProducts] = useState<DealProduct[]>([]);
     const [directories, setDirectories] = useState<Directory[]>([]);
     const [funnels, setFunnels] = useState<import('../../api/settings').Funnel[]>([]);
@@ -69,6 +71,8 @@ export function DealDetailsPage(): ReactElement {
     // Form states
     const [showAddProduct, setShowAddProduct] = useState(false);
     const [productForm, setProductForm] = useState({ categoryId: '', quantity: 1, price: 0 });
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [isCreatingCategory, setIsCreatingCategory] = useState(false);
     const [addingProduct, setAddingProduct] = useState(false);
 
     const [showAddInteraction, setShowAddInteraction] = useState(false);
@@ -94,13 +98,14 @@ export function DealDetailsPage(): ReactElement {
         setIsLoading(true);
         setError(null);
         try {
-            const [dealData, historyData, productsData, dirs, allFunnels, companiesData] = await Promise.all([
+            const [dealData, historyData, productsData, dirs, allFunnels, companiesData, stageHistoryData] = await Promise.all([
                 dealsApi.getDealById(id),
                 interactionsApi.get({ dealId: id }),
                 dealsApi.getProducts(id),
                 directoriesApi.getAll(),
                 import('../../api/settings').then(m => m.funnelsApi.getAll()),
-                clientsApi.getAll()
+                clientsApi.getAll(),
+                dealsApi.getStageHistory(id)
             ]);
 
             const reqStages = await Promise.all(
@@ -115,6 +120,15 @@ export function DealDetailsPage(): ReactElement {
             setProducts(productsData);
             setDirectories(dirs);
             setInteractions(historyData.sort((a, b) => new Date(b.interactionDate).getTime() - new Date(a.interactionDate).getTime()));
+            setDealStageHistory(stageHistoryData || []);
+
+            if (dealData.contactPersonId) {
+                const contactData = await contactsApi.getById(dealData.contactPersonId).catch(() => null);
+                if (contactData) setContact(contactData);
+            } else if (dealData.clientCompanyId) {
+                const compContacts = await contactsApi.getByClientCompany(dealData.clientCompanyId).catch(() => []);
+                if (compContacts.length > 0) setContact(compContacts[0]);
+            }
 
             if (dealData.clientCompanyId) {
                 const compData = await clientsApi.getById(dealData.clientCompanyId);
@@ -135,9 +149,18 @@ export function DealDetailsPage(): ReactElement {
         if (!id || !productForm.categoryId) return;
         setAddingProduct(true);
         try {
-            await dealsApi.addProduct(id, productForm.categoryId, productForm.quantity, productForm.price);
+            let catId = productForm.categoryId;
+            if (catId === 'NEW_CATEGORY') {
+                if (!newCategoryName.trim()) return;
+                const newCat = await directoriesApi.create('product_category', newCategoryName.trim());
+                catId = newCat.id;
+                setDirectories(prev => [...prev, newCat]);
+            }
+            await dealsApi.addProduct(id, catId, productForm.quantity, productForm.price);
             setShowAddProduct(false);
             setProductForm({ categoryId: '', quantity: 1, price: 0 });
+            setNewCategoryName('');
+            setIsCreatingCategory(false);
             void loadData();
         } catch (err) {
             console.error('Failed to add product', err);
@@ -462,35 +485,45 @@ export function DealDetailsPage(): ReactElement {
                                     </button>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="border border-border rounded-xl overflow-hidden">
-                                        <div className="bg-primary/10 py-1.5 px-4 text-center text-xs font-semibold text-primary uppercase tracking-wide">
-                                            {t('deals.details.primaryContact')}
-                                        </div>
-                                        <div className="p-4 relative">
-                                            <button className="absolute right-3 top-3 text-muted-foreground/40 hover:text-foreground transition-colors">
-                                                <MoreHorizontal className="w-4 h-4" />
-                                            </button>
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <div className="w-10 h-10 rounded-full bg-primary/10 overflow-hidden flex-shrink-0">
-                                                    <img src="https://i.pravatar.cc/150?img=1" alt="avatar" className="w-full h-full object-cover" />
+                                    {contact ? (
+                                        <div className="border border-border rounded-xl overflow-hidden">
+                                            <div className="bg-primary/10 py-1.5 px-4 text-center text-xs font-semibold text-primary uppercase tracking-wide">
+                                                {t('deals.details.primaryContact')}
+                                            </div>
+                                            <div className="p-4 relative">
+                                                <button className="absolute right-3 top-3 text-muted-foreground/40 hover:text-foreground transition-colors">
+                                                    <MoreHorizontal className="w-4 h-4" />
+                                                </button>
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <div className="w-10 h-10 rounded-full bg-primary/10 overflow-hidden flex-shrink-0 flex items-center justify-center font-bold text-primary">
+                                                        {contact.firstName?.[0] || contact.lastName?.[0] || '?'}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-foreground text-sm">{contact.firstName} {contact.lastName}</p>
+                                                        <p className="text-xs text-muted-foreground">{contact.position || '—'}</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="font-bold text-foreground text-sm">Мария Иванова</p>
-                                                    <p className="text-xs text-muted-foreground">Менеджер по продуктам</p>
+                                                <div className="space-y-1.5">
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <Mail className="w-3.5 h-3.5 text-muted-foreground/60" />
+                                                        <span>{contact.email || '—'}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                        <Phone className="w-3.5 h-3.5 text-muted-foreground/60" />
+                                                        <span>{contact.phoneMobile || contact.phoneWork || contact.phonePersonal || '—'}</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="space-y-1.5">
-                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                    <Mail className="w-3.5 h-3.5 text-muted-foreground/60" />
-                                                    <span>maria@example.com</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                    <Phone className="w-3.5 h-3.5 text-muted-foreground/60" />
-                                                    <span>+7 (495) 555-0112</span>
-                                                </div>
-                                            </div>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-border rounded-xl">
+                                            <p className="text-xs text-muted-foreground text-center mb-2">{t('deals.details.noContact', 'Контакт не назначен')}</p>
+                                            <Button variant="outline" size="sm" className="text-xs">
+                                                <Plus className="w-3 h-3 mr-1" />
+                                                Добавить контакт
+                                            </Button>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
 
@@ -690,15 +723,35 @@ export function DealDetailsPage(): ReactElement {
                                             <label className="block text-xs font-medium text-foreground mb-1">Категория / Название</label>
                                             <select
                                                 required
-                                                value={productForm.categoryId}
-                                                onChange={e => setProductForm(p => ({ ...p, categoryId: e.target.value }))}
-                                                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm"
+                                                value={productForm.categoryId === 'NEW_CATEGORY' ? 'NEW_CATEGORY' : productForm.categoryId}
+                                                onChange={e => {
+                                                    if (e.target.value === 'NEW_CATEGORY') {
+                                                        setIsCreatingCategory(true);
+                                                        setProductForm(p => ({ ...p, categoryId: 'NEW_CATEGORY' }));
+                                                    } else {
+                                                        setIsCreatingCategory(false);
+                                                        setProductForm(p => ({ ...p, categoryId: e.target.value }));
+                                                    }
+                                                }}
+                                                className="w-full px-3 py-2 rounded-lg border border-input bg-background text-sm mb-2"
                                             >
                                                 <option value="">Выберите продукт</option>
                                                 {directories.filter(d => d.type === 'product_category').map(d => (
                                                     <option key={d.id} value={d.id}>{d.value}</option>
                                                 ))}
+                                                <option value="NEW_CATEGORY">+ Создать новую категорию...</option>
                                             </select>
+                                            {isCreatingCategory && (
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    autoFocus
+                                                    placeholder="Название новой категории"
+                                                    value={newCategoryName}
+                                                    onChange={e => setNewCategoryName(e.target.value)}
+                                                    className="w-full px-3 py-2 rounded-lg border border-primary bg-background text-sm shadow-sm"
+                                                />
+                                            )}
                                         </div>
                                         <div>
                                             <label className="block text-xs font-medium text-foreground mb-1">Количество</label>
@@ -811,41 +864,82 @@ export function DealDetailsPage(): ReactElement {
                                     </Button>
                                 </form>
                             )}
-                            {interactions.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-10">
-                                    <History className="w-8 h-8 text-muted-foreground/40 mb-2" />
-                                    <p className="text-sm font-medium text-muted-foreground">Нет событий в истории</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-6">
-                                    {interactions.map(interaction => {
-                                        const date = new Date(interaction.interactionDate);
-                                        const Icon = INTERACTION_ICONS[interaction.type] || FileText;
-                                        const color = INTERACTION_COLORS[interaction.type] || 'text-muted-foreground bg-muted';
+                            {(() => {
+                                const timelineEvents = [
+                                    ...interactions
+                                        .filter(i => i.type !== 'note' || (i.description && i.description.trim().length > 0))
+                                        .map(i => ({ type: 'interaction' as const, date: i.interactionDate, data: i })),
+                                    ...dealStageHistory
+                                        .filter(h => new Date(h.changedAtTime).getFullYear() > 1900)
+                                        .map(h => ({ type: 'stage_change' as const, date: h.changedAtTime, data: h }))
+                                ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-                                        return (
-                                            <div key={interaction.id} className="flex gap-4">
-                                                <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center mt-1 ${color}`}>
-                                                    <Icon className="w-4 h-4" />
-                                                </div>
-                                                <div className="flex-1 bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md hover:border-primary/20 transition-all group">
-                                                    <div className="flex items-start justify-between mb-2">
-                                                        <div className="font-semibold text-sm text-foreground capitalize">
-                                                            {t(`clients.history.types.${interaction.type}`)}
+                                if (timelineEvents.length === 0) {
+                                    return (
+                                        <div className="flex flex-col items-center justify-center py-10">
+                                            <History className="w-8 h-8 text-muted-foreground/40 mb-2" />
+                                            <p className="text-sm font-medium text-muted-foreground">Нет событий в истории</p>
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <div className="space-y-6">
+                                        {timelineEvents.map((evt, idx) => {
+                                            const date = new Date(evt.date);
+                                            if (evt.type === 'interaction') {
+                                                const interaction = evt.data as Interaction;
+                                                const Icon = INTERACTION_ICONS[interaction.type] || FileText;
+                                                const color = INTERACTION_COLORS[interaction.type] || 'text-muted-foreground bg-muted';
+                                                return (
+                                                    <div key={`int-${interaction.id}`} className="flex gap-4">
+                                                        <div className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center mt-1 ${color}`}>
+                                                            <Icon className="w-4 h-4" />
                                                         </div>
-                                                        <div className="text-xs text-muted-foreground font-medium bg-muted/50 px-2 py-1 rounded-md">
-                                                            {date.toLocaleDateString('ru-RU')} в {date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                                                        <div className="flex-1 bg-card border border-border rounded-xl p-4 shadow-sm hover:shadow-md hover:border-primary/20 transition-all group">
+                                                            <div className="flex items-start justify-between mb-2">
+                                                                <div className="font-semibold text-sm text-foreground capitalize">
+                                                                    {t(`clients.history.types.${interaction.type}`)}
+                                                                </div>
+                                                                <div className="text-xs text-muted-foreground font-medium bg-muted/50 px-2 py-1 rounded-md">
+                                                                    {date.toLocaleDateString('ru-RU')} в {date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                                                                {interaction.description || 'Событие без описания'}
+                                                            </p>
                                                         </div>
                                                     </div>
-                                                    <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                                                        {interaction.description}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
+                                                );
+                                            } else {
+                                                const history = evt.data as DealStageHistoryDef;
+                                                const fromStage = stages.find(s => s.id === history.fromStageId);
+                                                const toStage = stages.find(s => s.id === history.toStageId);
+                                                return (
+                                                    <div key={`stage-${history.id}-${idx}`} className="flex gap-4">
+                                                        <div className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center mt-1 bg-primary/10 text-primary">
+                                                            <CheckCircle2 className="w-4 h-4" />
+                                                        </div>
+                                                        <div className="flex-1 bg-card border border-primary/20 rounded-xl p-4 shadow-sm hover:shadow-md transition-all group">
+                                                            <div className="flex items-start justify-between mb-2">
+                                                                <div className="font-semibold text-sm text-foreground">
+                                                                    Смена этапа сделки
+                                                                </div>
+                                                                <div className="text-xs text-muted-foreground font-medium bg-muted/50 px-2 py-1 rounded-md">
+                                                                    {date.toLocaleDateString('ru-RU')} в {date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-sm text-foreground/80">
+                                                                Этап изменен с <strong>{fromStage?.name || '—'}</strong> на <strong>{toStage?.name || '—'}</strong>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+                                        })}
+                                    </div>
+                                );
+                            })()}
                         </CardContent>
                     </Card>
                 )}
