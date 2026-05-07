@@ -88,7 +88,10 @@ export const usersApi = {
     /** Получить всех пользователей (например, по orgCode, хотя обычно платформа фильтрует сама или надо фильтровать) */
     async getAll(orgCode: string): Promise<User[]> {
         const resp = await apiClient.get('/application/api/Users', {
-            params: { filter: `orgCode=="${orgCode}"` }
+            params: { 
+                filter: `orgCode=="${orgCode}"`,
+                limit: 1000
+            }
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return unwrap(resp.data as any[]).map((u: any) => ({
@@ -109,7 +112,9 @@ export const usersApi = {
 export const funnelsApi = {
     /** Получить все воронки компании */
     async getAll(): Promise<Funnel[]> {
-        const resp = await apiClient.get('/application/api/CrmFunnel');
+        const resp = await apiClient.get('/application/api/CrmFunnel', {
+            params: { limit: 1000 }
+        });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return unwrap(resp.data as any[]).map((f: any) => ({
             id: f.id,
@@ -123,7 +128,10 @@ export const funnelsApi = {
     /** Получить этапы конкретной воронки */
     async getStages(funnelId: string): Promise<FunnelStage[]> {
         const resp = await apiClient.get('/application/api/FunnelStage', {
-            params: { filter: `funnel.id=="${funnelId}"` }
+            params: { 
+                filter: `funnel.id=="${funnelId}"`,
+                limit: 1000
+            }
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const stages = unwrap(resp.data as any[]).map((s: any) => ({
@@ -216,7 +224,10 @@ export const transitionRulesApi = {
      */
     async getByFunnel(funnelId: string): Promise<StageTransitionRule[]> {
         const resp = await apiClient.get('/application/api/StageTransitionRule', {
-            params: { filter: `funnel.id=="${funnelId}"` }
+            params: { 
+                filter: `funnel.id=="${funnelId}"`,
+                limit: 1000
+            }
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return unwrap(resp.data as any[]).map((r: any): StageTransitionRule => ({
@@ -311,7 +322,10 @@ export const companyApi = {
     /** Получить данные компании по orgCode */
     async getByOrgCode(orgCode: string): Promise<Company | null> {
         const resp = await apiClient.get('/application/api/Company', {
-            params: { filter: `orgCode=="${orgCode}"` }
+            params: { 
+                filter: `orgCode=="${orgCode}"`,
+                limit: 100
+            }
         });
         const companies = unwrap(resp.data);
         if (!companies.length) return null;
@@ -394,7 +408,10 @@ export const inviteApi = {
      */
     async getAll(companyId: string): Promise<CompanyInvite[]> {
         const resp = await apiClient.get('/application/api/CompanyInvite', {
-            params: { filter: `companyId=="${companyId}"` },
+            params: { 
+                filter: `companyId=="${companyId}"`,
+                limit: 1000
+            }
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return unwrap(resp.data as any[]).map((d: any) => ({

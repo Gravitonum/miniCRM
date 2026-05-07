@@ -1,5 +1,20 @@
 # Project Change Log
 
+## [2026-05-07T16:42:00Z] Fixed directory items "disappearing" bug (pagination limit)
+- Type: bugfix
+
+- Affected: `frontend/src/api/clients.ts`, `frontend/src/api/deals.ts`, `frontend/src/api/settings.ts`
+
+- Summary: Fixed a bug where directory items (Lead Sources, etc.) seemed to disappear when more than 10-20 items were added. This was caused by GraviBase's default pagination limit (10 items). Added `limit: 1000` to all collection fetch methods across the API layer to ensure all records are retrieved.
+
+- Context: User reported that only 2 values were saved or displayed. Investigation showed that as new items were added, older ones were being pushed out of the first page of the default API response.
+
+- Risk: Low. Increasing the limit to 1000 is safe for these entities as they are not expected to have millions of records per company.
+
+- Lesson learned: Always specify a explicit `limit` when fetching collections from GraviBase, as the default limit is very restrictive (usually 10).
+
+- Next steps: Consider implementing proper infinite scroll or pagination in the UI if collection sizes grow significantly.
+
 ## [2026-05-07T16:13:00Z] Improved error handling and descriptive messages
 - Type: bugfix | refactor
 

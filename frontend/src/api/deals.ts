@@ -46,7 +46,9 @@ interface DealBackendModel {
 
 export const dealsApi = {
     async getDeals(): Promise<Deal[]> {
-        const response = await apiClient.get<DealBackendModel[] | { data: DealBackendModel[] }>('/application/api/Deal');
+        const response = await apiClient.get<DealBackendModel[] | { data: DealBackendModel[] }>('/application/api/Deal', {
+            params: { limit: 1000 }
+        });
         const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
 
         return data.map(d => ({
@@ -132,7 +134,8 @@ export const dealsApi = {
         interface AppUser { id: string; username: string; orgCode?: string; email?: string; }
         const response = await apiClient.get<AppUser[] | { data: AppUser[] }>('/application/api/Users', {
             params: {
-                filter: `orgCode=="${orgCode}"`
+                filter: `orgCode=="${orgCode}"`,
+                limit: 1000
             }
         });
         const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
@@ -165,7 +168,10 @@ export const dealsApi = {
 
     async getStageHistory(dealId: string): Promise<DealStageHistoryDef[]> {
         const response = await apiClient.get<any>('/application/api/DealStageHistory', {
-            params: { filter: `deal.id=="${dealId}"` }
+            params: { 
+                filter: `deal.id=="${dealId}"`,
+                limit: 1000
+            }
         });
         const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
         return data.map((h: any) => ({
@@ -180,7 +186,10 @@ export const dealsApi = {
 
     async getProducts(dealId: string): Promise<DealProduct[]> {
         const response = await apiClient.get<any[] | { data: any[] }>('/application/api/DealProduct', {
-            params: { filter: `deal.id=="${dealId}"` }
+            params: { 
+                filter: `deal.id=="${dealId}"`,
+                limit: 1000
+            }
         });
         const data = Array.isArray(response.data) ? response.data : (response.data?.data || []);
         return data.map(p => ({

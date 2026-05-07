@@ -256,7 +256,8 @@
             "confirm": "Tasdiqlash",
             "add": "Qo'shish",
             "deleteConfirm": "Ushbu elementni o'chirishga aminmisiz?",
-            "nothingFound": "Hech narsa topilmadi"
+            "nothingFound": "Hech narsa topilmadi",
+            "loading": "Yuklanmoqda..."
         },
         "refresh": "Yangilash",
         "all": "Barchasi",

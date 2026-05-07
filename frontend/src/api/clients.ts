@@ -105,7 +105,10 @@ export const directoriesApi = {
      */
     async getByType(type: string): Promise<Directory[]> {
         const resp = await apiClient.get<RawDirectory[] | { data: RawDirectory[] }>('/application/api/Directory', {
-            params: { filter: `type=="${type}"` }
+            params: { 
+                filter: `type=="${type}"`,
+                limit: 1000
+            }
         });
         return unwrap(resp.data).map(d => ({
             id: d.id,
@@ -119,7 +122,9 @@ export const directoriesApi = {
      * Получить все справочники сразу (group by type)
      */
     async getAll(): Promise<Directory[]> {
-        const resp = await apiClient.get<RawDirectory[] | { data: RawDirectory[] }>('/application/api/Directory');
+        const resp = await apiClient.get<RawDirectory[] | { data: RawDirectory[] }>('/application/api/Directory', {
+            params: { limit: 1000 }
+        });
         return unwrap(resp.data).map(d => ({
             id: d.id,
             type: d.type,
@@ -162,7 +167,9 @@ export const clientsApi = {
      * @example clientsApi.getAll()
      */
     async getAll(): Promise<ClientCompany[]> {
-        const resp = await apiClient.get<RawClient[] | { data: RawClient[] }>('/application/api/ClientCompany');
+        const resp = await apiClient.get<RawClient[] | { data: RawClient[] }>('/application/api/ClientCompany', {
+            params: { limit: 1000 }
+        });
         return unwrap(resp.data).map(c => ({
             id: c.id,
             name: c.name || '—',
@@ -238,7 +245,10 @@ export const clientsApi = {
      */
     async getDeals(clientCompanyId: string): Promise<{ id: string; name: string; amount: number; stage: string }[]> {
         const resp = await apiClient.get('/application/api/Deal', {
-            params: { filter: `clientCompany.id=="${clientCompanyId}"` }
+            params: { 
+                filter: `clientCompany.id=="${clientCompanyId}"`,
+                limit: 1000
+            }
         });
         const data = unwrap(resp.data as unknown[]);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -260,7 +270,9 @@ export const contactsApi = {
      * Получить все контактные лица
      */
     async getAll(): Promise<ContactPerson[]> {
-        const resp = await apiClient.get<RawContact[] | { data: RawContact[] }>('/application/api/ContactPerson');
+        const resp = await apiClient.get<RawContact[] | { data: RawContact[] }>('/application/api/ContactPerson', {
+            params: { limit: 1000 }
+        });
         return unwrap(resp.data).map(c => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const anyC = c as any;
@@ -301,7 +313,10 @@ export const contactsApi = {
     async getByClientCompany(clientCompanyId: string): Promise<ContactPerson[]> {
         // Gets links, then fetches each contact
         const linksResp = await apiClient.get('/application/api/ContactCompanyLink', {
-            params: { filter: `clientCompany.id=="${clientCompanyId}"` }
+            params: { 
+                filter: `clientCompany.id=="${clientCompanyId}"`,
+                limit: 1000
+            }
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const links = unwrap(linksResp.data as any[]) as Array<{ contactPerson: { id: string } }>;
@@ -386,7 +401,10 @@ export const interactionsApi = {
         if (params.contactId) filters.push(`contactPerson.id=="${params.contactId}"`);
 
         const resp = await apiClient.get<RawInteraction[] | { data: RawInteraction[] }>('/application/api/Interaction', {
-            params: filters.length ? { filter: filters.join(' and ') } : {}
+            params: { 
+                ...(filters.length ? { filter: filters.join(' and ') } : {}),
+                limit: 1000
+            }
         });
 
         return unwrap(resp.data).map(i => {
