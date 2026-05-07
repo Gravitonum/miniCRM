@@ -79,14 +79,17 @@ export function RegisterPage(): ReactElement {
                 if (result.username) await assignRole(result.username, 'Viewer');
                 setIsSuccess(true);
             } else {
-                const errorKey = result.error === 'usernameExists'
-                    ? 'register.errors.usernameExists'
-                    : result.error === 'passwordTooShort'
-                        ? 'register.errors.passwordTooShort'
-                        : result.error === 'networkError'
-                            ? 'register.errors.networkError'
-                            : 'register.errors.registrationFailed';
-                setErrors({ general: t(errorKey) });
+                // If we have a specific error key, try to translate it
+                const errorKey = `register.errors.${result.error}`;
+                const translatedError = t(errorKey);
+
+                // If translation is missing or same as key, show a more generic error or the raw error
+                if (translatedError === errorKey) {
+                    setErrors({ general: result.details || result.error || t('register.errors.registrationFailed') });
+                } else {
+                    // Show translated error, but append details if they are meaningfully different
+                    setErrors({ general: result.details && result.details !== result.error ? `${translatedError} (${result.details})` : translatedError });
+                }
             }
         } catch {
             setErrors({ general: t('register.errors.registrationFailed') });

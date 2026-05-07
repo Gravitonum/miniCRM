@@ -88,12 +88,17 @@ export function LoginPage(): ReactElement {
                     setErrors({ general: t('login.errors.serverError') });
                 }
             } else {
-                const errorKey = loginResult.error === 'invalidCredentials'
-                    ? 'login.errors.invalidCredentials'
-                    : loginResult.error === 'networkError'
-                        ? 'login.errors.networkError'
-                        : 'login.errors.serverError';
-                setErrors({ general: t(errorKey) });
+                // If we have a specific error key, try to translate it
+                const errorKey = `login.errors.${loginResult.error}`;
+                const translatedError = t(errorKey);
+
+                // If translation is missing or same as key, show a more generic error or the raw error
+                if (translatedError === errorKey) {
+                    setErrors({ general: loginResult.details || loginResult.error || t('login.errors.serverError') });
+                } else {
+                    // Show translated error, but append details if they are meaningfully different
+                    setErrors({ general: loginResult.details && loginResult.details !== loginResult.error ? `${translatedError} (${loginResult.details})` : translatedError });
+                }
             }
         } catch (err) {
             console.error('Login error:', err);

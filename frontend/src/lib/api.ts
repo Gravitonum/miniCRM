@@ -22,9 +22,15 @@ export interface TokenResponse {
 interface ApiError {
     error: string;
     details?: string;
+    error_description?: string;
 }
 
-
+/** Simple success/failure result with optional error details */
+export interface SimpleResult {
+    success: boolean;
+    error?: string;
+    details?: string;
+}
 
 /** Result of company lookup by org code */
 export interface CompanyLookupResult {
@@ -35,6 +41,7 @@ export interface CompanyLookupResult {
         orgCode: string;
     };
     error?: string;
+    details?: string;
 }
 
 /** Result of login operation */
@@ -42,6 +49,7 @@ export interface LoginResult {
     success: boolean;
     token?: TokenResponse;
     error?: string;
+    details?: string;
 }
 
 /** Result of registration operation */
@@ -49,6 +57,7 @@ export interface RegisterResult {
     success: boolean;
     token?: TokenResponse;
     error?: string;
+    details?: string;
     errorCode?: string;
     username?: string;
 }
@@ -79,7 +88,11 @@ export async function login(username: string, password: string): Promise<LoginRe
                 return { success: false, error: 'invalidCredentials' };
             }
             const errorData = error.response?.data as ApiError;
-            return { success: false, error: errorData?.error || 'serverError' };
+            return { 
+                success: false, 
+                error: errorData?.error || 'serverError',
+                details: errorData?.error_description || errorData?.details 
+            };
         }
         return { success: false, error: 'networkError' };
     }
@@ -130,7 +143,12 @@ export async function lookupCompanyByOrgCode(orgCode: string): Promise<CompanyLo
         };
     } catch (error) {
         console.error('Company lookup failed:', error);
-        return { found: false, error: 'lookupFailed' };
+        let details = undefined;
+        if (error instanceof AxiosError) {
+            const errorData = error.response?.data as ApiError;
+            details = errorData?.error_description || errorData?.details || errorData?.error;
+        }
+        return { found: false, error: 'lookupFailed', details };
     }
 }
 
@@ -159,7 +177,7 @@ export async function register(
         );
 
         return { success: true, token: response.data, username };
-    } catch (error) {
+        } catch (error) {
         if (error instanceof AxiosError) {
             if (error.response?.status === 406) {
                 return { success: false, error: 'passwordTooShort', errorCode: 'password_policy' };
@@ -168,7 +186,12 @@ export async function register(
                 return { success: false, error: 'usernameExists', errorCode: 'conflict' };
             }
             const errorData = error.response?.data as ApiError;
-            return { success: false, error: 'registrationFailed', errorCode: errorData?.error };
+            return { 
+                success: false, 
+                error: 'registrationFailed', 
+                errorCode: errorData?.error,
+                details: errorData?.error_description || errorData?.details
+            };
         }
         return { success: false, error: 'networkError' };
     }
@@ -180,7 +203,7 @@ export async function register(
  * Assigns a role to a user.
  * Uses PUT /security/projects/{project}/users/{username}/roles/{role}
  */
-export async function assignRole(username: string, role: string): Promise<{ success: boolean; error?: string }> {
+export async function assignRole(username: string, role: string): Promise<SimpleResult> {
     try {
         await apiClient.put(
             `/security/projects/${PROJECT_CODE}/users/${username}/roles/${role}`
@@ -237,6 +260,7 @@ export interface AppUserResult {
     success: boolean;
     user?: AppUser;
     error?: string;
+    details?: string;
 }
 
 /**
@@ -262,7 +286,12 @@ export async function getAppUser(username: string): Promise<AppUserResult> {
         return { success: true, user: users[0] };
     } catch (error) {
         console.error('Failed to get app user:', error);
-        return { success: false, error: 'fetchFailed' };
+        let details = undefined;
+        if (error instanceof AxiosError) {
+            const errorData = error.response?.data as ApiError;
+            details = errorData?.error_description || errorData?.details || errorData?.error;
+        }
+        return { success: false, error: 'fetchFailed', details };
     }
 }
 
@@ -284,14 +313,19 @@ export async function createAppUser(username: string, email?: string): Promise<A
         return { success: true, user: response.data };
     } catch (error) {
         console.error('Failed to create app user:', error);
-        return { success: false, error: 'createFailed' };
+        let details = undefined;
+        if (error instanceof AxiosError) {
+            const errorData = error.response?.data as ApiError;
+            details = errorData?.error_description || errorData?.details || errorData?.error;
+        }
+        return { success: false, error: 'createFailed', details };
     }
 }
 
 /**
  * Updates the orgCode for a user in the 'Users' table.
  */
-export async function updateAppUserOrg(usernameOrId: string, orgCode: string): Promise<{ success: boolean; error?: string }> {
+export async function updateAppUserOrg(usernameOrId: string, orgCode: string): Promise<SimpleResult> {
     try {
         let user: AppUser | undefined;
 
@@ -322,13 +356,18 @@ export async function updateAppUserOrg(usernameOrId: string, orgCode: string): P
         return { success: true };
     } catch (error) {
         console.error('Failed to update app user org:', error);
-        return { success: false, error: 'updateFailed' };
+        let details = undefined;
+        if (error instanceof AxiosError) {
+            const errorData = error.response?.data as ApiError;
+            details = errorData?.error_description || errorData?.details || errorData?.error;
+        }
+        return { success: false, error: 'updateFailed', details };
     }
 }
 /**
  * Updates the onboarding fulfillment status for a user.
  */
-export async function updateOnboardingStatus(usernameOrId: string, status: boolean): Promise<{ success: boolean; error?: string }> {
+export async function updateOnboardingStatus(usernameOrId: string, status: boolean): Promise<SimpleResult> {
     try {
         let user: AppUser | undefined;
 
@@ -360,7 +399,12 @@ export async function updateOnboardingStatus(usernameOrId: string, status: boole
         return { success: true };
     } catch (error) {
         console.error('Failed to update onboarding status:', error);
-        return { success: false, error: 'updateFailed' };
+        let details = undefined;
+        if (error instanceof AxiosError) {
+            const errorData = error.response?.data as ApiError;
+            details = errorData?.error_description || errorData?.details || errorData?.error;
+        }
+        return { success: false, error: 'updateFailed', details };
     }
 }
 

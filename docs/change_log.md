@@ -1,5 +1,20 @@
 # Project Change Log
 
+## [2026-05-07T16:13:00Z] Improved error handling and descriptive messages
+- Type: bugfix | refactor
+
+- Affected: `frontend/src/api/client.ts`, `frontend/src/lib/api.ts`, `frontend/src/pages/LoginPage.tsx`, `frontend/src/pages/RegisterPage.tsx`
+
+- Summary: Fixed an issue where the 401 response from the auth API was being incorrectly handled by the axios interceptor, causing it to be reported as a "Network Error". Improved the UI to display meaningful error messages from the backend (error_description or details) instead of defaulting to generic messages.
+
+- Context: Users were seeing "Network Error" even for simple wrong password attempts. The interceptor was trying to refresh the token on any 401, throwing a generic error when no refresh token was found, which the frontend then interpreted as a network failure.
+
+- Risk: Low. The interceptor now correctly skips refresh logic for auth-related paths and when no refresh token is present. UI fallback logic ensures some message is always shown.
+
+- Lesson learned: Always exclude authentication and token refresh endpoints from automatic 401 refresh interceptors to avoid masking original authentication errors. Ensure error detail fields from the backend are preserved through the API client layer.
+
+- Next steps: Verify other API calls to ensure they also benefit from descriptive error reporting.
+
 ## [2026-05-07T12:58:00Z] Fixed onboarding tour re-triggering issue
 - Type: bugfix | refactor
 

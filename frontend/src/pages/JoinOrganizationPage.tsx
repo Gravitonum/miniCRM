@@ -81,7 +81,7 @@ export function JoinOrganizationPage(): ReactElement {
             if (appUserResult.success) {
                 navigate('/');
             } else {
-                setErrors({ general: t('register.errors.joinFailed') || 'Failed to update app user record' });
+                setErrors({ general: appUserResult.details || t('register.errors.joinFailed') || 'Failed to update app user record' });
             }
         } catch (err) {
             console.error('Join error:', err);
