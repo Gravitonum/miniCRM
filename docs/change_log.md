@@ -1,5 +1,21 @@
 # Project Change Log
 
+## [2026-05-07T12:58:00Z] Fixed onboarding tour re-triggering issue
+- Type: bugfix | refactor
+
+- Affected: `frontend/src/lib/api.ts`, `frontend/src/components/onboarding/DashboardTour.tsx`, `frontend/src/components/layout/DashboardLayout.tsx`, `frontend/src/pages/LoginPage.tsx`, `frontend/src/pages/JoinOrganizationPage.tsx`
+
+- Summary: Fixed the issue where the "Welcome to GraviSales!" tour would restart after every login. Replaced `localStorage.clear()` with a targeted `logout()` function to preserve user settings (theme, language, tour status) across sessions. Made the tour completion flag user-specific by including the username in the storage key.
+
+- Context: Users reported that the tour was annoying as it appeared every time they logged in. This was caused by the logout logic wiping all local storage, including the "completed" flag.
+
+- Risk: Low. The `logout()` function now explicitly removes only auth tokens, which is safer and provides better UX.
+
+- Lesson learned: Avoid using `localStorage.clear()` for logout if you want to persist user preferences like theme, language, or onboarding status. Always use user-specific keys for flags that should only apply to a specific account.
+
+- Next steps: Consider moving the tour status to the backend (GraviBase) for true cross-device persistence.
+
+
 ## [2026-05-07T12:37:00Z] Settings access control based on roles
 - Type: feature | security
 - Affected: `frontend/src/App.tsx`, `frontend/src/components/layout/DashboardLayout.tsx`

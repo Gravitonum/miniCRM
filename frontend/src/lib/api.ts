@@ -363,3 +363,12 @@ export async function updateOnboardingStatus(usernameOrId: string, status: boole
         return { success: false, error: 'updateFailed' };
     }
 }
+
+/**
+ * Clears authentication data from storage while preserving user settings.
+ */
+export function logout(): void {
+    localStorage.removeItem('gravisales_token');
+    localStorage.removeItem('gravisales_refresh_token');
+    sessionStorage.clear();
+}

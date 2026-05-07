@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle2, ArrowRight, Search, LogOut } from 'lucide-react';
 import { AuthLayout } from '../components/AuthLayout';
-import { lookupCompanyByOrgCode, updateAppUserOrg } from '../lib/api';
+import { lookupCompanyByOrgCode, updateAppUserOrg, logout } from '../lib/api';
 import type { CompanyLookupResult } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -99,7 +99,7 @@ export function JoinOrganizationPage(): ReactElement {
                         {t('joinOrg.title') || 'Join Organization'}
                     </h1>
                     <button
-                        onClick={() => { localStorage.clear(); navigate('/login'); }}
+                        onClick={() => { logout(); navigate('/login'); }}
                         className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent transition-colors mt-1 shrink-0"
                         title={t('auth.logout') || 'Logout'}
                     >

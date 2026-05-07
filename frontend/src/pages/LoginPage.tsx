@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, LogIn, Loader2 } from 'lucide-react';
 import { AuthLayout } from '../components/AuthLayout';
-import { login, getAppUser, createAppUser } from '../lib/api';
+import { login, getAppUser, createAppUser, logout } from '../lib/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -80,7 +80,7 @@ export function LoginPage(): ReactElement {
                     const user = appUserResult.user;
                     if (!user.isActive) {
                         setErrors({ general: t('login.errors.accountDisabled') || 'Account is disabled.' });
-                        localStorage.clear();
+                        logout();
                         return;
                     }
                     navigate(user.orgCode ? '/' : '/join-organization');

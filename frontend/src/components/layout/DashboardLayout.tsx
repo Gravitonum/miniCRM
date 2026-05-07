@@ -46,13 +46,13 @@ import {
 import { cn } from '../../lib/utils';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeSwitcher } from '../ThemeSwitcher';
-import { getUserRolesFromToken } from '../../lib/api';
+import { getUserRolesFromToken, logout as apiLogout } from '../../lib/api';
 
 /** Хук выхода из системы */
 function useLogout() {
     const navigate = useNavigate();
     return () => {
-        localStorage.clear();
+        apiLogout();
         navigate('/login');
     };
 }
@@ -60,6 +60,7 @@ function useLogout() {
 export function DashboardLayout({ children }: { children: React.ReactNode }): ReactElement {
     const { t } = useTranslation();
     const logout = useLogout();
+    const navigate = useNavigate();
     const location = useLocation();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);

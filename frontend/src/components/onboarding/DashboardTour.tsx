@@ -3,16 +3,18 @@ import Joyride, { type CallBackProps, STATUS, type Step } from 'react-joyride';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../lib/useTheme';
 
-const TOUR_COMPLETED_KEY = 'gravisales_dashboard_tour_completed';
 
 export function DashboardTour() {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const [run, setRun] = useState(false);
 
+  const username = localStorage.getItem('gravisales_username') || 'default';
+  const tourCompletedKey = `gravisales_dashboard_tour_completed_${username}`;
+
   useEffect(() => {
     // Проверяем, проходил ли уже этот пользователь (или в этом браузере) тур
-    const isCompleted = localStorage.getItem(TOUR_COMPLETED_KEY);
+    const isCompleted = localStorage.getItem(tourCompletedKey);
     if (!isCompleted) {
       // Небольшая задержка, чтобы UI успел отрендериться, включая виджеты
       const timer = setTimeout(() => {
@@ -107,7 +109,7 @@ export function DashboardTour() {
 
     if (finishedStatuses.includes(status)) {
       // Запоминаем, что тур пройден
-      localStorage.setItem(TOUR_COMPLETED_KEY, 'true');
+      localStorage.setItem(tourCompletedKey, 'true');
       setRun(false);
     }
   };
